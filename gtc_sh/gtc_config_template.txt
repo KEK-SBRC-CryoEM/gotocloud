@@ -17,15 +17,16 @@ base_os = ubuntu1804
 vpc_settings = default
 queue_settings = g4dn-vcpu96-gpu8, g4dn-vcpu48-gpu4, g4dn-vcpu48-gpu4-spot, c5-vcpu96-gpu0, c5-vcpu96-gpu0-spot
 tags = {"iam-user" : "XXX_GTC_IAM_USER_NAME_XXX", "method" : "XXX_GTC_METHOD_NAME_XXX", "project" : "XXX_GTC_PROJECT_NAME_XXX"}
-efs_settings = kek-shared-efs
+#efs_settings = kek-shared-efs
 s3_read_write_resource = arn:aws:s3:::XXX_GTC_S3_NAME_XXX*
 fsx_settings = fsx-scratch
 dcv_settings = my-dcv
 cw_log_settings = my-cw
+post_install = https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
 
 [vpc default]
-vpc_id = vpc-0a936e6c
-master_subnet_id = subnet-680c8a43
+vpc_id = XXX_GTC_VPC_ID_XXX
+master_subnet_id = XXX_GTC_SUBNET_ID_XXX
 # compute_subnet_id = subnet-680c8a43
 use_public_ips = true
 
@@ -76,9 +77,9 @@ disable_hyperthreading = true
 instance_type = c5.24xlarge
 max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
 
-[efs kek-shared-efs]
-shared_dir = efs
-efs_fs_id = fs-0f97919aa0862153f
+#[efs kek-shared-efs]
+#shared_dir = efs
+#efs_fs_id = fs-0f97919aa0862153f
 
 [fsx fsx-scratch]
 shared_dir = /fsx
