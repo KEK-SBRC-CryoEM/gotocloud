@@ -1,18 +1,258 @@
 #!/bin/bash
+#
+# Usage:
+#   gtc_utility_master_node_startup.sh [-d]
+#   
+# Arguments & Options:
+#   -d                 : Run with GoToCloud debug mode
+#   
+#   -h                 : Help option displays usage
+#   
+# Example:
+#   $ /efs/em/gtc_sh_ver00/gtc_utility_master_node_startup.sh -d
+#   
+# Debug Script:
+#   gtc_utility_master_node_startup_debug.sh
+#  
+usage_exit() {
+        echo "GoToCloud: Usage $0 [-d]" 1>&2
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+}
 
-# Install basic denpendency 
+# Check if the number of command line arguments is valid
+if [[ $# -gt 1 ]]; then
+    echo "GoToCloud: Invalid number of arguments ($#)"
+    usage_exit
+fi
+
+# Initialize variables with default values
+GTC_DEBUG_MODE=0   # 0 (off) by default
+
+# Parse command line arguments
+while getopts dh OPT
+do
+    case "$OPT" in
+        d)  echo "GoToCloud: GoToCloud debug mode is specified"
+            GTC_DEBUG_MODE=1
+            ;;
+        h)  usage_exit
+            ;;
+        \?) echo "GoToCloud: [GTC_ERROR] Invalid option $OPTARG is specified!"
+            usage_exit
+            ;;
+    esac
+done
+
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_DEBUG_MODE=${GTC_DEBUG_MODE}"; fi
+
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_master_node_startup.sh"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+
+# GoToCloud shell script direcctory path
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] 0 = $0"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] dirname $0 = $(dirname $0)"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
+GTC_SH_DIR=`cd $(dirname ${0}) && pwd`
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
+
 echo "GoToCloud: Installing basic denpendency for RELION3.1 ..."
-
 sudo apt update -y
 sudo apt update
 sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev
 
-echo "GoToCloud: Setting up environment variables for RELION3.1 ..."
-GTC_SH_DIR="/efs/em/gtc_sh_ver00/"
-echo "GoToCloud [DEBUG]: GTC_SH_DIR=${GTC_SH_DIR}"
-cd
-rm .bashrc
-cp ${GTC_SH_DIR}gtc.bashrc.txt ~/.bashrc
+echo "GoToCloud: Installing basic denpendency for Follow_Relion_gracefully ..."
+sudo apt-get --yes --force-yes install python3-venv
+
+echo "GoToCloud: Installing chimerax ..."
+sudo apt-get --yes --force-yes install /efs/em/ucsf-chimerax_1.2.5-1_amd64.deb
 
 echo "GoToCloud: Changing owners of directories and files in fsx (Lustre) ..."
 sudo chown -R ubuntu:ubuntu /fsx
+
+# --------------------
+# Set GoToCloud application directory path on pcluster head node
+GTC_APPLICATION_DIR=${HOME}/.gtc
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_APPLICATION_DIR=${GTC_APPLICATION_DIR}"; fi
+if [ -e ${GTC_APPLICATION_DIR} ]; then
+    echo "GoToCloud: ${GTC_APPLICATION_DIR} exists already!"
+    GTC_APPLICATION_DIR_BACKUP=${GTC_APPLICATION_DIR}_backup_`date "+%Y%m%d_%H%M%S"`
+    if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_APPLICATION_DIR_BACKUP=${GTC_APPLICATION_DIR_BACKUP}"; fi
+    echo "GoToCloud: Making a backup of previous GoToCloud application ${GTC_APPLICATION_DIR} as ${GTC_APPLICATION_DIR_BACKUP}..."
+    mv ${GTC_APPLICATION_DIR} ${GTC_APPLICATION_DIR_BACKUP}
+fi
+echo "GoToCloud: Creating GoToCloud application directory ${GTC_APPLICATION_DIR}..."
+mkdir -p ${GTC_APPLICATION_DIR}
+
+# --------------------
+# Set file path of GoToCloud environment settings file for pcluster head node as a systemwise environment constant
+GTC_GLOBAL_VARIABLES_FILE=${GTC_APPLICATION_DIR}/global_variables.sh
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_GLOBAL_VARIABLES_FILE=${GTC_GLOBAL_VARIABLES_FILE}"; fi
+if [ -e ${GTC_GLOBAL_VARIABLES_FILE} ]; then
+    echo "GoToCloud: [GTC_ERROR] Locally ${GTC_GLOBAL_VARIABLES_FILE} should not exist!"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
+fi
+
+# --------------------
+# Store all to GoToCloud environment settings file
+echo "GoToCloud: Creating pcluster head node system environment variable settings for GoToCloud global variables as ${GTC_GLOBAL_VARIABLES_FILE}..."
+# cat > ${GTC_GLOBAL_VARIABLES_FILE} <<'EOS' suppresses varaible replacements 
+# cat > ${GTC_GLOBAL_VARIABLES_FILE} <<EOS allows varaible replacements 
+cat > ${GTC_GLOBAL_VARIABLES_FILE} <<'EOS'
+#!/bin/sh
+
+# GoToCloud system environment variables
+export GTC_SYSTEM_SH_DIR=XXX_GTC_SH_DIR_XXX
+export GTC_SYSTEM_DEBUG_MODE=XXX_GTC_DEBUG_MODE_XXX
+# To be causious, put new path at the end
+export PATH=$PATH:${GTC_SYSTEM_SH_DIR}
+EOS
+
+# Replace variable strings in template to actual values
+# XXX_GTC_SH_DIR_XXX -> ${GTC_SH_DIR}
+sed -i "s@XXX_GTC_SH_DIR_XXX@${GTC_SH_DIR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+# XXX_GTC_DEBUG_MODE_XXX -> ${GTC_DEBUG_MODE}
+sed -i "s@XXX_GTC_DEBUG_MODE_XXX@${GTC_DEBUG_MODE}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+
+# Set file permission 
+chmod 775 ${GTC_GLOBAL_VARIABLES_FILE}
+
+# echo "GoToCloud: Activating pcluster head node system environment variable settings for GoToCloud global variables defined in ${GTC_GLOBAL_VARIABLES_FILE}..."
+# echo "GoToCloud: Note that this activation is effective only for caller of this script file."
+# source ${GTC_GLOBAL_VARIABLES_FILE}
+# #. ${GTC_GLOBAL_VARIABLES_FILE}
+
+# --------------------
+# Set file path of RELION environment settings file for pcluster head node as a systemwise environment constant
+GTC_RELION_SETTINGS_FILE=${GTC_APPLICATION_DIR}/relion_settings.sh
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_RELION_SETTINGS_FILE=${GTC_RELION_SETTINGS_FILE}"; fi
+if [ -e ${GTC_RELION_SETTINGS_FILE} ]; then
+    echo "GoToCloud: [GTC_ERROR] Locally ${GTC_RELION_SETTINGS_FILE} should not exist!"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
+fi
+
+# --------------------
+# Store all to RELION environment settings file
+echo "GoToCloud: Creating pcluster head node system environment variable settings for RELION as ${GTC_RELION_SETTINGS_FILE}..."
+# cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS' suppresses varaible replacements 
+# cat > ${GTC_RELION_SETTINGS_FILE} <<EOS allows varaible replacements 
+cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
+#!/bin/sh
+
+# ctffind 4.1.14
+# To be causious, put new path at the end
+export PATH=$PATH:/efs/em/ctffind-4.1.14-linux64/bin
+
+# Gctf-v1.06
+# To be causious, put new path at the end
+export PATH=$PATH:/efs/em/Gctf_v1.06/bin
+
+# relion 3.1.2
+# To be causious, put new path at the end
+export PATH=$PATH:/efs/em/relion-v31/relion-3.1.2/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/efs/em/relion-v31/relion-3.1.2/lib
+export RELION_CTFFIND_EXECUTABLE=/efs/em/ctffind-4.1.14-linux64/bin/ctffind
+export RELION_GCTF_EXECUTABLE=/efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64
+export RELION_PDFVIEWER_EXECUTABLE=/usr/bin/evince
+export RELION_ERROR_LOCAL_MPI=96
+
+# Required system environment variables for this RELION job submission script template
+export RELION_QSUB_TEMPLATE=/efs/em/aws_slurm_relion.sh
+export RELION_QSUB_EXTRA_COUNT=1
+export RELION_QSUB_EXTRA1=Partition
+export RELION_QSUB_EXTRA1_DEFAULT=g4dn-vcpu48-gpu4
+export RELION_QSUB_EXTRA1_HELP="Partitions: g4dn-vcpu96-gpu8, g4dn-vcpu48-gpu4*, g4dn-vcpu48-gpu4-spot, c5-vcpu96-gpu0, c5-vcpu96-gpu0-spot"
+
+# The mpi runtime ('mpirun' by default)
+# export RELION_MPI_RUN=srun
+# The default for 'Submit to queue?'
+export RELION_QUEUE_USE=Yes
+# The default for 'Queue submit command'
+export RELION_QSUB_COMMAND=sbatch
+EOS
+
+# Set file permission 
+chmod 775 ${GTC_RELION_SETTINGS_FILE}
+
+# echo "GoToCloud: Activating pcluster head node system environment variable settings for RELION defined in ${GTC_RELION_SETTINGS_FILE}..."
+# echo "GoToCloud: Note that this activation is effective only for caller of this script file."
+# source ${GTC_RELION_SETTINGS_FILE}
+# #. ${GTC_RELION_SETTINGS_FILE}
+
+# --------------------
+# Set file path of UCFS Chimera environment settings file for pcluster head node as a systemwise environment constant
+GTC_CHIMERA_SETTINGS_FILE=${GTC_APPLICATION_DIR}/chimera_settings.sh
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_CHIMERA_SETTINGS_FILE=${GTC_CHIMERA_SETTINGS_FILE}"; fi
+if [ -e ${GTC_CHIMERA_SETTINGS_FILE} ]; then
+    echo "GoToCloud: [GTC_ERROR] Locally ${GTC_CHIMERA_SETTINGS_FILE} should not exist!"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
+fi
+
+# --------------------
+# Store all to UCFS Chimera environment settings file
+echo "GoToCloud: Creating pcluster head node system environment variable settings for UCFS Chimera settings as ${GTC_CHIMERA_SETTINGS_FILE}..."
+# cat > ${GTC_CHIMERA_SETTINGS_FILE} <<'EOS' suppresses varaible replacements 
+# cat > ${GTC_CHIMERA_SETTINGS_FILE} <<EOS allows varaible replacements 
+cat > ${GTC_CHIMERA_SETTINGS_FILE} <<'EOS'
+#!/bin/sh
+
+# USFS chimera 1.15
+# To be causious, put new path at the end
+export PATH=$PATH:/efs/em/UCSF-Chimera64-1.15rc/bin
+EOS
+
+# Set file permission 
+chmod 775 ${GTC_CHIMERA_SETTINGS_FILE}
+
+# echo "GoToCloud: Activating pcluster head node system environment variable settings for UCFS Chimera defined in ${GTC_CHIMERA_SETTINGS_FILE}..."
+# echo "GoToCloud: Note that this activation is effective only for caller of this script file."
+# source ${GTC_CHIMERA_SETTINGS_FILE}
+# #. ${GTC_CHIMERA_SETTINGS_FILE}
+
+# --------------------
+echo "GoToCloud: Setting up pcluster head node environment variables for GoToCloud system ..."
+GTC_BASHRC=${HOME}/.bashrc
+if [ -e ${GTC_BASHRC} ]; then
+    GTC_BASHRC_BACKUP=${GTC_APPLICATION_DIR}/.bashrc_backup_`date "+%Y%m%d_%H%M%S"`
+    echo "GoToCloud: Making a backup of previous ${GTC_BASHRC} as ${GTC_BASHRC_BACKUP}..."
+    cp ${GTC_BASHRC} ${GTC_BASHRC_BACKUP}
+else
+    echo "GoToCloud: [GTC_WARNING] ${GTC_BASHRC} does not exist on this system. Normally, this should not happen!"
+fi
+
+echo "GoToCloud: Appending GoToCloud system environment variable settings to ${GTC_BASHRC}..."
+# cat > ${GTC_BASHRC} <<'EOS' suppresses varaible replacements 
+# cat > ${GTC_BASHRC} <<EOS allows varaible replacements 
+cat >> ${GTC_BASHRC} <<EOS
+
+# ------------------
+# GoToCloud settings
+# ------------------
+# GoToCloud system environment variables
+source ${GTC_GLOBAL_VARIABLES_FILE}
+# GoToCloud RELION settings variables
+source ${GTC_RELION_SETTINGS_FILE}
+# GoToCloud UCFS Chimera settings variables
+source ${GTC_CHIMERA_SETTINGS_FILE}
+EOS
+
+echo "GoToCloud: "
+echo "GoToCloud: To applying GoToCloud system environment settings, open a new terminal. "
+echo "GoToCloud: OR use the following commands in this session:"
+echo "GoToCloud: "
+echo "GoToCloud:   source ${GTC_GLOBAL_VARIABLES_FILE}"
+echo "GoToCloud:   source ${GTC_RELION_SETTINGS_FILE}"
+echo "GoToCloud:   source ${GTC_CHIMERA_SETTINGS_FILE}"
+echo "GoToCloud: "
+echo "GoToCloud: Done"
+
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] "; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_master_node_startup.sh!"; fi
+if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+

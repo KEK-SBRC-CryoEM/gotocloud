@@ -1,38 +1,77 @@
 #!/bin/bash
 #
-# Example:
-# $ /efs/em/gtc_sh_ver00/gtc_aws_ec2_create_key_pair.sh
+# Usage:
+#   gtc_aws_ec2_create_key_pair.sh
+#   
+# Arguments & Options:
+#   -h                 : Help option displays usage
+#   
+# Examples:
+#   $ gtc_aws_ec2_create_key_pair.sh
 # 
-# Debug Commands:
+# Debug Script:
+#   gtc_aws_ec2_create_key_pair_debug.sh
 # 
-# $ /efs/em/gtc_sh_ver00/gtc_aws_ec2_create_key_pair.sh
-# $ ls -l ~/environment/kek-moriya-protein210720.pem
-# $ cat ~/environment/kek-moriya-protein210720.pem
-# $ 
-# $ aws ec2 describe-key-pairs --key-name kek-moriya-protein210720
-# $ 
-# $ aws ec2 delete-key-pair --key-name kek-moriya-protein210720
-# $ rm ~/environment/kek-moriya-protein210720.pem
-# $ 
 
-GTC_KEY_PAIR_DIR="${HOME}/environment/"
-GTC_SH_DIR="/efs/em/gtc_sh_ver00/"
-
-echo "GoToCloud [DEBUG]: GTC_KEY_PAIR_DIR=${GTC_KEY_PAIR_DIR}"
-echo "GoToCloud [DEBUG]: GTC_SH_DIR=${GTC_SH_DIR}"
-
-GTC_PCLUSTER_NAME=`${GTC_SH_DIR}gtc_utility_generate_pcluster_name.sh`
-echo "GoToCloud [DEBUG]: GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"
-
-mkdir -p ${GTC_KEY_PAIR_DIR}
-
-echo "GoToCloud: Generating keypair ${GTC_PCLUSTER_NAME}..."
-aws ec2 create-key-pair --key-name ${GTC_PCLUSTER_NAME} --region ap-northeast-1 --query 'KeyMaterial' --output text > ${GTC_KEY_PAIR_DIR}${GTC_PCLUSTER_NAME}.pem || {
-        echo "GoToCloud: GCT_ERROR! Keypair ${GTC_PCLUSTER_NAME} exists already!"
-        echo "GoToCloud: Exiting..."
+usage_exit() {
+        echo "GoToCloud: Usage $0" 1>&2
+        echo "GoToCloud: Exiting(1)..."
         exit 1
 }
-chmod 600 ${GTC_KEY_PAIR_DIR}${GTC_PCLUSTER_NAME}.pem
 
-echo "GoToCloud: Saved keypair file as ${GTC_KEY_PAIR_DIR}${GTC_PCLUSTER_NAME}.pem"
+# Check if the number of command line arguments is valid
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] @=$@"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] #=$#"; fi
+if [[ $# -gt 1 ]]; then
+    echo "GoToCloud: Invalid number of arguments ($#)"
+    usage_exit
+fi
+
+# Parse command line arguments
+while getopts h OPT
+do
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] OPT=$OPT"; fi
+    case "$OPT" in
+        h)  usage_exit
+            ;;
+        \?) echo "GoToCloud: [GTC_ERROR] Invalid option $OPTARG is specified!"
+            usage_exit
+            ;;
+    esac
+done
+
+# Load gtc_utility_global_varaibles shell functions
+source gtc_utility_global_varaibles.sh
+# . gtc_utility_global_varaibles.sh
+# Get related global variables
+GTC_KEY_NAME=$(gtc_utility_get_key_name)
+GTC_KEY_DIR=$(gtc_utility_get_key_dir)
+GTC_KEY_FILE=$(gtc_utility_get_key_file)
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_DIR=${GTC_KEY_DIR}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_FILE=${GTC_KEY_FILE}"; fi
+
+if [ ! -e ${GTC_KEY_DIR} ]; then
+    echo "GoToCloud: [GCT_WARNING] Key directory ${GTC_KEY_DIR} does not exists. Normally, this should not happen!"
+    echo "GoToCloud: However, this does not cause any fatal problem and so continue by making key directory ${GTC_KEY_DIR}"
+    mkdir -p ${GTC_KEY_DIR}
+fi
+
+echo "GoToCloud: Making sure that Key-pair ${GTC_KEY_NAME} does not exist yet..."
+aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} && {
+    echo "GoToCloud: [GCT_WARNING] Key-pair ${GTC_KEY_NAME} exists already!"
+    echo "GoToCloud: Exiting(0)..."
+    exit 0
+}
+echo "GoToCloud: OK! Key-pair ${GTC_KEY_NAME} does not exist yet!"
+
+echo "GoToCloud: Generating Key-pair ${GTC_KEY_NAME}..."
+aws ec2 create-key-pair --key-name ${GTC_KEY_NAME} --region ap-northeast-1 --query 'KeyMaterial' --output text > ${GTC_KEY_FILE} || {
+    echo "GoToCloud: [GCT_WARNING] Key-pair ${GTC_KEY_NAME} exists already!"
+    echo "GoToCloud: Exiting(0)..."
+    exit 0
+}
+chmod 600 ${GTC_KEY_FILE}
+
+echo "GoToCloud: Saved Key file as ${GTC_KEY_FILE}"
 echo "GoToCloud: Done"

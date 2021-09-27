@@ -15,12 +15,13 @@ scheduler = slurm
 master_instance_type = m5.xlarge
 base_os = ubuntu1804
 vpc_settings = default
-queue_settings = g4dn-vcpu96-gpu8, g4dn-vcpu48-gpu4, g4dn-vcpu32-gpu1, c5-vcpu96-gpu0, c5-vcpu96-gpu0-spot
+queue_settings = g4dn-vcpu96-gpu8, g4dn-vcpu48-gpu4, g4dn-vcpu48-gpu4-spot, c5-vcpu96-gpu0, c5-vcpu96-gpu0-spot
 tags = {"iam-user" : "XXX_GTC_IAM_USER_NAME_XXX", "method" : "XXX_GTC_METHOD_NAME_XXX", "project" : "XXX_GTC_PROJECT_NAME_XXX"}
 efs_settings = kek-shared-efs
 s3_read_write_resource = arn:aws:s3:::XXX_GTC_S3_NAME_XXX*
 fsx_settings = fsx-scratch
 dcv_settings = my-dcv
+cw_log_settings = my-cw
 
 [vpc default]
 vpc_id = vpc-0a936e6c
@@ -46,13 +47,13 @@ compute_type = ondemand
 instance_type = g4dn.12xlarge
 max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
 
-[queue g4dn-vcpu32-gpu1]
+[queue g4dn-vcpu48-gpu4-spot]
 enable_efa = false
 enable_efa_gdr = false
-compute_resource_settings = g4dn-8xlarge
-compute_type = ondemand
-[compute_resource g4dn-8xlarge]
-instance_type = g4dn.8xlarge
+compute_resource_settings = g4dn-12xlarge-spot
+compute_type = spot
+[compute_resource g4dn-12xlarge-spot]
+instance_type = g4dn.12xlarge
 max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
 
 [queue c5-vcpu96-gpu0]
@@ -88,3 +89,6 @@ export_path = s3://XXX_GTC_S3_NAME_XXX
 
 [dcv my-dcv]
 enable = master
+
+[cw_log my-cw] 
+retention_days = 180
