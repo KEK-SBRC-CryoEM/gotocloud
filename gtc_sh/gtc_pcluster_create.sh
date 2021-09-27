@@ -1,83 +1,91 @@
 #!/bin/sh
 #
 # Usage:
-# $1 : IAM User Name. e.g. kek-gtc00
-# $2 : AWS Parallel Cluster ID. Recommended to use date of cryo-EM session or sample name. e.g. protein210719
-# $3 : AWS Parallel Cluster Instance ID. e.g. 01
-# $4 : FSX (Lustre) strage capacity in MByte. e.g. 1200 or 2400 (meaning 1.2TByte or 2.4TByte)
+# $1 : AWS Parallel Cluster Instance ID. e.g. 00
 # 
 # Example:
-# ./gtc_pcluster_create.sh kek-gtc00 protein210719 01 1200
+# /efs/em/gtc_sh_ver00/gtc_pcluster_create.sh 00
 # 
+# Debug:
+# pcluster ssh kek-moriya-protein210720-00  -i ~/environment/kek-moriya-protein210720.pem
+# 
+# pcluster dcv connect kek-moriya-protein210720-00  -k ~/environment/kek-moriya-protein210720.pem
+# 
+# pcluster delete kek-moriya-protein210720-00 
 
-GTC_IAM_USER_NAME=$1
-GTC_CLUSTER_ID=$2
-GTC_INSATANCE_ID=$3
-GTC_FSX_MB_CAPACITY=$4
+GTC_INSATANCE_ID=$1
+echo "GoToCloud [DEBUG]: GTC_INSATANCE_ID=${GTC_INSATANCE_ID}"
 
-echo "GoToCloud: GTC_IAM_USER_NAME=${GTC_IAM_USER_NAME}"
-echo "GoToCloud: GTC_CLUSTER_ID=${GTC_CLUSTER_ID}"
-echo "GoToCloud: GTC_INSATANCE_ID=${GTC_INSATANCE_ID}"
-echo "GoToCloud: GTC_FSX_MB_CAPACITY=${GTC_FSX_MB_CAPACITY}"
+GTC_SH_DIR="/efs/em/gtc_sh_ver00/"
+echo "GoToCloud [DEBUG]: GTC_SH_DIR=${GTC_SH_DIR}"
 
-GTC_CLUSTER_NAME=`/efs/em/gtc_utility_generate_pcluster_name.sh ${GTC_IAM_USER_NAME} ${GTC_CLUSTER_ID}`
-GTC_KEY_PAIR_DIR="${HOME}/environment/"
-GTC_KEY_FILE_PATH="${GTC_KEY_PAIR_DIR}${GTC_CLUSTER_NAME}.pem"
-GTC_INSTANCE_NAME="${GTC_CLUSTER_NAME}-${GTC_INSATANCE_ID}"
+GTC_PCLUSTER_NAME=`${GTC_SH_DIR}gtc_utility_generate_pcluster_name.sh`
+GTC_KEY_PAIR_DIR=${HOME}/environment/
+GTC_KEY_FILE_PATH=${GTC_KEY_PAIR_DIR}${GTC_PCLUSTER_NAME}.pem
+GTC_INSTANCE_NAME=${GTC_PCLUSTER_NAME}-${GTC_INSATANCE_ID}
+echo "GoToCloud [DEBUG]: GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"
+echo "GoToCloud [DEBUG]: GTC_KEY_PAIR_DIR=${GTC_KEY_PAIR_DIR}"
+echo "GoToCloud [DEBUG]: GTC_KEY_FILE_PATH=${GTC_KEY_FILE_PATH}"
+echo "GoToCloud [DEBUG]: GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"
 
-echo "GoToCloud: GTC_CLUSTER_NAME=${GTC_CLUSTER_NAME}"
-echo "GoToCloud: GTC_KEY_PAIR_DIR=${GTC_KEY_PAIR_DIR}"
-echo "GoToCloud: GTC_KEY_FILE_PATH=${GTC_KEY_FILE_PATH}"
-echo "GoToCloud: GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"
-
-GTC_CONFIG_TEMPORARY="${HOME}/.parallelcluster/config_temporary"
-GTC_CMD="/efs/em/gtc_utility_master_node_startup.sh"
-GTC_STATUS_CHECK_INTERVAL=60 # in seconds
-GTC_TIME_OUT=1800 # in seconds
-
-echo "GoToCloud: GTC_CONFIG_TEMPORARY=${GTC_CONFIG_TEMPORARY}"
-echo "GoToCloud: GTC_CMD=${GTC_CMD}"
-echo "GoToCloud: GTC_STATUS_CHECK_INTERVAL=${GTC_STATUS_CHECK_INTERVAL}"
-echo "GoToCloud: GTC_TIME_OUT=${GTC_TIME_OUT}"
-
-echo "GoToCloud: Checking if ${GTC_INSTANCE_NAME} cluster instance is running..."
+echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is not running..."
 pcluster status -nw ${GTC_INSTANCE_NAME} &&  {
-        echo "GoToCloud: ${GTC_INSTANCE_NAME} cluster instance aleady exists."
-        echo "GoToCloud: Please delete the cluster first."
+        echo "GoToCloud: GCT_ERROR! Pcluster instance ${GTC_INSTANCE_NAME} is aleady running!"
+        echo "GoToCloud: Exiting(1)..."
         exit 1
 }
-echo "GoToCloud: ${GTC_INSTANCE_NAME} cluster instance is not running yet."
+echo "GoToCloud: OK! Pcluster instance ${GTC_INSTANCE_NAME} is not running yet!"
 
-echo "GoToCloud: Editing temporary config...."
-# Set XXX_GTC_FSX_MB_CAPACITY_XXX -> ${GTC_FSX_MB_CAPACITY}
-sed -i "s/XXX_GTC_FSX_MB_CAPACITY_XXX/${GTC_FSX_MB_CAPACITY}/g" ${GTC_CONFIG_TEMPORARY}
+GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config_${GTC_INSATANCE_ID}
+echo "GoToCloud [DEBUG]: GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"
 
-echo "GoToCloud: Creating ${GTC_INSTANCE_NAME} cluster instance..."
-pcluster create -nw ${GTC_INSTANCE_NAME}
+if [ ! -e ${GTC_CONFIG_INSTANCE} ]; then
+        echo "GoToCloud: GCT_ERROR! Config ${GTC_CONFIG_INSTANCE} is not found..."
+        echo "GoToCloud: Please use a correct instance ID instead of ${GTC_INSATANCE_ID}"
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+fi
+
+GTC_STATUS_CHECK_INTERVAL=60 # in seconds
+GTC_TIME_OUT=1800 # in seconds
+echo "GoToCloud [DEBUG]: GTC_STATUS_CHECK_INTERVAL=${GTC_STATUS_CHECK_INTERVAL}"
+echo "GoToCloud [DEBUG]: GTC_TIME_OUT=${GTC_TIME_OUT}"
+
+echo "GoToCloud: Creating pcluster instance ${GTC_INSTANCE_NAME}..."
+pcluster create ${GTC_INSTANCE_NAME} --config ${GTC_CONFIG_INSTANCE} -nw
 
 t0=`date +%s` # in seconds
 while :
 do
-        stat=`pcluster status -nw ${GTC_INSTANCE_NAME}`
-        echo "GoToCloud: ${stat}"
-        if [[ ${stat} =~ .*CREATE_COMPLETE.* ]]; then
-                echo "GoToCloud: Creation of ${GTC_INSTANCE_NAME} cluster instance is completed."
+        # Check if creation of pcluster instace is completed.
+        # It is done when pcluster status command outputs "CREATE_COMPLETE".
+        GCT_EXIT_STATUS=`pcluster status -nw ${GTC_INSTANCE_NAME}`
+        echo "GoToCloud: ${GCT_EXIT_STATUS}"
+        if [[ ${GCT_EXIT_STATUS} =~ .*CREATE_COMPLETE.* ]]; then
+                echo "GoToCloud: Creation of pcluster instance ${GTC_INSTANCE_NAME} is completed."
                 break
-        elif [[ ${stat} =~ .*ROLLBACK.* ]]; then
-                echo "GoToCloud: Creation of ${GTC_INSTANCE_NAME} cluster instance is failed."
+        elif [[ ${GCT_EXIT_STATUS} =~ .*ROLLBACK.* ]]; then
+                echo "GoToCloud: GCT_ERROR! Creation of pcluster instance ${GTC_INSTANCE_NAME} failed."
+                echo "GoToCloud: Exiting(1)..."
                 exit 1
         fi
 
         sleep ${GTC_STATUS_CHECK_INTERVAL} 
         t1=`date +%s` # in seconds
         if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
-                echo "GoToCloud: GTC_TIME_OUT"
+                echo "GoToCloud: GCT_ERROR! GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
                 echo "GoToCloud: Last output of pcluster status command:"
-                echo "GoToCloud: ${stat}"
+                echo "GoToCloud: ${GCT_EXIT_STATUS}"
+                echo "GoToCloud: Exiting(1)..."
                 exit 1
         fi
 done
 
-echo "GoToCloud: Executing start-up script..."
+GTC_CMD="${GTC_SH_DIR}gtc_utility_master_node_startup.sh"
+echo "GoToCloud [DEBUG]: GTC_CMD=${GTC_CMD}"
+
+echo "GoToCloud: Executing head-node startup script..."
 pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE_PATH} -oStrictHostKeyChecking=no ${GTC_CMD}
+
 echo "GoToCloud: Done"
+# echo "GoToCloud [DEBUG]: END OF SCRIPT (gtc_pcluster_create.sh)"

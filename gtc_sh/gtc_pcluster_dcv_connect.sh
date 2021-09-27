@@ -1,32 +1,27 @@
 #!/bin/sh
 #
 # Usage:
-# $1 : IAM User Name. e.g. kek-gtc00
-# $2 : AWS Parallel Cluster ID. Recommended to use date of cryo-EM session or sample name. e.g. protein210719
-# $3 : AWS Parallel Cluster Instance ID. e.g. 01
+# $1 : AWS Parallel Cluster Instance ID. e.g. 00
 # 
 # Example:
-# ./gtc_pcluster_dcv_connect.sh kek-gtc00 protein210719 01
+# /efs/em/gtc_sh_ver00/gtc_pcluster_dcv_connect.sh 00
 # 
 
-GTC_IAM_USER_NAME=$1
-GTC_CLUSTER_ID=$2
-GTC_INSATANCE_ID=$3
+GTC_INSATANCE_ID=$1
+echo "GoToCloud [DEBUG]: GTC_INSATANCE_ID=${GTC_INSATANCE_ID}"
 
-echo "GoToCloud: GTC_IAM_USER_NAME=${GTC_IAM_USER_NAME}"
-echo "GoToCloud: GTC_CLUSTER_ID=${GTC_CLUSTER_ID}"
-echo "GoToCloud: GTC_INSATANCE_ID=${GTC_INSATANCE_ID}"
+GTC_SH_DIR="/efs/em/gtc_sh_ver00/"
+echo "GoToCloud [DEBUG]: GTC_SH_DIR=${GTC_SH_DIR}"
 
-GTC_CLUSTER_NAME=`/efs/em/gtc_utility_generate_pcluster_name.sh ${GTC_IAM_USER_NAME} ${GTC_CLUSTER_ID}`
-GTC_KEY_PAIR_DIR="${HOME}/environment/"
-GTC_KEY_FILE_PATH="${GTC_KEY_PAIR_DIR}${GTC_CLUSTER_NAME}.pem"
-GTC_INSTANCE_NAME="${GTC_CLUSTER_NAME}-${GTC_INSATANCE_ID}"
+GTC_PCLUSTER_NAME=`${GTC_SH_DIR}gtc_utility_generate_pcluster_name.sh`
+GTC_KEY_PAIR_DIR=${HOME}/environment/
+GTC_KEY_FILE_PATH=${GTC_KEY_PAIR_DIR}${GTC_PCLUSTER_NAME}.pem
+GTC_INSTANCE_NAME=${GTC_PCLUSTER_NAME}-${GTC_INSATANCE_ID}
+echo "GoToCloud [DEBUG]: GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"
+echo "GoToCloud [DEBUG]: GTC_KEY_PAIR_DIR=${GTC_KEY_PAIR_DIR}"
+echo "GoToCloud [DEBUG]: GTC_KEY_FILE_PATH=${GTC_KEY_FILE_PATH}"
+echo "GoToCloud [DEBUG]: GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"
 
-echo "GoToCloud: GTC_CLUSTER_NAME=${GTC_CLUSTER_NAME}"
-echo "GoToCloud: GTC_KEY_PAIR_DIR=${GTC_KEY_PAIR_DIR}"
-echo "GoToCloud: GTC_KEY_FILE_PATH=${GTC_KEY_FILE_PATH}"
-echo "GoToCloud: GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"
-
-echo "GoToCloud: Connecting to ${GTC_INSTANCE_NAME} cluster instance through NiceDCV..."
+echo "GoToCloud: Connecting to pcluster instance ${GTC_INSTANCE_NAME} through NiceDCV..."
 pcluster dcv connect ${GTC_INSTANCE_NAME} -k ${GTC_KEY_FILE_PATH}
 # echo "GoToCloud: Done"
