@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# Usage:
+# $1 : IAM User Name. e.g. kek-gtc00
+# $2 : AWS Parallel Cluster ID. Recommended to use date of cryo-EM session or sample name. e.g. protein210719
+# $3 : Maximum number of EC2 instances you can use at the same time. e.g. 2
+# 
+# Example
+# ./gtc_config_create.sh kek-gtc00 protein210719 2
+
+GTC_IAM_USER_NAME=$1
+GTC_CLUSTER_ID=$2
+GTC_COMPUTE_RESOURCE_MAX_COUNT=$3
+
+echo "GoToCloud: GTC_IAM_USER_NAME=${GTC_IAM_USER_NAME}"
+echo "GoToCloud: GTC_CLUSTER_ID=${GTC_CLUSTER_ID}"
+echo "GoToCloud: GTC_COMPUTE_RESOURCE_MAX_COUNT=${GTC_COMPUTE_RESOURCE_MAX_COUNT}"
+
+GTC_CLUSTER_NAME=`/efs/em/gtc_utility_generate_pcluster_name.sh ${GTC_IAM_USER_NAME} ${GTC_CLUSTER_ID}`
+GTC_KEY_NAME=${GTC_CLUSTER_NAME}
+GTC_TAGS_METHOD="cryoem"
+GTC_TAGS_PROJECT=${GTC_CLUSTER_NAME}
+GTC_S3_NAME=${GTC_CLUSTER_NAME}
+GTC_FSX_MB_CAPACITY=2400    # By default, set FSX (Lustre) strage capacity to 2400 MByte (2.4TByte)
+GTC_CONFIG="${HOME}/.parallelcluster/config"
+GTC_CONFIG_TEMPLATE="/efs/em/gtc_config_template.txt"
+GTC_CONFIG_BACKUP="${HOME}/.parallelcluster/config_backup"
+GTC_CONFIG_TEMPORARY="${HOME}/.parallelcluster/config_temporary"
+
+echo "GoToCloud: GTC_CLUSTER_NAME=${GTC_CLUSTER_NAME}"
+echo "GoToCloud: GTC_KEY_NAME=${GTC_KEY_NAME}"
+echo "GoToCloud: GTC_TAGS_METHOD=${GTC_TAGS_METHOD}"
+echo "GoToCloud: GTC_TAGS_PROJECT=${GTC_TAGS_PROJECT}"
+echo "GoToCloud: GTC_S3_NAME=${GTC_S3_NAME}"
+echo "GoToCloud: GTC_FSX_MB_CAPACITY=${GTC_FSX_MB_CAPACITY}"
+
+echo "GoToCloud: GTC_CONFIG=${GTC_CONFIG}"
+echo "GoToCloud: GTC_CONFIG_TEMPLATE=${GTC_CONFIG_TEMPLATE}"
+echo "GoToCloud: GTC_CONFIG_BACKUP=${GTC_CONFIG_BACKUP}"
+echo "GoToCloud: GTC_CONFIG_TEMPORARY=${GTC_CONFIG_TEMPORARY}"
+
+echo "GoToCloud: Creating config from template...."
+mv ${GTC_CONFIG} ${GTC_CONFIG_BACKUP}
+cp ${GTC_CONFIG_TEMPLATE} ${GTC_CONFIG}
+
+# Replace variable strings in template to actual values
+# XXX_GTC_KEY_NAME_XXX -> ${GTC_KEY_NAME}
+sed -i "s/XXX_GTC_KEY_NAME_XXX/${GTC_KEY_NAME}/g" ${GTC_CONFIG}
+# XXX_GTC_TAGS_METHOD_XXX -> ${GTC_TAGS_METHOD}
+sed -i "s/XXX_GTC_TAGS_METHOD_XXX/${GTC_TAGS_METHOD}/g" ${GTC_CONFIG}
+# XXX_GTC_TAGS_PROJECT_XXX -> ${GTC_TAGS_PROJECT}
+sed -i "s/XXX_GTC_TAGS_PROJECT_XXX/${GTC_TAGS_PROJECT}/g" ${GTC_CONFIG}
+# XXX_GTC_S3_NAME_XXX -> ${GTC_S3_NAME}
+sed -i "s/XXX_GTC_S3_NAME_XXX/${GTC_S3_NAME}/g" ${GTC_CONFIG}
+# XXX_GTC_FSX_MB_CAPACITY_XXX -> ${GTC_FSX_MB_CAPACITY}
+sed -i "s/XXX_GTC_FSX_MB_CAPACITY_XXX/${GTC_FSX_MB_CAPACITY}/g" ${GTC_CONFIG}
+# XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX -> ${GTC_COMPUTE_RESOURCE_MAX_COUNT}
+sed -i "s/XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX/${GTC_COMPUTE_RESOURCE_MAX_COUNT}/g" ${GTC_CONFIG}
+
+cp ${GTC_CONFIG_TEMPLATE} ${GTC_CONFIG_TEMPORARY}
+
+# Replace variable strings in template to actual values
+# XXX_GTC_KEY_NAME_XXX -> ${GTC_KEY_NAME}
+sed -i "s/XXX_GTC_KEY_NAME_XXX/${GTC_KEY_NAME}/g" ${GTC_CONFIG_TEMPORARY}
+# XXX_GTC_TAGS_METHOD_XXX -> ${GTC_TAGS_METHOD}
+sed -i "s/XXX_GTC_TAGS_METHOD_XXX/${GTC_TAGS_METHOD}/g" ${GTC_CONFIG_TEMPORARY}
+# XXX_GTC_TAGS_PROJECT_XXX -> ${GTC_TAGS_PROJECT}
+sed -i "s/XXX_GTC_TAGS_PROJECT_XXX/${GTC_TAGS_PROJECT}/g" ${GTC_CONFIG_TEMPORARY}
+# XXX_GTC_S3_NAME_XXX -> ${GTC_S3_NAME}
+sed -i "s/XXX_GTC_S3_NAME_XXX/${GTC_S3_NAME}/g" ${GTC_CONFIG_TEMPORARY}
+### Set this in  gtc_pcluster_create.sh
+### # XXX_GTC_FSX_MB_CAPACITY_XXX -> ${GTC_FSX_MB_CAPACITY}
+### sed -i "s/XXX_GTC_FSX_MB_CAPACITY_XXX/${GTC_FSX_MB_CAPACITY}/g" ${GTC_CONFIG_TEMPORARY}
+# XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX -> ${GTC_COMPUTE_RESOURCE_MAX_COUNT}
+sed -i "s/XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX/${GTC_COMPUTE_RESOURCE_MAX_COUNT}/g" ${GTC_CONFIG_TEMPORARY}
+
+echo "GoToCloud: Done"

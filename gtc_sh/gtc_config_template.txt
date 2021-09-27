@@ -1,0 +1,90 @@
+[aws]
+aws_region_name = ap-northeast-1
+
+[aliases]
+ssh = ssh {CFN_USER}@{MASTER_IP} {ARGS}
+
+[global]
+cluster_template = default
+update_check = true
+sanity_check = true
+
+[cluster default]
+key_name = XXX_GTC_KEY_NAME_XXX
+scheduler = slurm
+master_instance_type = m5.xlarge
+base_os = ubuntu1804
+vpc_settings = default
+queue_settings = g4dn-vcpu96-gpu8, g4dn-vcpu48-gpu4, g4dn-vcpu32-gpu1, c5-vcpu96-gpu0, c5-vcpu96-gpu0-spot
+tags = {"method" : "XXX_GTC_TAGS_METHOD_XXX", "project" : "XXX_GTC_TAGS_PROJECT_XXX"}
+efs_settings = kek-shared-efs
+s3_read_write_resource = arn:aws:s3:::XXX_GTC_S3_NAME_XXX*
+fsx_settings = fsx-scratch
+dcv_settings = my-dcv
+
+[vpc default]
+vpc_id = vpc-0a936e6c
+master_subnet_id = subnet-680c8a43
+# compute_subnet_id = subnet-680c8a43
+use_public_ips = true
+
+[queue g4dn-vcpu96-gpu8]
+enable_efa = false
+enable_efa_gdr = false
+compute_resource_settings = g4dn-metal
+compute_type = ondemand
+[compute_resource g4dn-metal]
+instance_type = g4dn.metal
+max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+
+[queue g4dn-vcpu48-gpu4]
+enable_efa = false
+enable_efa_gdr = false
+compute_resource_settings = g4dn-12xlarge
+compute_type = ondemand
+[compute_resource g4dn-12xlarge]
+instance_type = g4dn.12xlarge
+max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+
+[queue g4dn-vcpu32-gpu1]
+enable_efa = false
+enable_efa_gdr = false
+compute_resource_settings = g4dn-8xlarge
+compute_type = ondemand
+[compute_resource g4dn-8xlarge]
+instance_type = g4dn.8xlarge
+max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+
+[queue c5-vcpu96-gpu0]
+enable_efa = false
+enable_efa_gdr = false
+compute_resource_settings = c5-24xlarge
+compute_type = ondemand
+disable_hyperthreading = true
+[compute_resource c5-24xlarge]
+instance_type = c5.24xlarge
+max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+
+[queue c5-vcpu96-gpu0-spot]
+enable_efa = false
+enable_efa_gdr = false
+compute_resource_settings = c5-24xlarge-spot
+compute_type = spot
+disable_hyperthreading = true
+[compute_resource c5-24xlarge-spot]
+instance_type = c5.24xlarge
+max_count = XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+
+[efs kek-shared-efs]
+shared_dir = efs
+efs_fs_id = fs-0f97919aa0862153f
+
+[fsx fsx-scratch]
+shared_dir = /fsx
+deployment_type = SCRATCH_2
+storage_capacity = XXX_GTC_FSX_MB_CAPACITY_XXX
+import_path = s3://XXX_GTC_S3_NAME_XXX
+export_path = s3://XXX_GTC_S3_NAME_XXX
+
+[dcv my-dcv]
+enable = master
