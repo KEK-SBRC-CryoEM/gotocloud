@@ -1,0 +1,146 @@
+Region: ap-northeast-1
+Image:
+  Os: ubuntu1804
+HeadNode: 
+  InstanceType: m5.xlarge
+  Networking:
+    SubnetId: XXX_GTC_SUBNET_ID_XXX
+    ElasticIp: true
+  Ssh:
+    KeyName: XXX_GTC_KEY_NAME_XXX
+  Dcv:
+    Enabled: true
+  CustomActions:
+    OnNodeConfigured:
+      Script: https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
+  Iam:
+    S3Access:
+    - BucketName: XXX_GTC_S3_NAME_XXX
+      EnableWriteAccess: true
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+  - Name: g4dn-vcpu96-gpu8
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: g4dn-metal
+      InstanceType: g4dn.metal
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g4dn-vcpu48-gpu4
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: g4dn-12xlarge
+      InstanceType: g4dn.12xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g4dn-vcpu48-gpu4-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: g4dn-12xlarge-spot
+      InstanceType: g4dn.12xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: c5-vcpu96-gpu0
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: c5-24xlarge
+      InstanceType: c5.24xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      DisableSimultaneousMultithreading: true
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: c5-vcpu96-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: c5-24xlarge-spot
+      InstanceType: c5.24xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      DisableSimultaneousMultithreading: true
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: https://kek-gtc-shared.s3.amazonaws.com/post_install.sh
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+SharedStorage:
+- MountDir: /fsx
+  Name: fsx-scratch 
+  StorageType: FsxLustre 
+  FsxLustreSettings:
+    StorageCapacity: XXX_GTC_FSX_MB_CAPACITY_XXX
+    DeploymentType: SCRATCH_2 
+    ExportPath: s3://XXX_GTC_S3_NAME_XXX
+    ImportPath: s3://XXX_GTC_S3_NAME_XXX
+Monitoring: 
+  Logs:
+    CloudWatch:
+      Enabled: true 
+      RetentionInDays: 180
+      DeletionPolicy: Retain
+Tags:
+- Key: iam-user
+  Value: XXX_GTC_IAM_USER_NAME_XXX
+- Key: method
+  Value: XXX_GTC_METHOD_NAME_XXX
+- Key: project
+  Value: XXX_GTC_PROJECT_NAME_XXX

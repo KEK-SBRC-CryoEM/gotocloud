@@ -105,7 +105,8 @@ GTC_KEY_FILE=$(gtc_utility_get_key_file)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_FILE=${GTC_KEY_FILE}"; fi
 
 echo "GoToCloud: Connecting to pcluster instance ${GTC_INSTANCE_NAME} through NiceDCV..."
-pcluster dcv connect ${GTC_INSTANCE_NAME} -k ${GTC_KEY_FILE}
+pcluster dcv-connect --cluster-name ${GTC_INSTANCE_NAME} --key-path ${GTC_KEY_FILE}
+#pcluster dcv connect ${GTC_INSTANCE_NAME} -k ${GTC_KEY_FILE}
 
 # echo "GoToCloud: Done"
 

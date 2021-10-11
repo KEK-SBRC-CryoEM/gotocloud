@@ -99,13 +99,13 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PC
 GTC_SN=$(aws ec2 describe-subnets | jq '.Subnets[]')
 #echo "GoToCloud: [GTC_DEBUG] GTC_VPC=${GTC_VPC}"
 #echo "GoToCloud: [GTC_DEBUG] GTC_SN=${GTC_SN}" 
-GTC_VPC_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).VpcId'`
+#GTC_VPC_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).VpcId'`
 GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).SubnetId'`
 
 
 # Create config file
-GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
-GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template.txt
+GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}.yaml
+GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template.yaml
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_TEMPLATE=${GTC_CONFIG_TEMPLATE}"; fi
 
@@ -135,7 +135,7 @@ sed -i "s@XXX_GTC_FSX_MB_CAPACITY_XXX@${GTC_FSX_MB_CAPACITY}@g" ${GTC_CONFIG_INS
 sed -i "s@XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX@${GTC_COMPUTE_RESOURCE_MAX_COUNT}@g" ${GTC_CONFIG_INSTANCE}
 
 # XXX_GTC_VPC_ID_XXX -> ${GTC_VPC_ID}
-sed -i "s@XXX_GTC_VPC_ID_XXX@${GTC_VPC_ID}@g" ${GTC_CONFIG_INSTANCE}
+# sed -i "s@XXX_GTC_VPC_ID_XXX@${GTC_VPC_ID}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_SUBNET_ID_XXX -> ${GTC_SUBNET_ID}
 sed -i "s@XXX_GTC_SUBNET_ID_XXX@${GTC_SUBNET_ID}@g" ${GTC_CONFIG_INSTANCE}
 

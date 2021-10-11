@@ -106,7 +106,8 @@ GTC_KEY_FILE=$(gtc_utility_get_key_file)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_FILE=${GTC_KEY_FILE}"; fi
 
 echo "GoToCloud: Connecting to pcluster instance ${GTC_INSTANCE_NAME} through SSH..."
-pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE}
+pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE}
+# pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE}
 # pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no
 
 # echo "GoToCloud: Done"

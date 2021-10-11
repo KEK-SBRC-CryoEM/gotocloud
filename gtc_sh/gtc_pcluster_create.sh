@@ -137,14 +137,17 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IN
 
 # << GTC_DEBUG_COMMENTOUTS
 echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is not running..."
-pcluster status -nw ${GTC_INSTANCE_NAME} &&  {
+# pcluster status -nw ${GTC_INSTANCE_NAME} &&  { 
+pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 > /dev/null &&  { 
         echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} is aleady running!"
         echo "GoToCloud: Exiting(1)..."
         exit 1
 }
+
+
 echo "GoToCloud: OK! Pcluster instance ${GTC_INSTANCE_NAME} is not running yet!"
 
-GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
+GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}.yaml
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"; fi
 if [ ! -e ${GTC_CONFIG_INSTANCE} ]; then
         echo "GoToCloud: [GCT_ERROR] Config ${GTC_CONFIG_INSTANCE} is not found..."
@@ -160,19 +163,21 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TI
 
 echo "GoToCloud: Creating pcluster instance ${GTC_INSTANCE_NAME}..."
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] pcluster create ${GTC_INSTANCE_NAME} --config ${GTC_CONFIG_INSTANCE} -nw"; fi
-pcluster create ${GTC_INSTANCE_NAME} --config ${GTC_CONFIG_INSTANCE} -nw
+pcluster create-cluster --cluster-name ${GTC_INSTANCE_NAME} --cluster-configuration ${GTC_CONFIG_INSTANCE}
+# pcluster create ${GTC_INSTANCE_NAME} --config ${GTC_CONFIG_INSTANCE} -nw
 
 t0=`date +%s` # in seconds
 while :
 do
         # Check if creation of pcluster instace is completed.
         # It is done when pcluster status command outputs "CREATE_COMPLETE".
-        GCT_EXIT_STATUS=`pcluster status -nw ${GTC_INSTANCE_NAME}`
+        # GCT_EXIT_STATUS=`pcluster status -nw ${GTC_INSTANCE_NAME}`
+        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 | jq -r '.clusterStatus'`
         echo "GoToCloud: ${GCT_EXIT_STATUS}"
         if [[ ${GCT_EXIT_STATUS} =~ .*CREATE_COMPLETE.* ]]; then
                 echo "GoToCloud: Creation of pcluster instance ${GTC_INSTANCE_NAME} is completed."
                 break
-        elif [[ ${GCT_EXIT_STATUS} =~ .*ROLLBACK.* ]]; then
+        elif [[ ${GCT_EXIT_STATUS} =~ .*CREATE_FAILED.* ]]; then
                 echo "GoToCloud: [GCT_ERROR] Creation of pcluster instance ${GTC_INSTANCE_NAME} failed."
                 echo "GoToCloud: Exiting(1)..."
                 exit 1
@@ -205,7 +210,8 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CM
 
 echo "GoToCloud: Executing head-node startup script..."
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no \"${GTC_CMD}\""; fi
-pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD}"
+pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD}"
+# pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD}"
 # GTC_DEBUG_COMMENTOUTS
 
 echo "GoToCloud: Done"
