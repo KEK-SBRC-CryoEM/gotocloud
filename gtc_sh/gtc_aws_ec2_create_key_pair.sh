@@ -58,18 +58,23 @@ if [ ! -e ${GTC_KEY_DIR} ]; then
 fi
 
 echo "GoToCloud: Making sure that Key-pair ${GTC_KEY_NAME} does not exist yet..."
+if [ -e ${GTC_KEY_FILE} ]; then
+    echo "GoToCloud: Key file ${GTC_KEY_FILE} exists already in your environment!"
+    echo "GoToCloud: Done"  
+    exit 0
+fi
 aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} && {
     echo "GoToCloud: [GCT_WARNING] Key-pair ${GTC_KEY_NAME} exists already!"
-    echo "GoToCloud: Exiting(0)..."
-    exit 0
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 }
 echo "GoToCloud: OK! Key-pair ${GTC_KEY_NAME} does not exist yet!"
 
 echo "GoToCloud: Generating Key-pair ${GTC_KEY_NAME}..."
 aws ec2 create-key-pair --key-name ${GTC_KEY_NAME} --region ap-northeast-1 --query 'KeyMaterial' --output text > ${GTC_KEY_FILE} || {
     echo "GoToCloud: [GCT_WARNING] Key-pair ${GTC_KEY_NAME} exists already!"
-    echo "GoToCloud: Exiting(0)..."
-    exit 0
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 }
 chmod 600 ${GTC_KEY_FILE}
 

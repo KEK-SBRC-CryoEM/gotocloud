@@ -13,6 +13,7 @@
 #   $ gtc_utility_get_iam_user_name
 #   $ gtc_utility_get_method_name
 #   $ gtc_utility_get_project_name
+#   $ gtc_utility_get_account_id
 #   $ gtc_utility_get_pcluster_name
 #   $ gtc_utility_get_s3_name
 #   $ gtc_utility_get_key_name
@@ -26,7 +27,7 @@
 #   gtc_utility_global_varaibles_debug_setup.sh 
 # 
 
-# Set GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME
+# Set GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID
 function gtc_utility_setup_global_variables() {
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_setup_global_variables!"; fi
@@ -46,16 +47,40 @@ function gtc_utility_setup_global_variables() {
     # --------------------
     # Get tags values from this Cloud9 instance and set them as systemwise environment varaibles
     # Load gtc_utility shell functions
-    . ${GTC_SH_DIR}/gtc_utility_class_cloud9_tags.sh
+    # . ${GTC_SH_DIR}/gtc_utility_account_identity.sh
+    # Set GTC_IAM_USEAR_NAME GTC_ACCOUNT_ID
+    function gtc_utility_account_identity_get_values() {
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_account_identity_get_values!"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    
+        # Get tags values from this Cloud9 instance
+        # local GTC_TAGS=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].Tags[]')
+        local GTC_AWS_INFO=$(aws sts get-caller-identity)
+        # echo "GoToCloud: [GTC_DEBUG] GTC_TAGS=${GTC_TAGS}"
+    
+        # Extract values of keys
+        GTC_IAM_USEAR_NAME=`echo ${GTC_AWS_INFO} | jq -r '.Arn' | awk '{sub(".*./", "");print $0;}'`
+        GTC_ACCOUNT_ID=`echo ${GTC_AWS_INFO} | jq -r '.Account'`
+
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
+  
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_account_identity_get_values!"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    }
     # Get GoToCloud meta info as global variables within file scope
-    # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME
-    gtc_utility_class_cloud9_tags_get_values
-    GTC_PCLUSTER_NAME=${GTC_IAM_USEAR_NAME}-${GTC_PROJECT_NAME}
+    # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID
+    gtc_utility_account_identity_get_values
+    GTC_METHOD_NAME="cryoem"    
+    GTC_PCLUSTER_NAME=${GTC_IAM_USEAR_NAME}-${GTC_ACCOUNT_ID}-${GTC_PROJECT_NAME}
     GTC_S3_NAME=${GTC_PCLUSTER_NAME}
     GTC_KEY_NAME=${GTC_PCLUSTER_NAME}
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_S3_NAME=${GTC_S3_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
@@ -117,6 +142,7 @@ export GTC_SYSTEM_SH_DIR=XXX_GTC_SH_DIR_XXX
 export GTC_SYSTEM_IAM_USEAR_NAME=XXX_GTC_IAM_USEAR_NAME_XXX
 export GTC_SYSTEM_METHOD_NAME=XXX_GTC_METHOD_NAME_XXX
 export GTC_SYSTEM_PROJECT_NAME=XXX_GTC_PROJECT_NAME_XXX
+export GTC_SYSTEM_ACCOUNT_ID=XXX_GTC_ACCOUNT_ID_XXX
 export GTC_SYSTEM_PCLUSTER_NAME=XXX_GTC_PCLUSTER_NAME_XXX
 export GTC_SYSTEM_S3_NAME=XXX_GTC_S3_NAME_XXX
 export GTC_SYSTEM_KEY_NAME=XXX_GTC_KEY_NAME_XXX
@@ -138,6 +164,8 @@ EOS
     sed -i "s@XXX_GTC_METHOD_NAME_XXX@${GTC_METHOD_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_PROJECT_NAME_XXX -> ${GTC_PROJECT_NAME}
     sed -i "s@XXX_GTC_PROJECT_NAME_XXX@${GTC_PROJECT_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_ACCOUNT_ID_XXX -> ${GTC_ACCOUNT_ID}
+    sed -i "s@XXX_GTC_ACCOUNT_ID_XXX@${GTC_ACCOUNT_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}    
     # XXX_GTC_PCLUSTER_NAME_XXX -> ${GTC_PCLUSTER_NAME}
     sed -i "s@XXX_GTC_PCLUSTER_NAME_XXX@${GTC_PCLUSTER_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_S3_NAME_XXX -> ${GTC_S3_NAME}
@@ -188,6 +216,10 @@ function gtc_utility_get_method_name() {
 
 function gtc_utility_get_project_name() {
     echo ${GTC_SYSTEM_PROJECT_NAME}
+}
+
+function gtc_utility_get_account_id() {
+    echo ${GTC_SYSTEM_ACCOUNT_ID}
 }
 
 function gtc_utility_get_pcluster_name() {

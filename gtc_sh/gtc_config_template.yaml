@@ -144,3 +144,6 @@ Tags:
   Value: XXX_GTC_METHOD_NAME_XXX
 - Key: project
   Value: XXX_GTC_PROJECT_NAME_XXX
+- Key: account
+  Value: "XXX_GTC_ACCOUNT_ID_XXX"
+  

@@ -83,6 +83,7 @@ GTC_SH_DIR=$(gtc_utility_get_sh_dir)
 GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
 GTC_METHOD_NAME=$(gtc_utility_get_method_name)
 GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
+GTC_ACCOUNT_ID=$(gtc_utility_get_account_id)
 GTC_S3_NAME=$(gtc_utility_get_s3_name)
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
@@ -90,6 +91,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SH
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_S3_NAME=${GTC_S3_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"; fi
@@ -105,13 +107,14 @@ GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4"
 
 # Create config file
 GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}.yaml
+GTC_CONFIG_INSTANCE1=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
 GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template.yaml
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_TEMPLATE=${GTC_CONFIG_TEMPLATE}"; fi
 
 echo "GoToCloud: Creating config from template..."
 if [ -e ${GTC_CONFIG_INSTANCE} ]; then
-    GTC_CONFIG_BACKUP=${GTC_CONFIG_INSTANCE}_backup_`date "+%Y%m%d_%H%M%S"`
+    GTC_CONFIG_BACKUP=${GTC_CONFIG_INSTANCE1}_backup_`date "+%Y%m%d_%H%M%S"`.yaml
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_BACKUP=${GTC_CONFIG_BACKUP}"; fi
     echo "GoToCloud: Making a backup of previous config ${GTC_CONFIG_INSTANCE} as ${GTC_CONFIG_BACKUP}..."
     mv ${GTC_CONFIG_INSTANCE} ${GTC_CONFIG_BACKUP}
@@ -127,6 +130,8 @@ sed -i "s@XXX_GTC_IAM_USER_NAME_XXX@${GTC_IAM_USEAR_NAME}@g" ${GTC_CONFIG_INSTAN
 sed -i "s@XXX_GTC_METHOD_NAME_XXX@${GTC_METHOD_NAME}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_PROJECT_NAME_XXX -> ${GTC_PROJECT_NAME}
 sed -i "s@XXX_GTC_PROJECT_NAME_XXX@${GTC_PROJECT_NAME}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_ACCOUNT_ID_XXX -> ${GTC_ACCOUNT_ID}
+sed -i "s@XXX_GTC_ACCOUNT_ID_XXX@${GTC_ACCOUNT_ID}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_S3_NAME_XXX -> ${GTC_S3_NAME}
 sed -i "s@XXX_GTC_S3_NAME_XXX@${GTC_S3_NAME}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_FSX_MB_CAPACITY_XXX -> ${GTC_FSX_MB_CAPACITY}
