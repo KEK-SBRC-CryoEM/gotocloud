@@ -80,6 +80,10 @@ source gtc_utility_global_varaibles.sh
 # . gtc_utility_global_varaibles.sh
 # Get related global variables
 GTC_SH_DIR=$(gtc_utility_get_sh_dir)
+GTC_TAG_KEY_IAMUSER=$(gtc_utility_get_tag_key_iamuser)
+GTC_TAG_KEY_METHOD=$(gtc_utility_get_tag_key_method)
+GTC_TAG_KEY_PROJECT=$(gtc_utility_get_tag_key_project)
+GTC_TAG_KEY_ACCOUNT=$(gtc_utility_get_tag_key_account)
 GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
 GTC_METHOD_NAME=$(gtc_utility_get_method_name)
 GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
@@ -88,6 +92,10 @@ GTC_S3_NAME=$(gtc_utility_get_s3_name)
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
@@ -106,15 +114,15 @@ GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4"
 
 
 # Create config file
-GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}.yaml
-GTC_CONFIG_INSTANCE1=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
+GTC_CONFIG_INSTANCE_BASE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
+GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE_BASE}.yaml
 GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template.yaml
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_TEMPLATE=${GTC_CONFIG_TEMPLATE}"; fi
 
 echo "GoToCloud: Creating config from template..."
 if [ -e ${GTC_CONFIG_INSTANCE} ]; then
-    GTC_CONFIG_BACKUP=${GTC_CONFIG_INSTANCE1}_backup_`date "+%Y%m%d_%H%M%S"`.yaml
+    GTC_CONFIG_BACKUP=${GTC_CONFIG_INSTANCE_BASE}_backup_`date "+%Y%m%d_%H%M%S"`.yaml
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_BACKUP=${GTC_CONFIG_BACKUP}"; fi
     echo "GoToCloud: Making a backup of previous config ${GTC_CONFIG_INSTANCE} as ${GTC_CONFIG_BACKUP}..."
     mv ${GTC_CONFIG_INSTANCE} ${GTC_CONFIG_BACKUP}
@@ -124,6 +132,14 @@ cp ${GTC_CONFIG_TEMPLATE} ${GTC_CONFIG_INSTANCE}
 # Replace variable strings in template to actual values
 # XXX_GTC_KEY_NAME_XXX -> ${GTC_KEY_NAME}
 sed -i "s@XXX_GTC_KEY_NAME_XXX@${GTC_KEY_NAME}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_TAG_KEY_IAMUSER_XXX -> ${GTC_TAG_KEY_IAMUSERE}
+sed -i "s@XXX_GTC_TAG_KEY_IAMUSER_XXX@${GTC_TAG_KEY_IAMUSER}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_GTC_TAG_KEY_METHOD_XXX -> ${GTC_TAG_KEY_METHOD}
+sed -i "s@XXX_GTC_TAG_KEY_METHOD_XXX@${GTC_TAG_KEY_METHOD}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_TAG_KEY_PROJECT_XXX -> ${GTC_TAG_KEY_PROJECT}
+sed -i "s@XXX_GTC_TAG_KEY_PROJECT_XXX@${GTC_TAG_KEY_PROJECT}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_TAG_KEY_ACCOUNT_XXX -> ${GTC_TAG_KEY_ACCOUNT}
+sed -i "s@XXX_GTC_TAG_KEY_ACCOUNT_XXX@${GTC_TAG_KEY_ACCOUNT}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_IAM_USER_NAME_XXX -> ${GTC_IAM_USEAR_NAME}
 sed -i "s@XXX_GTC_IAM_USER_NAME_XXX@${GTC_IAM_USEAR_NAME}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_METHOD_NAME_XXX -> ${GTC_METHOD_NAME}

@@ -10,6 +10,10 @@
 #   
 #   Then, you can use the following functions from any GoToCloud scripts
 #   $ gtc_utility_get_sh_dir
+#   $ gtc_utility_get_tag_key_iamuser
+#   $ gtc_utility_get_tag_key_method
+#   $ gtc_utility_get_tag_key_project
+#   $ gtc_utility_get_tag_key_account
 #   $ gtc_utility_get_iam_user_name
 #   $ gtc_utility_get_method_name
 #   $ gtc_utility_get_project_name
@@ -27,7 +31,7 @@
 #   gtc_utility_global_varaibles_debug_setup.sh 
 # 
 
-# Set GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID
+# Set GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
 function gtc_utility_setup_global_variables() {
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_setup_global_variables!"; fi
@@ -71,12 +75,20 @@ function gtc_utility_setup_global_variables() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     }
     # Get GoToCloud meta info as global variables within file scope
-    # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID
+    # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
     gtc_utility_account_identity_get_values
-    GTC_METHOD_NAME="cryoem"    
+    GTC_TAG_KEY_IAMUSER="iam-user"
+    GTC_TAG_KEY_METHOD="method"
+    GTC_TAG_KEY_PROJECT="project"
+    GTC_TAG_KEY_ACCOUNT="account"
+    GTC_METHOD_NAME="cryoem"
     GTC_PCLUSTER_NAME=${GTC_IAM_USEAR_NAME}-${GTC_ACCOUNT_ID}-${GTC_PROJECT_NAME}
     GTC_S3_NAME=${GTC_PCLUSTER_NAME}
     GTC_KEY_NAME=${GTC_PCLUSTER_NAME}
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
@@ -139,6 +151,10 @@ function gtc_utility_setup_global_variables() {
 
 # GoToCloud system environment variables
 export GTC_SYSTEM_SH_DIR=XXX_GTC_SH_DIR_XXX
+export GTC_SYSTEM_TAG_KEY_IAMUSER=XXX_GTC_TAG_KEY_IAMUSER_XXX
+export GTC_SYSTEM_TAG_KEY_METHOD=XXX_GTC_TAG_KEY_METHOD_XXX
+export GTC_SYSTEM_TAG_KEY_PROJECT=XXX_GTC_TAG_KEY_PROJECT_XXX
+export GTC_SYSTEM_TAG_KEY_ACCOUNT=XXX_GTC_TAG_KEY_ACCOUNT_XXX
 export GTC_SYSTEM_IAM_USEAR_NAME=XXX_GTC_IAM_USEAR_NAME_XXX
 export GTC_SYSTEM_METHOD_NAME=XXX_GTC_METHOD_NAME_XXX
 export GTC_SYSTEM_PROJECT_NAME=XXX_GTC_PROJECT_NAME_XXX
@@ -158,6 +174,14 @@ EOS
     # Replace variable strings in template to actual values
     # XXX_GTC_SH_DIR_XXX -> ${GTC_SH_DIR}
     sed -i "s@XXX_GTC_SH_DIR_XXX@${GTC_SH_DIR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_IAMUSER_XXX -> ${GTC_TAG_KEY_IAMUSER}
+    sed -i "s@XXX_GTC_TAG_KEY_IAMUSER_XXX@${GTC_TAG_KEY_IAMUSER}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_METHOD_XXX -> ${GTC_TAG_KEY_METHOD}
+    sed -i "s@XXX_GTC_TAG_KEY_METHOD_XXX@${GTC_TAG_KEY_METHOD}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_PROJECT_XXX -> ${GTC_TAG_KEY_PROJECT}
+    sed -i "s@XXX_GTC_TAG_KEY_PROJECT_XXX@${GTC_TAG_KEY_PROJECT}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_ACCOUNT_XXX -> ${GTC_TAG_KEY_PROJECT}
+    sed -i "s@XXX_GTC_TAG_KEY_ACCOUNT_XXX@${GTC_TAG_KEY_ACCOUNT}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_IAM_USEAR_NAME_XXX -> ${GTC_IAM_USEAR_NAME}
     sed -i "s@XXX_GTC_IAM_USEAR_NAME_XXX@${GTC_IAM_USEAR_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_METHOD_NAME_XXX -> ${GTC_METHOD_NAME}
@@ -204,6 +228,22 @@ EOS
 
 function gtc_utility_get_sh_dir() {
     echo ${GTC_SYSTEM_SH_DIR}
+}
+
+function gtc_utility_get_tag_key_iamuser() {
+    echo ${GTC_SYSTEM_TAG_KEY_IAMUSER}
+}
+
+function gtc_utility_get_tag_key_method() {
+    echo ${GTC_SYSTEM_TAG_KEY_METHOD}
+}
+
+function gtc_utility_get_tag_key_project() {
+    echo ${GTC_SYSTEM_TAG_KEY_PROJECT}
+}
+
+function gtc_utility_get_tag_key_account() {
+    echo ${GTC_SYSTEM_TAG_KEY_ACCOUNT}
 }
 
 function gtc_utility_get_iam_user_name() {

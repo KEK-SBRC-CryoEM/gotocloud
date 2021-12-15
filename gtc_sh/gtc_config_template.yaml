@@ -138,12 +138,11 @@ Monitoring:
       RetentionInDays: 180
       DeletionPolicy: Retain
 Tags:
-- Key: iam-user
+- Key: XXX_GTC_TAG_KEY_IAMUSER_XXX
   Value: XXX_GTC_IAM_USER_NAME_XXX
-- Key: method
+- Key: XXX_GTC_TAG_KEY_METHOD_XXX
   Value: XXX_GTC_METHOD_NAME_XXX
-- Key: project
+- Key: XXX_GTC_TAG_KEY_PROJECT_XXX
   Value: XXX_GTC_PROJECT_NAME_XXX
-- Key: account
+- Key: XXX_GTC_TAG_KEY_ACCOUNT_XXX
   Value: "XXX_GTC_ACCOUNT_ID_XXX"
-  

@@ -2,18 +2,18 @@
 #
 # Usage:
 #  gtc_setup_gotocloud_environment.sh
-#   
+#
 # Arguments & Options:
-#   -p                 : Project name
-#   -v                 : gtc_sh script version
+#   -p                 : Project name (default "`date`session")
+#   -v                 : gtc_sh script version (default "00o03o02")
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
-#   $ gtc_setup_gotocloud_environment.sh -p protein20211111 -v 00o03o01
-#   
+#   $ gtc_setup_gotocloud_environment.sh -p protein20211111 -v 00o03o02
+#
 # Debug Script:
-#   
-# 
+#
+#
 
 usage_exit() {
         echo "GoToCloud: Usage $0" 1>&2
@@ -31,7 +31,7 @@ if [[ $# -gt 4 ]]; then
 fi
 
 GTC_SET_PROJECT_NAME=`date "+%Y%m%d"`"session"
-GTC_SH_VERSION=00o03o01
+GTC_SH_VERSION=00o03o02
 # Parse command line arguments
 while getopts p:v:h OPT
 do
@@ -59,7 +59,7 @@ echo "GoToCloud: mounting the file system /efs ..."
 mountpoint -q /efs && {
     df -h
     echo "GoToCloud: /efs is already mounted."
-    echo "GoToCloud: Done"
+    #echo "GoToCloud: Done"
 } || {
     sudo yum -y install amazon-efs-utils
     sudo mkdir /efs
@@ -73,7 +73,7 @@ mountpoint -q /efs && {
     }
     df -h
     echo "GoToCloud: /efs is mounted."
-    echo "GoToCloud: Done"
+    #echo "GoToCloud: Done"
 } 
 
 #Setup SH directory path
@@ -91,6 +91,7 @@ source ${GTC_SET_SH_DIR}/gtc_utility_dependencies_install.sh
 
 #Installe jq
 gtc_dependency_jq_install
+GTC_JQ_INST_STAT=$?
 
 #Installe pcluster
 gtc_dependency_pcluster_install
@@ -102,6 +103,7 @@ GTC_NODE_INST_STAT=$?
 
 #Setup Cloud9 environment 
 ${GTC_SET_SH_DIR}/gtc_setup_cloud9_environment.sh -p ${GTC_SET_PROJECT_NAME}
+GTC_CLOUD9_SETUP_STAT=$?
 
 source /home/ec2-user/.gtc/global_variables.sh
 
@@ -121,7 +123,7 @@ echo "GoToCloud: "
 echo "GoToCloud: Checking config settings... "
 cat ~/.parallelcluster/config.yaml
 echo "GoToCloud: "
-echo "GoToCloud: Done"
+#echo "GoToCloud: Done"
 
 source gtc_utility_global_varaibles.sh 
 GTC_S3_NAME=$(gtc_utility_get_s3_name)
@@ -136,33 +138,47 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_S3
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_CREATE_STAT=${GTC_KEY_CREATE_STAT}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_CREATE_STAT=${GTC_CONFIG_CREATE_STAT}"; fi
 
-echo "GoToCloud: ----Execution result-------------------------------------------------------------------"
-    echo "GoToCloud: Mount /efs         : Pass"
-if [[ ${GTC_PCLUSER_INST_STAT} == 0 ]]; then
-    echo "GoToCloud: Install pcluster   : Pass";
+if [ ${GTC_JQ_INST_STAT} == 0 ]&&[ ${GTC_PCLUSER_INST_STAT} == 0 ]&&[ ${GTC_NODE_INST_STAT} == 0 ]&&[ ${GTC_CLOUD9_SETUP_STAT} == 0 ]&&[ ${GTC_S3_CREATE_STAT} == 0 ]&&[ ${GTC_KEY_CREATE_STAT} == 0 ]&&[ ${GTC_CONFIG_CREATE_STAT} == 0 ]; then
+    echo "GoToCloud: -- Overall Results : Success -------------------------------------------------------";
+else
+    echo "GoToCloud: -- Overall Results : Fail ----------------------------------------------------------";
+fi
+    echo "GoToCloud: Mount /efs         : Success"
+if [[ ${GTC_JQ_INST_STAT} == 0 ]]; then
+    echo "GoToCloud: Install jq         : Success";
 else 
-    echo "GoToCloud: Install pcluster   : Failure";    
+    echo "GoToCloud: Install jq         : Fail";
+fi   
+if [[ ${GTC_PCLUSER_INST_STAT} == 0 ]]; then
+    echo "GoToCloud: Install pcluster   : Success";
+else 
+    echo "GoToCloud: Install pcluster   : Fail";
 fi
 if [[ ${GTC_NODE_INST_STAT} == 0 ]]; then
-    echo "GoToCloud: Install node.js    : Pass"; 
+    echo "GoToCloud: Install node.js    : Success";
 else
-    echo "GoToCloud: Install node.js    : Failure"; 
+    echo "GoToCloud: Install node.js    : Fail";
+fi
+if [[ ${GTC_CLOUD9_SETUP_STAT} == 0 ]]; then
+    echo "GoToCloud: Setup Cloud9 tags  : Success";
+else
+    echo "GoToCloud: Setup Cloud9 tags  : Fail";
 fi
 if [[ ${GTC_S3_CREATE_STAT} == 0 ]]; then
-    echo "GoToCloud: Create s3 bucket   : Pass";    
+    echo "GoToCloud: Create s3 bucket   : Success";
 else 
-    echo "GoToCloud: Create s3 bucket   : Failure. Project name "${GTC_PROJECT_NAME}" may be invalid or S3 bucket "${GTC_S3_NAME}" exists already. Please set other project name.";  
+    echo "GoToCloud: Create s3 bucket   : Fail. Project name "${GTC_PROJECT_NAME}" may be invalid or S3 bucket "${GTC_S3_NAME}" exists already. Please set other project name.";  
 fi
 if [[ ${GTC_KEY_CREATE_STAT} == 0 ]]; then
-    echo "GoToCloud: Create key-pair    : Pass";
+    echo "GoToCloud: Create key-pair    : Success";
 else
-    echo "GoToCloud: Create key-pair    : Failure. Key-pair "${GTC_KEY_NAME}" exists already. Please set other project name."; 
+    echo "GoToCloud: Create key-pair    : Fail. Key-pair "${GTC_KEY_NAME}" exists already. Please set other project name."; 
 fi
 if [[ ${GTC_CONFIG_CREATE_STAT} == 0 ]]; then
-    echo "GoToCloud: Create config file : Pass";
+    echo "GoToCloud: Create config file : Success";
     
 else 
-    echo "GoToCloud: Create config file : Failure";   
+    echo "GoToCloud: Create config file : Fail";
 fi
-echo "GoToCloud: ---------------------------------------------------------------------------------------"
-echo "GoToCloud: ALL Done!"
+echo "GoToCloud: ------------------------------------------------------------------------------------"
+echo "GoToCloud: Done!"

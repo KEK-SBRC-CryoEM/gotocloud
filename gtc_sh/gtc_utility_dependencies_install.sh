@@ -17,7 +17,7 @@ function gtc_dependency_jq_install() {
     jq -V &>/dev/null || {
         echo "GoToCloud: Installing jq ..."
         sudo yum -y install jq
-        echo "GoToCloud: Done"
+        #echo "GoToCloud: Done"
         }
 }
 
@@ -27,7 +27,7 @@ function gtc_dependency_pcluster_install() {
     pcluster version &>/dev/null && {
         PV=$(pcluster version | jq -r '.version')
         echo "GoToCloud: Parallelcluster "${PV}" is already installed."
-        echo "GoToCloud: Done"
+        #echo "GoToCloud: Done"
     } || {
         pip3 install "aws-parallelcluster" --upgrade --user
         echo "GoToCloud: "
@@ -37,7 +37,7 @@ function gtc_dependency_pcluster_install() {
         echo "GoToCloud: "
         PV=$(pcluster version | jq -r '.version')
         echo "GoToCloud: Parallelcluster "${PV}" is installed."
-        echo "GoToCloud: Done"
+        #echo "GoToCloud: Done"
     }
 }
 
@@ -49,7 +49,7 @@ function gtc_dependency_node_install() {
     } && {
         GTC_NODE_VERSION=$(node --version)
         echo "GoToCloud: Node.js version "${GTC_NODE_VERSION}" is already installed"
-        echo "GoToCloud: Done"
+        #echo "GoToCloud: Done"
     } || {
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
         chmod 755 ~/.nvm/nvm.sh
@@ -60,6 +60,6 @@ function gtc_dependency_node_install() {
         nvm uninstall ${GTC_NODE_VERSION_BF}
         GTC_NODE_VERSION=$(node --version)
         echo "GoToCloud: Node.js "${GTC_NODE_VERSION}" is installed"
-        echo "GoToCloud: Done"
+        #echo "GoToCloud: Done"
     }
 }
