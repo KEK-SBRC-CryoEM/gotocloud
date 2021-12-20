@@ -63,3 +63,16 @@ function gtc_dependency_node_install() {
         #echo "GoToCloud: Done"
     }
 }
+
+#Check if Service-Linked Role "AWSServiceRoleForEC2Spot" exists
+function gtc_ec2spotrole_check() {
+    echo "GoToCloud: Checking if Service-Linked Role 'AWSServiceRoleForEC2Spot' exists..."
+    aws iam get-role --role-name AWSServiceRoleForEC2Spot > /dev/null 2>&1 && {
+        echo "GoToCloud: OK! Service-Linked Role 'AWSServiceRoleForEC2Spot' exists."
+    } || {
+        echo "GoToCloud: Service-Linked Role 'AWSServiceRoleForEC2Spot' doesn't exist."
+        echo "GoToCloud: Creating Service-Linked Role 'AWSServiceRoleForEC2Spot'..."
+        aws iam create-service-linked-role --aws-service-name spot.amazonaws.com
+        echo "GoToCloud: Created Service-Linked Role 'AWSServiceRoleForEC2Spot'."
+    }
+}

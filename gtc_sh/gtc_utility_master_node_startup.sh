@@ -61,7 +61,8 @@ if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"
 echo "GoToCloud: Installing basic denpendency for RELION3.1 ..."
 sudo apt update -y
 sudo apt update
-sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev
+#sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev
+sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev libpng-dev ghostscript libxft-dev
 
 echo "GoToCloud: Installing basic denpendency for Follow_Relion_gracefully ..."
 sudo apt-get --yes --force-yes install python3-venv
@@ -143,36 +144,9 @@ echo "GoToCloud: Creating pcluster head node system environment variable setting
 cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
 #!/bin/sh
 
-# ctffind 4.1.14
-# To be causious, put new path at the end
-export PATH=$PATH:/efs/em/ctffind-4.1.14-linux64/bin
-
-# Gctf-v1.06
-# To be causious, put new path at the end
-export PATH=$PATH:/efs/em/Gctf_v1.06/bin
-
-# relion 3.1.2
-# To be causious, put new path at the end
-export PATH=$PATH:/efs/em/relion-v31/relion-3.1.2/bin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/efs/em/relion-v31/relion-3.1.2/lib
-export RELION_CTFFIND_EXECUTABLE=/efs/em/ctffind-4.1.14-linux64/bin/ctffind
-export RELION_GCTF_EXECUTABLE=/efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64
-export RELION_PDFVIEWER_EXECUTABLE=/usr/bin/evince
-export RELION_ERROR_LOCAL_MPI=96
-
-# Required system environment variables for this RELION job submission script template
-export RELION_QSUB_TEMPLATE=/efs/em/aws_slurm_relion.sh
-export RELION_QSUB_EXTRA_COUNT=1
-export RELION_QSUB_EXTRA1=Partition
-export RELION_QSUB_EXTRA1_DEFAULT=g4dn-vcpu48-gpu4
-export RELION_QSUB_EXTRA1_HELP="Partitions: g4dn-vcpu96-gpu8, g4dn-vcpu48-gpu4*, g4dn-vcpu48-gpu4-spot, c5-vcpu96-gpu0, c5-vcpu96-gpu0-spot"
-
-# The mpi runtime ('mpirun' by default)
-# export RELION_MPI_RUN=srun
-# The default for 'Submit to queue?'
-export RELION_QUEUE_USE=Yes
-# The default for 'Queue submit command'
-export RELION_QSUB_COMMAND=sbatch
+# load relion 4.0-beta-2 (default)
+source /etc/profile.d/modules.sh
+module load relion
 EOS
 
 # Set file permission 

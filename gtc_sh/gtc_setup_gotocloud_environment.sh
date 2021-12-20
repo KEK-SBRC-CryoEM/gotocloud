@@ -101,6 +101,10 @@ GTC_PCLUSER_INST_STAT=$?
 gtc_dependency_node_install
 GTC_NODE_INST_STAT=$?
 
+#Check if Service-Linked Role "AWSServiceRoleForEC2Spot" exists
+gtc_ec2spotrole_check
+GTC_CHECK_SPOTROLL_STAT=$?
+
 #Setup Cloud9 environment 
 ${GTC_SET_SH_DIR}/gtc_setup_cloud9_environment.sh -p ${GTC_SET_PROJECT_NAME}
 GTC_CLOUD9_SETUP_STAT=$?
@@ -116,7 +120,7 @@ ${GTC_SET_SH_DIR}/gtc_aws_ec2_create_key_pair.sh
 GTC_KEY_CREATE_STAT=$?
 
 #Create config 
-${GTC_SET_SH_DIR}/gtc_config_create.sh -s 2400 -m 8
+${GTC_SET_SH_DIR}/gtc_config_create.sh -s 2400 -m 16
 GTC_CONFIG_CREATE_STAT=$?
 
 echo "GoToCloud: "
@@ -158,6 +162,11 @@ if [[ ${GTC_NODE_INST_STAT} == 0 ]]; then
     echo "GoToCloud: Install node.js    : Success";
 else
     echo "GoToCloud: Install node.js    : Fail";
+fi
+if [[ ${GTC_CHECK_SPOTROLL_STAT} == 0 ]]; then
+    echo "GoToCloud: Check EC2Spot Roll : Success";
+else
+    echo "GoToCloud: Check EC2Spot Roll : Fail";
 fi
 if [[ ${GTC_CLOUD9_SETUP_STAT} == 0 ]]; then
     echo "GoToCloud: Setup Cloud9 tags  : Success";
