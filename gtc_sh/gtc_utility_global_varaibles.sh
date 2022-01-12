@@ -85,6 +85,8 @@ function gtc_utility_setup_global_variables() {
     GTC_PCLUSTER_NAME=${GTC_IAM_USEAR_NAME}-${GTC_ACCOUNT_ID}-${GTC_PROJECT_NAME}
     GTC_S3_NAME=${GTC_PCLUSTER_NAME}
     GTC_KEY_NAME=${GTC_PCLUSTER_NAME}
+    GTC_SUBNET_NAME="kek-analysis-subnet4a"
+    GTC_SUBNET_ID=$(aws ec2 describe-subnets | jq '.Subnets[]' | jq -r 'select(.Tags[]?.Value == "'${GTC_SUBNET_NAME}'").SubnetId')
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
@@ -96,6 +98,8 @@ function gtc_utility_setup_global_variables() {
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_S3_NAME=${GTC_S3_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SUBNET_NAME=${GTC_SUBNET_NAME}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SUBNET_ID=${GTC_SUBNET_ID}"; fi
 
     # --------------------
     # Set GoToCloud directory path and file path of key file as a systemwise environment constant
@@ -162,6 +166,8 @@ export GTC_SYSTEM_ACCOUNT_ID=XXX_GTC_ACCOUNT_ID_XXX
 export GTC_SYSTEM_PCLUSTER_NAME=XXX_GTC_PCLUSTER_NAME_XXX
 export GTC_SYSTEM_S3_NAME=XXX_GTC_S3_NAME_XXX
 export GTC_SYSTEM_KEY_NAME=XXX_GTC_KEY_NAME_XXX
+export GTC_SYSTEM_SUBNET_NAME=XXX_GTC_SUBNET_NAME_XXX
+export GTC_SYSTEM_SUBNET_ID=XXX_GTC_SUBNET_ID_XXX
 export GTC_SYSTEM_KEY_DIR=XXX_GTC_KEY_DIR_XXX
 export GTC_SYSTEM_KEY_FILE=XXX_GTC_KEY_FILE_XXX
 export GTC_SYSTEM_APPLICATION_DIR=XXX_GTC_APPLICATION_DIR_XXX
@@ -196,6 +202,10 @@ EOS
     sed -i "s@XXX_GTC_S3_NAME_XXX@${GTC_S3_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_KEY_NAME_XXX -> ${GTC_KEY_NAME}
     sed -i "s@XXX_GTC_KEY_NAME_XXX@${GTC_KEY_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_SUBNET_NAME_XXX -> ${GTC_SUBNET_NAME}
+    sed -i "s@XXX_GTC_SUBNET_NAME_XXX@${GTC_SUBNET_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_SUBNET_NAME_XXX -> ${GTC_SUBNET_NAME}
+    sed -i "s@XXX_GTC_SUBNET_ID_XXX@${GTC_SUBNET_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_KEY_DIR_XXX -> ${GTC_KEY_DIR}
     sed -i "s@XXX_GTC_KEY_DIR_XXX@${GTC_KEY_DIR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_KEY_FILE_XXX -> ${GTC_KEY_FILE}
@@ -272,6 +282,14 @@ function gtc_utility_get_s3_name() {
 
 function gtc_utility_get_key_name() {
     echo ${GTC_SYSTEM_KEY_NAME}
+}
+
+function gtc_utility_get_subnet_name() {
+    echo ${GTC_SYSTEM_SUBNET_NAME}
+}
+
+function gtc_utility_get_subnet_id() {
+    echo ${GTC_SYSTEM_SUBNET_ID}
 }
 
 function gtc_utility_get_key_dir() {

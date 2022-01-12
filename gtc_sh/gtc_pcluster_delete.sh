@@ -107,7 +107,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IN
 
 echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is still running..."
 #pcluster status -nw ${GTC_INSTANCE_NAME} ||  {
-pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 > /dev/null | jq -r '.clusterStatus' ||  {
+pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 > /dev/null || {
         echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} does not exist already!"
         echo "GoToCloud: Exiting(1)..."
         exit 1

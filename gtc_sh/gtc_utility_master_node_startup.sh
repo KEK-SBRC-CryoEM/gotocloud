@@ -58,7 +58,7 @@ GTC_SH_DIR=`cd $(dirname ${0}) && pwd`
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
 
-echo "GoToCloud: Installing basic denpendency for RELION3.1 ..."
+echo "GoToCloud: Installing basic denpendency for RELION ..."
 sudo apt update -y
 sudo apt update
 #sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev
@@ -68,7 +68,7 @@ echo "GoToCloud: Installing basic denpendency for Follow_Relion_gracefully ..."
 sudo apt-get --yes --force-yes install python3-venv
 
 echo "GoToCloud: Installing chimerax ..."
-sudo apt-get --yes --force-yes install /efs/em/ucsf-chimerax_1.2.5-1_amd64.deb
+sudo apt-get --yes --force-yes install /efs/em/ucsf-chimerax_1.3ubuntu20.04_amd64.deb
 
 echo "GoToCloud: Changing owners of directories and files in fsx (Lustre) ..."
 sudo chown -R ubuntu:ubuntu /fsx

@@ -65,13 +65,16 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AC
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_S3_NAME=${GTC_S3_NAME}"; fi
 
 GTC_S3_WARNING=0
-echo "GoToCloud: Creating S3 bucket ${GTC_S3_NAME}..."
+echo "GoToCloud: Making sure that S3 bucket ${GTC_S3_NAME} does not exist yet..."
 aws s3 ls s3://${GTC_S3_NAME} && {
     echo "GoToCloud: S3 bucket ${GTC_S3_NAME} exists already in your account"
     #echo "GoToCloud: Done"
     exit 0
 }
 
+echo "GoToCloud: OK! S3 bucket ${GTC_S3_NAME} does not exist yet!"
+
+echo "GoToCloud: Creating S3 bucket ${GTC_S3_NAME}..."
 aws s3 mb s3://${GTC_S3_NAME} || {
     echo "GoToCloud: [GCT_ERROR] Project name ${GTC_PROJECT_NAME} may be invalid or same bucket name is used already"
     echo "GoToCloud: Exiting(1)..."
