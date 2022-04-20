@@ -131,7 +131,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CM
 
 echo "GoToCloud: Exporting (archiving) data from Lustre to S3 bucket..."
 # Request to export data from Lustre parallel file system (/fsx) to S3 bucket
-pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no ${GTC_CMD_INITIATE}
+pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD_INITIATE}"
 # pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no ${GTC_CMD_INITIATE}
 # GCT_EXIT_STATUS=`pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no ${GTC_CMD_STATUS}`
 # echo "GoToCloud: ${GCT_EXIT_STATUS}"
@@ -141,7 +141,7 @@ while :
 do
         # Check if exporting (archiving) is completed.
         # It is done when output becomes "0", 
-        GCT_EXIT_STATUS=`pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no ${GTC_CMD_STATUS}`
+        GCT_EXIT_STATUS=`pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD_STATUS}"`
         echo "GoToCloud: ${GCT_EXIT_STATUS}"
         if [ ${GCT_EXIT_STATUS} -eq 0 ]; then
                 echo "GoToCloud: Exporting (archiving) is completed."

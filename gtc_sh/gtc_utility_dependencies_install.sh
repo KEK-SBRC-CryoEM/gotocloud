@@ -29,7 +29,27 @@ function gtc_dependency_pcluster_install() {
         echo "GoToCloud: Parallelcluster "${PV}" is already installed."
         #echo "GoToCloud: Done"
     } || {
-        pip3 install --use-feature=2020-resolver "aws-parallelcluster" --upgrade --user
+        pip3 install --use-feature=2020-resolver "aws-parallelcluster<3.1" --upgrade --user
+        echo "GoToCloud: "
+        echo "GoToCloud: Check PATH settings for parallelcluster"
+        echo "GoToCloud: which pcluster "
+        which pcluster
+        echo "GoToCloud: "
+        PV=$(pcluster version | jq -r '.version')
+        echo "GoToCloud: Parallelcluster "${PV}" is installed."
+        #echo "GoToCloud: Done"
+    }
+}
+
+#Installe pcluster latest version
+function gtc_dependency_pcluster_latestver_install() {
+    echo "GoToCloud: Installing parallelcluster ..."
+    pcluster version &>/dev/null && {
+        PV=$(pcluster version | jq -r '.version')
+        echo "GoToCloud: Parallelcluster "${PV}" is already installed."
+        #echo "GoToCloud: Done"
+    } || {
+        pip3 install --use-feature=2020-resolver aws-parallelcluster --upgrade --user
         echo "GoToCloud: "
         echo "GoToCloud: Check PATH settings for parallelcluster"
         echo "GoToCloud: which pcluster "

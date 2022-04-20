@@ -12,3 +12,4 @@ mkdir /efs
 mount -t efs -o tls,mounttargetip=10.2.4.117 fs-0a8524613d2736fb6 /efs
 
 echo '/efs/em/modulefiles' | sudo tee -a /usr/share/modules/init/.modulespath
+echo '/efs/em/modulefiles/oneAPI' | sudo tee -a /usr/share/modules/init/.modulespath

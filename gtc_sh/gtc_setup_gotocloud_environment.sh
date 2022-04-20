@@ -6,10 +6,11 @@
 # Arguments & Options:
 #   -p                 : Project name (default value is cloud9 name)
 #   -v                 : gtc_sh script version (default value is latest version)
+#   --                 : pcluster version (default version is "fix", set when using pcluster of latest version)
 #   -h                 : Help option displays usage
 #
 # Examples:
-#   $ gtc_setup_gotocloud_environment.sh -p protein20211111 -v 00o03o02
+#   $ gtc_setup_gotocloud_environment.sh -p protein20211111 -v 00o04o02 --latest
 #
 # Debug Script:
 #
@@ -25,15 +26,17 @@ GTC_SYSTEM_DEBUG_MODE=0
 # Check if the number of command line arguments is valid
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] @=$@"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] #=$#"; fi
-if [[ $# -gt 4 ]]; then
+if [[ $# -gt 5 ]]; then
     echo "GoToCloud: Invalid number of arguments ($#)"
     usage_exit
 fi
 
 GTC_SET_PROJECT_NAME="cloud9-name"
 GTC_SH_VERSION="latest"
+GTC_PCLUSTER_VER="fix"
+
 # Parse command line arguments
-while getopts p:v:h OPT
+while getopts p:v:-:h OPT
 do
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] OPT=$OPT"; fi
     case "$OPT" in
@@ -42,7 +45,10 @@ do
             ;;
         v)  GTC_SH_VERSION="ver"$OPTARG
             echo "GoToCloud: gtc_sh verion '${GTC_SH_VERSION}' is specified"
-            ;;            
+            ;;
+        -)  GTC_PCLUSTER_VER=$OPTARG
+            echo "GoToCloud: pcluster verion '${GTC_PCLUSTER_VER}' is specified"
+            ;;
         h)  usage_exit
             ;;
         \?) echo "GoToCloud: [GTC_ERROR] Invalid option $OPTARG is specified!"
@@ -94,8 +100,13 @@ gtc_dependency_jq_install
 GTC_JQ_INST_STAT=$?
 
 #Installe pcluster
-gtc_dependency_pcluster_install
-GTC_PCLUSER_INST_STAT=$?
+if [[ ${GTC_PCLUSTER_VER} == "latest" ]]; then
+    gtc_dependency_pcluster_latestver_install;
+    GTC_PCLUSER_INST_STAT=$?;
+else
+    gtc_dependency_pcluster_install;
+    GTC_PCLUSER_INST_STAT=$?;
+fi
 
 #Installe Node.js
 gtc_dependency_node_install
