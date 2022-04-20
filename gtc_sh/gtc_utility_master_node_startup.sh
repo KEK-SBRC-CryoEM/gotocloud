@@ -64,6 +64,10 @@ sudo apt update
 #sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev
 sudo apt install -y cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev libpng-dev ghostscript libxft-dev
 
+echo "GoToCloud: Installing basic denpendency for Schemes in Relion ..."
+#sudo apt-get install tk-dev
+sudo apt-get --yes install python-tk
+
 echo "GoToCloud: Installing basic denpendency for Follow_Relion_gracefully ..."
 sudo apt-get --yes --force-yes install python3-venv
 
