@@ -54,7 +54,7 @@ if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] -------------
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] 0 = $0"; fi
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] dirname $0 = $(dirname $0)"; fi
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
-GTC_SH_DIR=`cd $(dirname ${0}) && pwd`
+GTC_SH_DIR=`cd $(dirname $(readlink -f ${0})) && pwd`
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
 if [[ ${GTC_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
 

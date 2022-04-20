@@ -44,7 +44,7 @@ function gtc_utility_setup_global_variables() {
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_PARENT_COMMAND=${GTC_PARENT_COMMAND}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] dirname ${GTC_PARENT_COMMAND} = $(dirname ${GTC_PARENT_COMMAND})"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
-    GTC_SH_DIR=`cd $(dirname ${GTC_PARENT_COMMAND}) && pwd`
+    GTC_SH_DIR=`cd $(dirname $(readlink -f ${GTC_PARENT_COMMAND})) && pwd`
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] pwd = $(pwd)"; fi
 
@@ -74,9 +74,33 @@ function gtc_utility_setup_global_variables() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_account_identity_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     }
+
+    function gtc_utility_project_name_get_values() {
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_project_name_get_values!"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    
+        # Get tags values from this Cloud9 instance
+        local GTC_TAGS=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].Tags[]')
+        GTC_CLOUD9_ENV=`echo ${GTC_TAGS} | jq -r 'select(.Key == "aws:cloud9:environment").Value'`
+        GTC_CLOUD9_NAME=`echo ${GTC_TAGS} | jq -r 'select(.Key == "Name").Value' | awk '{sub("-'${GTC_CLOUD9_ENV}'", "");print $0;}' | awk '{sub("aws-cloud9-", "");print $0;}'`
+
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_CLOUD9_ENV=${GTC_CLOUD9_ENV}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_CLOUD9_NAME=${GTC_CLOUD9_NAME}"; fi
+  
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_project_name_get_values!"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    }
     # Get GoToCloud meta info as global variables within file scope
     # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
     gtc_utility_account_identity_get_values
+    gtc_utility_project_name_get_values
+    if [ ${GTC_PROJECT_NAME_INIT} == "cloud9-name" ]; then
+        GTC_PROJECT_NAME=${GTC_CLOUD9_NAME};
+    else
+        GTC_PROJECT_NAME=${GTC_PROJECT_NAME_INIT};
+    fi
     GTC_TAG_KEY_IAMUSER="iam-user"
     GTC_TAG_KEY_METHOD="method"
     GTC_TAG_KEY_PROJECT="project"

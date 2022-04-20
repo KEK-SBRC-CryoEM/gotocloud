@@ -4,7 +4,7 @@
 #   gtc_setup_cloud9_environment.sh
 #   
 # Arguments & Options:
-#   -p                 : Project name (default "`date`session")
+#   -p                 : Project name (Default value is cloud9 name)
 #   -h                 : Help option displays usage
 #   
 # Examples:
@@ -51,14 +51,14 @@ if [[ $# -gt 2 ]]; then
 fi
 
 # Initialize variables with default values
-GTC_PROJECT_NAME=`date "+%Y%m%d"`"session"
+GTC_PROJECT_NAME_INIT="cloud9-name"
 # Parse command line arguments
 while getopts p:h OPT
 do
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] OPT=$OPT"; fi
     case "$OPT" in
-        p)  GTC_PROJECT_NAME=$OPTARG
-            echo "GoToCloud: project name '${GTC_PROJECT_NAME}' is specified"
+        p)  GTC_PROJECT_NAME_INIT=$OPTARG
+            echo "GoToCloud: project name '${GTC_PROJECT_NAME_INIT}' is specified"
             ;;
         h)  usage_exit
             ;;

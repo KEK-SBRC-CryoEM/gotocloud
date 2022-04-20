@@ -4,8 +4,8 @@
 #  gtc_setup_gotocloud_environment.sh
 #
 # Arguments & Options:
-#   -p                 : Project name (default "`date`session")
-#   -v                 : gtc_sh script version (default "00o03o02")
+#   -p                 : Project name (default value is cloud9 name)
+#   -v                 : gtc_sh script version (default value is latest version)
 #   -h                 : Help option displays usage
 #
 # Examples:
@@ -30,8 +30,8 @@ if [[ $# -gt 4 ]]; then
     usage_exit
 fi
 
-GTC_SET_PROJECT_NAME=`date "+%Y%m%d"`"session"
-GTC_SH_VERSION=00o03o02
+GTC_SET_PROJECT_NAME="cloud9-name"
+GTC_SH_VERSION="latest"
 # Parse command line arguments
 while getopts p:v:h OPT
 do
@@ -40,7 +40,7 @@ do
         p)  GTC_SET_PROJECT_NAME=$OPTARG
             echo "GoToCloud: project name '${GTC_SET_PROJECT_NAME}' is specified"
             ;;
-        v)  GTC_SH_VERSION=$OPTARG
+        v)  GTC_SH_VERSION="ver"$OPTARG
             echo "GoToCloud: gtc_sh verion '${GTC_SH_VERSION}' is specified"
             ;;            
         h)  usage_exit
@@ -77,7 +77,7 @@ mountpoint -q /efs && {
 } 
 
 #Setup SH directory path
-GTC_SET_SH_DIR="/efs/em/gtc_sh_ver"${GTC_SH_VERSION}
+GTC_SET_SH_DIR="/efs/em/gtc_sh_"${GTC_SH_VERSION}
 # echo "GoToCloud: GTC_SET_SH_DIR=${GTC_SET_SH_DIR}"
 if [[ ! -e  ${GTC_SET_SH_DIR} ]]; then
     echo "GoToCloud:----------------------------------------------------------------------------------------------------------------"
