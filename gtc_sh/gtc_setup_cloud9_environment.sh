@@ -140,27 +140,32 @@ echo "GoToCloud: Done"
 
 # Setup tags to Cloud9
 # Get related global variables
-GTC_TAG_KEY_IAMUSER=$(gtc_utility_get_tag_key_iamuser)
-GTC_TAG_KEY_METHOD=$(gtc_utility_get_tag_key_method)
-GTC_TAG_KEY_PROJECT=$(gtc_utility_get_tag_key_project)
-GTC_TAG_KEY_ACCOUNT=$(gtc_utility_get_tag_key_account)
-GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
-GTC_METHOD_NAME=$(gtc_utility_get_method_name)
-GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
-GTC_ACCOUNT_ID=$(gtc_utility_get_account_id)
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
+# GTC_TAG_KEY_IAMUSER=$(gtc_utility_get_tag_key_iamuser)
+# GTC_TAG_KEY_METHOD=$(gtc_utility_get_tag_key_method)
+# GTC_TAG_KEY_PROJECT=$(gtc_utility_get_tag_key_project)
+# GTC_TAG_KEY_ACCOUNT=$(gtc_utility_get_tag_key_account)
+# GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
+# GTC_METHOD_NAME=$(gtc_utility_get_method_name)
+# GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
+# GTC_ACCOUNT_ID=$(gtc_utility_get_account_id)
+
+# call GTC_CLOUD9_TAGSET
+gtc_utility_tagset_get_values
+GTC_CLOUD9_TAGSET=${GTC_CLOUD9_TAGSET}
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
+# if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CLOUD9_TAGSET=${GTC_CLOUD9_TAGSET}"; fi
 
 echo "GoToCloud: Settings tags to Cloud9..."
 GTC_CLOUD9_INSTANCE_ID=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].InstanceId')
 echo "GoToCloud: Cloud9 Instance ID: ${GTC_CLOUD9_INSTANCE_ID}"
-aws ec2 create-tags --resources ${GTC_CLOUD9_INSTANCE_ID} --tags Key=${GTC_TAG_KEY_METHOD},Value=${GTC_METHOD_NAME} Key=${GTC_TAG_KEY_PROJECT},Value=${GTC_PROJECT_NAME} Key=${GTC_TAG_KEY_IAMUSER},Value=${GTC_IAM_USEAR_NAME} Key=${GTC_TAG_KEY_ACCOUNT},Value=${GTC_ACCOUNT_ID} || {
+aws ec2 create-tags --resources ${GTC_CLOUD9_INSTANCE_ID} --tags ${GTC_CLOUD9_TAGSET} || {
     echo "GoToCloud: [GCT_WARNING] Failed to setup Cloud9 tags."
     echo "GoToCloud: Exiting(1)..."
     exit 1

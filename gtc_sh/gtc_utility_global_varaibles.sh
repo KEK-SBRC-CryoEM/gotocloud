@@ -14,6 +14,10 @@
 #   $ gtc_utility_get_tag_key_method
 #   $ gtc_utility_get_tag_key_project
 #   $ gtc_utility_get_tag_key_account
+#   $ gtc_utility_get_aws_vendor_user
+#   $ gtc_utility_get_tag_key_user
+#   $ gtc_utility_get_tag_key_service
+#   $ gtc_utility_get_tag_key_team
 #   $ gtc_utility_get_iam_user_name
 #   $ gtc_utility_get_method_name
 #   $ gtc_utility_get_project_name
@@ -101,20 +105,28 @@ function gtc_utility_setup_global_variables() {
     else
         GTC_PROJECT_NAME=${GTC_PROJECT_NAME_INIT};
     fi
-    GTC_TAG_KEY_IAMUSER="iam-user"
-    GTC_TAG_KEY_METHOD="method"
-    GTC_TAG_KEY_PROJECT="project"
-    GTC_TAG_KEY_ACCOUNT="account"
+    GTC_TAG_KEY_IAMUSER="gtc:iam-user"
+    GTC_TAG_KEY_METHOD="gtc:method"
+    GTC_TAG_KEY_PROJECT="gtc:project"
+    GTC_TAG_KEY_ACCOUNT="gtc:account"
     GTC_METHOD_NAME="cryoem"
+    GTC_AWS_VENDOR="1"  # 1:vendor M  0:others
+    GTC_TAG_KEY_USER="User"
+    GTC_TAG_KEY_SERVICE="Service"
+    GTC_TAG_KEY_TEAM="Team"
     GTC_PCLUSTER_NAME=${GTC_IAM_USEAR_NAME}-${GTC_ACCOUNT_ID}-${GTC_PROJECT_NAME}
     GTC_S3_NAME=${GTC_PCLUSTER_NAME}
     GTC_KEY_NAME=${GTC_PCLUSTER_NAME}
     GTC_SUBNET_NAME="kek-analysis-subnet4a"
-    GTC_SUBNET_ID=$(aws ec2 describe-subnets | jq '.Subnets[]' | jq -r 'select(.Tags[]?.Value == "'${GTC_SUBNET_NAME}'").SubnetId')
+    GTC_SUBNET_ID=$(aws ec2 describe-subnets | jq '.Subnets[]' | jq -r 'select(.Tags[]?.Value == "'${GTC_SUBNET_NAME}'").SubnetId') 
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_AWS_VENDOR=${GTC_AWS_VENDOR}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_USER=${GTC_TAG_KEY_USER}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_SERVICE=${GTC_TAG_KEY_SERVICE}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_TEAM=${GTC_TAG_KEY_TEAM}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
@@ -183,6 +195,10 @@ export GTC_SYSTEM_TAG_KEY_IAMUSER=XXX_GTC_TAG_KEY_IAMUSER_XXX
 export GTC_SYSTEM_TAG_KEY_METHOD=XXX_GTC_TAG_KEY_METHOD_XXX
 export GTC_SYSTEM_TAG_KEY_PROJECT=XXX_GTC_TAG_KEY_PROJECT_XXX
 export GTC_SYSTEM_TAG_KEY_ACCOUNT=XXX_GTC_TAG_KEY_ACCOUNT_XXX
+export GTC_SYSTEM_AWS_VENDOR=XXX_GTC_AWS_VENDOR_XXX
+export GTC_SYSTEM_TAG_KEY_USER=XXX_GTC_TAG_KEY_USER_XXX
+export GTC_SYSTEM_TAG_KEY_SERVICE=XXX_GTC_TAG_KEY_SERVICE_XXX
+export GTC_SYSTEM_TAG_KEY_TEAM=XXX_GTC_TAG_KEY_TEAM_XXX
 export GTC_SYSTEM_IAM_USEAR_NAME=XXX_GTC_IAM_USEAR_NAME_XXX
 export GTC_SYSTEM_METHOD_NAME=XXX_GTC_METHOD_NAME_XXX
 export GTC_SYSTEM_PROJECT_NAME=XXX_GTC_PROJECT_NAME_XXX
@@ -210,8 +226,16 @@ EOS
     sed -i "s@XXX_GTC_TAG_KEY_METHOD_XXX@${GTC_TAG_KEY_METHOD}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_TAG_KEY_PROJECT_XXX -> ${GTC_TAG_KEY_PROJECT}
     sed -i "s@XXX_GTC_TAG_KEY_PROJECT_XXX@${GTC_TAG_KEY_PROJECT}@g" ${GTC_GLOBAL_VARIABLES_FILE}
-    # XXX_GTC_TAG_KEY_ACCOUNT_XXX -> ${GTC_TAG_KEY_PROJECT}
+    # XXX_GTC_TAG_KEY_ACCOUNT_XXX -> ${GTC_TAG_KEY_ACCOUNT}
     sed -i "s@XXX_GTC_TAG_KEY_ACCOUNT_XXX@${GTC_TAG_KEY_ACCOUNT}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_AWS_VENDOR_XXX -> ${GTC_AWS_VENDOR}
+    sed -i "s@XXX_GTC_AWS_VENDOR_XXX@${GTC_AWS_VENDOR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_USER_XXX -> ${GTC_TAG_KEY_USER}
+    sed -i "s@XXX_GTC_TAG_KEY_USER_XXX@${GTC_TAG_KEY_USER}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_SERVICE_XXX -> ${GTC_TAG_KEY_SERVICE}
+    sed -i "s@XXX_GTC_TAG_KEY_SERVICE_XXX@${GTC_TAG_KEY_SERVICE}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_TAG_KEY_TEAM_XXX -> ${GTC_TAG_KEY_TEAM}
+    sed -i "s@XXX_GTC_TAG_KEY_TEAM_XXX@${GTC_TAG_KEY_TEAM}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_IAM_USEAR_NAME_XXX -> ${GTC_IAM_USEAR_NAME}
     sed -i "s@XXX_GTC_IAM_USEAR_NAME_XXX@${GTC_IAM_USEAR_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_METHOD_NAME_XXX -> ${GTC_METHOD_NAME}
@@ -219,7 +243,7 @@ EOS
     # XXX_GTC_PROJECT_NAME_XXX -> ${GTC_PROJECT_NAME}
     sed -i "s@XXX_GTC_PROJECT_NAME_XXX@${GTC_PROJECT_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_ACCOUNT_ID_XXX -> ${GTC_ACCOUNT_ID}
-    sed -i "s@XXX_GTC_ACCOUNT_ID_XXX@${GTC_ACCOUNT_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}    
+    sed -i "s@XXX_GTC_ACCOUNT_ID_XXX@${GTC_ACCOUNT_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE} 
     # XXX_GTC_PCLUSTER_NAME_XXX -> ${GTC_PCLUSTER_NAME}
     sed -i "s@XXX_GTC_PCLUSTER_NAME_XXX@${GTC_PCLUSTER_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_S3_NAME_XXX -> ${GTC_S3_NAME}
@@ -280,6 +304,22 @@ function gtc_utility_get_tag_key_account() {
     echo ${GTC_SYSTEM_TAG_KEY_ACCOUNT}
 }
 
+function gtc_utility_get_aws_vendor() {
+    echo ${GTC_SYSTEM_AWS_VENDOR}
+}
+
+function gtc_utility_get_tag_key_user() {
+    echo ${GTC_SYSTEM_TAG_KEY_USER}
+}
+
+function gtc_utility_get_tag_key_service() {
+    echo ${GTC_SYSTEM_TAG_KEY_SERVICE}
+}
+
+function gtc_utility_get_tag_key_team() {
+    echo ${GTC_SYSTEM_TAG_KEY_TEAM}
+}
+
 function gtc_utility_get_iam_user_name() {
     echo ${GTC_SYSTEM_IAM_USEAR_NAME}
 }
@@ -336,3 +376,67 @@ function gtc_utility_get_debug_mode() {
     echo ${GTC_SYSTEM_DEBUG_MODE}
 }
 
+#create tagset
+function gtc_utility_tagset_get_values() {
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_tagset_get_values!"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+
+    # Get related global variables
+    GTC_AWS_VENDOR=$(gtc_utility_get_aws_vendor)
+    GTC_TAG_KEY_METHOD=$(gtc_utility_get_tag_key_method)
+    GTC_TAG_KEY_PROJECT=$(gtc_utility_get_tag_key_project)
+    GTC_TAG_KEY_IAMUSER=$(gtc_utility_get_tag_key_iamuser)
+    GTC_TAG_KEY_ACCOUNT=$(gtc_utility_get_tag_key_account)
+    GTC_TAG_KEY_SERVICE=$(gtc_utility_get_tag_key_service)
+    GTC_TAG_KEY_TEAM=$(gtc_utility_get_tag_key_team)
+    GTC_TAG_KEY_USER=$(gtc_utility_get_tag_key_user)
+    GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
+    GTC_METHOD_NAME=$(gtc_utility_get_method_name)
+    GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
+    GTC_ACCOUNT_ID=$(gtc_utility_get_account_id)
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_SERVICE=${GTC_TAG_KEY_SERVICE}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_TEAM=${GTC_TAG_KEY_TEAM}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_USER=${GTC_TAG_KEY_USER}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
+
+    if [ ${GTC_AWS_VENDOR} == 1 ]; then
+        GTC_S3_TAGSET="TagSet=[{Key='${GTC_TAG_KEY_METHOD}',Value='${GTC_METHOD_NAME}'}, \
+        {Key='${GTC_TAG_KEY_PROJECT}',Value='${GTC_PROJECT_NAME}'}, \
+        {Key='${GTC_TAG_KEY_IAMUSER}',Value='${GTC_IAM_USEAR_NAME}'}, \
+        {Key='${GTC_TAG_KEY_ACCOUNT}',Value='${GTC_ACCOUNT_ID}'}, \
+        {Key='${GTC_TAG_KEY_SERVICE}',Value='${GTC_METHOD_NAME}'}, \
+        {Key='${GTC_TAG_KEY_TEAM}',Value='${GTC_PROJECT_NAME}'}, \
+        {Key='${GTC_TAG_KEY_USER}',Value='${GTC_IAM_USEAR_NAME}'}]"
+        GTC_CLOUD9_TAGSET="Key=${GTC_TAG_KEY_METHOD},Value=${GTC_METHOD_NAME} \
+        Key=${GTC_TAG_KEY_PROJECT},Value=${GTC_PROJECT_NAME} \
+        Key=${GTC_TAG_KEY_IAMUSER},Value=${GTC_IAM_USEAR_NAME} \
+        Key=${GTC_TAG_KEY_ACCOUNT},Value=${GTC_ACCOUNT_ID} \
+        Key=${GTC_TAG_KEY_SERVICE},Value=${GTC_METHOD_NAME} \
+        Key=${GTC_TAG_KEY_TEAM},Value=${GTC_PROJECT_NAME} \
+        Key=${GTC_TAG_KEY_USER},Value=${GTC_IAM_USEAR_NAME}"
+    else
+        GTC_S3_TAGSET="TagSet=[{Key='${GTC_TAG_KEY_METHOD}',Value='${GTC_METHOD_NAME}'}, \
+        {Key='${GTC_TAG_KEY_PROJECT}',Value='${GTC_PROJECT_NAME}'}, \
+        {Key='${GTC_TAG_KEY_IAMUSER}',Value='${GTC_IAM_USEAR_NAME}'}, \
+        {Key='${GTC_TAG_KEY_ACCOUNT}',Value='${GTC_ACCOUNT_ID}'}]"
+        GTC_CLOUD9_TAGSET="Key=${GTC_TAG_KEY_METHOD},Value=${GTC_METHOD_NAME} \
+        Key=${GTC_TAG_KEY_PROJECT},Value=${GTC_PROJECT_NAME} \
+        Key=${GTC_TAG_KEY_IAMUSER},Value=${GTC_IAM_USEAR_NAME} \
+        Key=${GTC_TAG_KEY_ACCOUNT},Value=${GTC_ACCOUNT_ID}"
+    fi
+
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_S3_TAGSET=${GTC_S3_TAGSET}"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_CLOUD9_TAGSET=${GTC_CLOUD9_TAGSET}"; fi
+
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_tagset_get_values!"; fi
+    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+}

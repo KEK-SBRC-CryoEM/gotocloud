@@ -84,6 +84,9 @@ GTC_TAG_KEY_IAMUSER=$(gtc_utility_get_tag_key_iamuser)
 GTC_TAG_KEY_METHOD=$(gtc_utility_get_tag_key_method)
 GTC_TAG_KEY_PROJECT=$(gtc_utility_get_tag_key_project)
 GTC_TAG_KEY_ACCOUNT=$(gtc_utility_get_tag_key_account)
+GTC_TAG_KEY_USER=$(gtc_utility_get_tag_key_user)
+GTC_TAG_KEY_SERVICE=$(gtc_utility_get_tag_key_service)
+GTC_TAG_KEY_TEAM=$(gtc_utility_get_tag_key_team)
 GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
 GTC_METHOD_NAME=$(gtc_utility_get_method_name)
 GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
@@ -97,6 +100,9 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TA
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_ACCOUNT=${GTC_TAG_KEY_ACCOUNT}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_USER=${GTC_TAG_KEY_USER}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_SERVICE=${GTC_TAG_KEY_SERVICE}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_TEAM=${GTC_TAG_KEY_TEAM}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_METHOD_NAME=${GTC_METHOD_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PROJECT_NAME=${GTC_PROJECT_NAME}"; fi
@@ -142,6 +148,12 @@ sed -i "s@XXX_GTC_TAG_KEY_METHOD_XXX@${GTC_TAG_KEY_METHOD}@g" ${GTC_CONFIG_INSTA
 sed -i "s@XXX_GTC_TAG_KEY_PROJECT_XXX@${GTC_TAG_KEY_PROJECT}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_TAG_KEY_ACCOUNT_XXX -> ${GTC_TAG_KEY_ACCOUNT}
 sed -i "s@XXX_GTC_TAG_KEY_ACCOUNT_XXX@${GTC_TAG_KEY_ACCOUNT}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_TAG_KEY_USER_XXX -> ${GTC_TAG_KEY_USERE}
+sed -i "s@XXX_GTC_TAG_KEY_USER_XXX@${GTC_TAG_KEY_USER}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_GTC_TAG_KEY_SERVICE_XXX -> ${GTC_TAG_KEY_SERVICE}
+sed -i "s@XXX_GTC_TAG_KEY_SERVICE_XXX@${GTC_TAG_KEY_SERVICE}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_TAG_KEY_TEAM_XXX -> ${GTC_TAG_KEY_TEAM}
+sed -i "s@XXX_GTC_TAG_KEY_TEAM_XXX@${GTC_TAG_KEY_TEAM}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_IAM_USER_NAME_XXX -> ${GTC_IAM_USEAR_NAME}
 sed -i "s@XXX_GTC_IAM_USER_NAME_XXX@${GTC_IAM_USEAR_NAME}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_METHOD_NAME_XXX -> ${GTC_METHOD_NAME}

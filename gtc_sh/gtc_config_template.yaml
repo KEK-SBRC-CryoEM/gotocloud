@@ -26,12 +26,14 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: g4dn-metal
       InstanceType: g4dn.metal
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -46,12 +48,14 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: g4dn-metal-spot
       InstanceType: g4dn.metal
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -66,12 +70,14 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: g4dn-12xlarge
       InstanceType: g4dn.12xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -86,12 +92,14 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: g4dn-12xlarge-spot
       InstanceType: g4dn.12xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -106,12 +114,14 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: g4dn-8xlarge
       InstanceType: g4dn.8xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -126,12 +136,14 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: g4dn-8xlarge-spot
       InstanceType: g4dn.8xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -188,13 +200,15 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: c6i-32xlarge
       InstanceType: c6i.32xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       DisableSimultaneousMultithreading: true
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -209,13 +223,15 @@ Scheduling:
       SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
+      PlacementGroup: 
+        Enabled: true
     ComputeResources: 
     - Name: c6i-32xlarge-spot
       InstanceType: c6i.32xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       DisableSimultaneousMultithreading: true
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -248,3 +264,9 @@ Tags:
   Value: XXX_GTC_PROJECT_NAME_XXX
 - Key: XXX_GTC_TAG_KEY_ACCOUNT_XXX
   Value: "XXX_GTC_ACCOUNT_ID_XXX"
+- Key: XXX_GTC_TAG_KEY_USER_XXX
+  Value: XXX_GTC_IAM_USER_NAME_XXX
+- Key: XXX_GTC_TAG_KEY_SERVICE_XXX
+  Value: XXX_GTC_METHOD_NAME_XXX
+- Key: XXX_GTC_TAG_KEY_TEAM_XXX
+  Value: XXX_GTC_PROJECT_NAME_XXX
