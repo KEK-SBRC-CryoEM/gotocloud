@@ -69,7 +69,18 @@ mountpoint -q /efs && {
 } || {
     sudo yum -y install amazon-efs-utils
     sudo mkdir /efs
-    echo 'fs-0a8524613d2736fb6:/ /efs efs _netdev,noresvport,tls,mounttargetip=10.2.4.117 1 1' | sudo tee -a /etc/fstab
+    GTC_AWS_REGION=$(aws configure get region)
+    if [[ ${GTC_AWS_REGION} == "ap-northeast-1" ]]; then
+        echo 'fs-0a8524613d2736fb6:/ /efs efs _netdev,noresvport,tls,mounttargetip=10.2.4.117 1 1' | sudo tee -a /etc/fstab;
+    elif [[ ${GTC_AWS_REGION} == "us-east-1" ]]; then
+        echo 'fs-09c4bbb5f7e489d85:/ /efs efs _netdev,noresvport,tls,mounttargetip=10.2.4.87 1 1' | sudo tee -a /etc/fstab;
+    else
+        echo "GoToCloud:----------------------------------------------------------------------------------------"
+        echo "GoToCloud: [GCT_ERROR] Failed to mount /efs. Please create new cloud9 with correct VPC settings."
+        echo "GoToCloud:----------------------------------------------------------------------------------------"
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
     sudo mount -a || {
         echo "GoToCloud:----------------------------------------------------------------------------------------"
         echo "GoToCloud: [GCT_ERROR] Failed to mount /efs. Please create new cloud9 with correct VPC settings."

@@ -135,10 +135,14 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PC
 GTC_INSTANCE_NAME=${GTC_PCLUSTER_NAME}${GTC_INSATANCE_SUFFIX}
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"; fi
 
+# Get AWS region 
+GTC_AWS_REGION=$(gtc_utility_get_aws_region)
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AWS_REGION=${GTC_AWS_REGION}"; fi
+
 # << GTC_DEBUG_COMMENTOUTS
 echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is not running..."
 # pcluster status -nw ${GTC_INSTANCE_NAME} &&  { 
-pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 > /dev/null &&  { 
+pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} > /dev/null &&  { 
         echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} is aleady running!"
         echo "GoToCloud: Exiting(1)..."
         exit 1
@@ -172,7 +176,7 @@ do
         # Check if creation of pcluster instace is completed.
         # It is done when pcluster status command outputs "CREATE_COMPLETE".
         # GCT_EXIT_STATUS=`pcluster status -nw ${GTC_INSTANCE_NAME}`
-        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 | jq -r '.clusterStatus'`
+        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} | jq -r '.clusterStatus'`
         echo "GoToCloud: ${GCT_EXIT_STATUS}"
         if [[ ${GCT_EXIT_STATUS} =~ .*CREATE_COMPLETE.* ]]; then
                 echo "GoToCloud: Creation of pcluster instance ${GTC_INSTANCE_NAME} is completed."

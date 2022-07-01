@@ -105,9 +105,13 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PC
 GTC_INSTANCE_NAME=${GTC_PCLUSTER_NAME}${GTC_INSATANCE_SUFFIX}
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"; fi
 
+# Get AWS region
+GTC_AWS_REGION=$(gtc_utility_get_aws_region)
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AWS_REGION=${GTC_AWS_REGION}"; fi
+
 echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is still running..."
 #pcluster status -nw ${GTC_INSTANCE_NAME} ||  {
-pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 > /dev/null || {
+pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} > /dev/null || {
         echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} does not exist already!"
         echo "GoToCloud: Exiting(1)..."
         exit 1
@@ -167,7 +171,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_ST
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TIME_OUT=${GTC_TIME_OUT}"; fi
 
 echo "GoToCloud: Deleting pcluster instance ${GTC_INSTANCE_NAME}..."
-pcluster delete-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1
+pcluster delete-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION}
 # pcluster delete --keep-logs ${GTC_INSTANCE_NAME}
 
 t0=`date +%s` # in seconds
@@ -175,7 +179,7 @@ while :
 do
         # Check if deletion of pcluster instace is completed.
         # It is done when pcluster status command returns error value (Non-zero value) with exit status.
-        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ap-northeast-1 | jq -r '.clusterStatus'`
+        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} | jq -r '.clusterStatus'`
         # exit_status=$?
         echo "GoToCloud: ${GCT_EXIT_STATUS}"
         if [[ ${GCT_EXIT_STATUS} =~ .*null.* ]]; then

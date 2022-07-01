@@ -5,8 +5,9 @@
 #   
 # Arguments & Options:
 #   -s STRAGE_CAPACITY : FSX (Lustre) strage capacity in MByte. e.g. "-s 1200". (default "2400", meaning 2.4TByte)
-#   -m MAX_COUNTS      : Maximum number of EC2 instances you can use at the same time. e.g "-m 2".  (default "10")
+#   -m MAX_COUNTS      : Maximum number of EC2 instances you can use at the same time. e.g "-m 2".  (default "16")
 #   -i INSTANCE_ID     : AWS Parallel Cluster Instance ID. e.g. "-i 00". (default NONE)
+#   --benchmark        : When using config for benchmark
 #   
 #   -h                 : Help option displays usage
 #   
@@ -14,7 +15,7 @@
 #   $ gtc_config_create.sh 
 #   $ gtc_config_create.sh -s 1200 -m 2
 #   $ gtc_config_create.sh -i 00
-#   $ gtc_config_create.sh -s 1200 -m 2 -i 01 
+#   $ gtc_config_create.sh -s 1200 -m 2 -i 01 --benchmark
 #   
 # Debug Script:
 #   gtc_config_create_debug.sh
@@ -33,7 +34,8 @@ usage_exit() {
 # Check if the number of command line arguments is valid
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] @=$@"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] #=$#"; fi
-if [[ $# -gt 6 || $# != 1 && $(( $# & 1 )) != 0 ]]; then
+#if [[ $# -gt 7 || $# != 1 && $(( $# & 1 )) != 0 ]]; then
+if [[ $# -gt 7 ]]; then
     echo "GoToCloud: Invalid number of arguments ($#)"
     usage_exit
 fi
@@ -41,10 +43,11 @@ fi
 # Initialize variables with default values
 GTC_INSATANCE_ID="GTC_INVALID"
 GTC_FSX_MB_CAPACITY=2400
-GTC_COMPUTE_RESOURCE_MAX_COUNT=10
+GTC_COMPUTE_RESOURCE_MAX_COUNT=16
+GTC_CONFIG_TYPE="general"
 
 # Parse command line arguments
-while getopts i:s:m:h OPT
+while getopts i:s:m:-:h OPT
 do
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] OPT=$OPT"; fi
     case "$OPT" in
@@ -57,6 +60,9 @@ do
         i)  GTC_INSATANCE_ID=$OPTARG
             echo "GoToCloud: AWS Parallel Cluster Instance ID '${GTC_INSATANCE_ID}' is specified"
             ;;
+        -)  GTC_CONFIG_TYPE=$OPTARG
+            echo "GoToCloud: AWS Parallel Cluster Config Type '${GTC_CONFIG_TYPE}' is specified"
+            ;;
         h)  usage_exit
             ;;
         \?) echo "GoToCloud: [GTC_ERROR] Invalid option $OPTARG is specified!"
@@ -68,6 +74,7 @@ echo "GoToCloud: Creating config with following parameters..."
 echo "GoToCloud:   FSX (Lustre) strage capacity (MByte) : ${GTC_FSX_MB_CAPACITY}"
 echo "GoToCloud:   Maximum number of EC2 instances      : ${GTC_COMPUTE_RESOURCE_MAX_COUNT}"
 echo "GoToCloud:   AWS Parallel Cluster Instance ID     : ${GTC_INSATANCE_ID}"
+echo "GoToCloud:   AWS Parallel Cluster Config Type     : ${GTC_CONFIG_TYPE}"
 
 GTC_INSATANCE_SUFFIX=""
 if [[ "${GTC_INSATANCE_ID}" != "GTC_INVALID" ]]; then
@@ -94,6 +101,7 @@ GTC_ACCOUNT_ID=$(gtc_utility_get_account_id)
 GTC_S3_NAME=$(gtc_utility_get_s3_name)
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
+GTC_AWS_REGION=$(gtc_utility_get_aws_region)
 GTC_SUBNET_ID=$(gtc_utility_get_subnet_id)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
@@ -110,6 +118,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AC
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_S3_NAME=${GTC_S3_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AWS_REGION=${GTC_AWS_REGION}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SUBNET_ID=${GTC_SUBNET_ID}"; fi
 
 # Get VPC and Subnet values
@@ -120,11 +129,17 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SU
 #GTC_VPC_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).VpcId'`
 #GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).SubnetId'`
 
+GTC_POST_INSTALL="https://kek-gtc-shared.s3.ap-northeast-1.amazonaws.com/post_install_${GTC_AWS_REGION}.sh"
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_POST_INSTAL=${GTC_POST_INSTAL}"; fi
 
 # Create config file
 GTC_CONFIG_INSTANCE_BASE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
 GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE_BASE}.yaml
-GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template.yaml
+if [[ ${GTC_CONFIG_TYPE} == "benchmark" ]]; then
+    GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template_benchmark.yaml
+    else
+    GTC_CONFIG_TEMPLATE=${GTC_SH_DIR}/gtc_config_template.yaml
+fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_TEMPLATE=${GTC_CONFIG_TEMPLATE}"; fi
 
@@ -168,7 +183,10 @@ sed -i "s@XXX_GTC_S3_NAME_XXX@${GTC_S3_NAME}@g" ${GTC_CONFIG_INSTANCE}
 sed -i "s@XXX_GTC_FSX_MB_CAPACITY_XXX@${GTC_FSX_MB_CAPACITY}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX -> ${GTC_COMPUTE_RESOURCE_MAX_COUNT}
 sed -i "s@XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX@${GTC_COMPUTE_RESOURCE_MAX_COUNT}@g" ${GTC_CONFIG_INSTANCE}
-
+# XXX_GTC_AWS_REGION_XXX -> ${GTC_AWS_REGION}
+sed -i "s@XXX_GTC_AWS_REGION_XXX@${GTC_AWS_REGION}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_POST_INSTALL_XXX -> ${GTC_POST_INSTALL}
+sed -i "s@XXX_GTC_POST_INSTALL_XXX@${GTC_POST_INSTALL}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_VPC_ID_XXX -> ${GTC_VPC_ID}
 # sed -i "s@XXX_GTC_VPC_ID_XXX@${GTC_VPC_ID}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_SUBNET_ID_XXX -> ${GTC_SUBNET_ID}

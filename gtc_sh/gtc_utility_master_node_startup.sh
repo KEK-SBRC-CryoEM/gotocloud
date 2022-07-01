@@ -112,6 +112,9 @@ cat > ${GTC_GLOBAL_VARIABLES_FILE} <<'EOS'
 # GoToCloud system environment variables
 export GTC_SYSTEM_SH_DIR=XXX_GTC_SH_DIR_XXX
 export GTC_SYSTEM_DEBUG_MODE=XXX_GTC_DEBUG_MODE_XXX
+export RDMAV_FORK_SAFE=1
+export FI_EFA_FORK_SAFE=1
+
 # To be causious, put new path at the end
 export PATH=$PATH:${GTC_SYSTEM_SH_DIR}
 EOS
@@ -148,9 +151,9 @@ echo "GoToCloud: Creating pcluster head node system environment variable setting
 cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
 #!/bin/sh
 
-# load relion 4.0-beta-2-intel
+# load relion 4.0-beta-2
 source /etc/profile.d/modules.sh
-module load relion/4.0-beta-2-intel
+module load relion/4.0-beta-2-pc3.0/intel_amd-gcc-intelmpi-gpu
 EOS
 
 # Set file permission 

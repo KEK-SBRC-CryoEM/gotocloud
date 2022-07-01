@@ -47,6 +47,7 @@ source gtc_utility_global_varaibles.sh
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_KEY_DIR=$(gtc_utility_get_key_dir)
 GTC_KEY_FILE=$(gtc_utility_get_key_file)
+GTC_AWS_REGION=$(gtc_utility_get_aws_region)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_DIR=${GTC_KEY_DIR}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_FILE=${GTC_KEY_FILE}"; fi
@@ -78,7 +79,7 @@ aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} && {
 echo "GoToCloud: OK! Key-pair ${GTC_KEY_NAME} does not exist yet!"
 
 echo "GoToCloud: Generating Key-pair ${GTC_KEY_NAME}..."
-aws ec2 create-key-pair --key-name ${GTC_KEY_NAME} --region ap-northeast-1 --query 'KeyMaterial' --output text > ${GTC_KEY_FILE} || {
+aws ec2 create-key-pair --key-name ${GTC_KEY_NAME} --region ${GTC_AWS_REGION} --query 'KeyMaterial' --output text > ${GTC_KEY_FILE} || {
     echo "GoToCloud: [GCT_WARNING] Key-pair ${GTC_KEY_NAME} exists already! Failed to create key file."
     echo "GoToCloud: Exiting(1)..."
     exit 1
