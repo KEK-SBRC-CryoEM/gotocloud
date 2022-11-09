@@ -26,6 +26,12 @@
 #   $ gtc_utility_get_s3_name
 #   $ gtc_utility_get_key_name
 #   $ gtc_utility_get_aws_region
+#   $ gtc_utility_get_vpc_id
+#   $gtc_utility_get_vpc_cidr
+#   $ gtc_utility_get_accepter_vpc_id
+#   $gtc_utility_get_accepter_vpc_cidr
+#   $gtc_utility_get_efs_filesystem_id
+#   $gtc_utility_get_efs_mount_target_ip
 #   $ gtc_utility_get_subnet_name
 #   $ gtc_utility_get_subnet_id
 #   $ gtc_utility_get_key_dir
@@ -99,14 +105,49 @@ function gtc_utility_setup_global_variables() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_project_name_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     }
+
+        function gtc_utility_network_info_get_values() {
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_network_info_get_values!"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    
+        # Get network info from this Cloud9 instance
+        local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
+        local GTC_PEERING_INFO=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]')
+        GTC_VPC_ID=`echo ${GTC_CLOUD9_NETWORK_INFO} | jq -r '.VpcId'`
+        GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
+        GTC_ACCEPTER_VPC_ID=`echo ${GTC_PEERING_INFO} | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.VpcId'`
+        GTC_ACCEPTER_VPC_CIDR=`echo ${GTC_PEERING_INFO} | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.CidrBlock'`
+        GTC_EFS_SETTING="${GTC_SH_DIR}/gtc_efs_setting.json"
+        GTC_EFS_FILESYSTEM_ID=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").FileSystemId')
+        GTC_EFS_MOUNT_TARGET_IP=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").IpAddress')
+        GTC_SUBNET_ID=`echo ${GTC_CLOUD9_NETWORK_INFO} | jq -r '.SubnetId'`
+        GTC_SUBNET_NAME=$(aws ec2 describe-subnets | jq '.Subnets[]' | jq 'select(.SubnetId == "'${GTC_SUBNET_ID}'")' | jq '.Tags[]' | jq -r 'select(.Key == "Name").Value')
+
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_VPC_ID=${GTC_VPC_ID}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_VPC_CIDR=${GTC_VPC_CIDR}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_ACCEPTER_VPC_ID=${GTC_ACCEPTER_VPC_ID}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_ACCEPTER_VPC_CIDR=${GTC_ACCEPTER_VPC_CIDR}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_EFS_FILESYSTEM_ID=${GTC_EFS_FILESYSTEM_ID}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_EFS_MOUNT_TARGET_IP=${GTC_EFS_MOUNT_TARGET_IP}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SUBNET_NAME=${GTC_SUBNET_NAME}"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SUBNET_ID=${GTC_SUBNET_ID}"; fi
+
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_network_info_get_values!"; fi
+        if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
+    }
+
     # Get GoToCloud meta info as global variables within file scope
     # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
+    GTC_AWS_REGION=$(aws configure get region)
     gtc_utility_account_identity_get_values
     gtc_utility_project_name_get_values
+    gtc_utility_network_info_get_values
     if [ ${GTC_PROJECT_NAME_INIT} == "cloud9-name" ]; then
-        GTC_PROJECT_NAME=${GTC_CLOUD9_NAME};
+        GTC_PROJECT_NAME=${GTC_CLOUD9_NAME}
     else
-        GTC_PROJECT_NAME=${GTC_PROJECT_NAME_INIT};
+        GTC_PROJECT_NAME=${GTC_PROJECT_NAME_INIT}
     fi
     GTC_TAG_KEY_IAMUSER="gtc:iam-user"
     GTC_TAG_KEY_METHOD="gtc:method"
@@ -120,9 +161,6 @@ function gtc_utility_setup_global_variables() {
     GTC_PCLUSTER_NAME=${GTC_IAM_USEAR_NAME}-${GTC_ACCOUNT_ID}-${GTC_PROJECT_NAME}
     GTC_S3_NAME=${GTC_PCLUSTER_NAME}
     GTC_KEY_NAME=${GTC_PCLUSTER_NAME}
-    GTC_AWS_REGION=$(aws configure get region)
-    GTC_SUBNET_ID=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[].SubnetId')
-    GTC_SUBNET_NAME=$(aws ec2 describe-subnets | jq '.Subnets[]' | jq -r 'select(.SubnetId == "'${GTC_SUBNET_ID}'").Tags[].Value')
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_TAG_KEY_PROJECT=${GTC_TAG_KEY_PROJECT}"; fi
@@ -139,8 +177,6 @@ function gtc_utility_setup_global_variables() {
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_S3_NAME=${GTC_S3_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_KEY_NAME=${GTC_KEY_NAME}"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_AWS_REGION=${GTC_AWS_REGION}"; fi
-    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SUBNET_NAME=${GTC_SUBNET_NAME}"; fi
-    if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SUBNET_ID=${GTC_SUBNET_ID}"; fi
 
     # --------------------
     # Set GoToCloud directory path and file path of key file as a systemwise environment constant
@@ -212,6 +248,12 @@ export GTC_SYSTEM_PCLUSTER_NAME=XXX_GTC_PCLUSTER_NAME_XXX
 export GTC_SYSTEM_S3_NAME=XXX_GTC_S3_NAME_XXX
 export GTC_SYSTEM_KEY_NAME=XXX_GTC_KEY_NAME_XXX
 export GTC_SYSTEM_AWS_REGION=XXX_GTC_AWS_REGION_XXX
+export GTC_SYSTEM_VPC_ID=XXX_GTC_VPC_ID_XXX
+export GTC_SYSTEM_VPC_CIDR=XXX_GTC_VPC_CIDR_XXX
+export GTC_SYSTEM_ACCEPTER_VPC_ID=XXX_GTC_ACCEPTER_VPC_ID_XXX
+export GTC_SYSTEM_ACCEPTER_VPC_CIDR=XXX_GTC_ACCEPTER_VPC_CIDR_XXX
+export GTC_SYSTEM_EFS_FILESYSTEM_ID=XXX_GTC_EFS_FILESYSTEM_ID_XXX
+export GTC_SYSTEM_EFS_MOUNT_TARGET_IP=XXX_GTC_EFS_MOUNT_TARGET_IP_XXX
 export GTC_SYSTEM_SUBNET_NAME=XXX_GTC_SUBNET_NAME_XXX
 export GTC_SYSTEM_SUBNET_ID=XXX_GTC_SUBNET_ID_XXX
 export GTC_SYSTEM_KEY_DIR=XXX_GTC_KEY_DIR_XXX
@@ -258,6 +300,18 @@ EOS
     sed -i "s@XXX_GTC_KEY_NAME_XXX@${GTC_KEY_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_AWS_REGION_XXX -> ${GTC_AWS_REGION}
     sed -i "s@XXX_GTC_AWS_REGION_XXX@${GTC_AWS_REGION}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_VPC_ID_XXX -> ${GTC_VPC_ID}
+    sed -i "s@XXX_GTC_VPC_ID_XXX@${GTC_VPC_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GGTC_VPC_CIDR_XXX -> ${GTC_VPC_CIDR}
+    sed -i "s@XXX_GTC_VPC_CIDR_XXX@${GTC_VPC_CIDR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_ACCEPTER_VPC_ID_XXX -> ${GTC_ACCEPTER_VPC_ID}
+    sed -i "s@XXX_GTC_ACCEPTER_VPC_ID_XXX@${GTC_ACCEPTER_VPC_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_ACCEPTER_VPC_CIDR_XXX -> ${GGTC_ACCEPTER_VPC_CIDR}
+    sed -i "s@XXX_GTC_ACCEPTER_VPC_CIDR_XXX@${GTC_ACCEPTER_VPC_CIDR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_EFS_FILESYSTEM_ID_XXX -> ${GGTC_EFS_FILESYSTEM_ID}
+    sed -i "s@XXX_GTC_EFS_FILESYSTEM_ID_XXX@${GTC_EFS_FILESYSTEM_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_EFS_MOUNT_TARGET_IP_XXX -> ${GTC_EFS_MOUNT_TARGET_IP}
+    sed -i "s@XXX_GTC_EFS_MOUNT_TARGET_IP_XXX@${GTC_EFS_MOUNT_TARGET_IP}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_SUBNET_NAME_XXX -> ${GTC_SUBNET_NAME}
     sed -i "s@XXX_GTC_SUBNET_NAME_XXX@${GTC_SUBNET_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_SUBNET_ID_XXX -> ${GTC_SUBNET_ID}
@@ -358,6 +412,30 @@ function gtc_utility_get_key_name() {
 
 function gtc_utility_get_aws_region() {
     echo ${GTC_SYSTEM_AWS_REGION}
+}
+
+function gtc_utility_get_vpc_id() {
+    echo ${GTC_SYSTEM_VPC_ID}
+}
+
+function gtc_utility_get_vpc_cidr() {
+    echo ${GTC_SYSTEM_VPC_CIDR}
+}
+
+function gtc_utility_get_accepter_vpc_id() {
+    echo ${GTC_SYSTEM_ACCEPTER_VPC_ID}
+}
+
+function gtc_utility_get_accepter_vpc_cidr() {
+    echo ${GTC_SYSTEM_ACCEPTER_VPC_CIDR}
+}
+
+function gtc_utility_get_efs_filesystem_id() {
+    echo ${GTC_SYSTEM_EFS_FILESYSTEM_ID}
+}
+
+function gtc_utility_get_efs_mount_target_ip() {
+    echo ${GTC_SYSTEM_EFS_MOUNT_TARGET_IP}
 }
 
 function gtc_utility_get_subnet_name() {

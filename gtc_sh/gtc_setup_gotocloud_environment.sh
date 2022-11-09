@@ -60,6 +60,13 @@ echo "GoToCloud: Run setup with following settings..."
 echo "GoToCloud: Project name         : ${GTC_SET_PROJECT_NAME}"
 echo "GoToCloud: gtc_sh script verion : ${GTC_SH_VERSION}"
 
+#Installe jq
+jq -V &>/dev/null || {
+    echo "GoToCloud: Installing jq ..."
+    sudo yum -y install jq
+    }
+GTC_JQ_INST_STAT=$?
+
 #Mount the file system /efs
 echo "GoToCloud: mounting the file system /efs ..." 
 mountpoint -q /efs && {
@@ -70,17 +77,16 @@ mountpoint -q /efs && {
     sudo yum -y install amazon-efs-utils
     sudo mkdir /efs
     GTC_AWS_REGION=$(aws configure get region)
-    if [[ ${GTC_AWS_REGION} == "ap-northeast-1" ]]; then
-        echo 'fs-0a8524613d2736fb6:/ /efs efs _netdev,noresvport,tls,mounttargetip=10.2.4.117 1 1' | sudo tee -a /etc/fstab;
-    elif [[ ${GTC_AWS_REGION} == "us-east-1" ]]; then
-        echo 'fs-09c4bbb5f7e489d85:/ /efs efs _netdev,noresvport,tls,mounttargetip=10.2.4.87 1 1' | sudo tee -a /etc/fstab;
-    else
-        echo "GoToCloud:----------------------------------------------------------------------------------------"
-        echo "GoToCloud: [GCT_ERROR] Failed to mount /efs. Please create new cloud9 with correct VPC settings."
-        echo "GoToCloud:----------------------------------------------------------------------------------------"
-        echo "GoToCloud: Exiting(1)..."
-        exit 1
-    fi
+    GTC_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+    GTC_VPC_ID=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[].VpcId')
+    GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
+    GTC_ACCEPTER_VPC_ID=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]' | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.VpcId')
+    GTC_ACCEPTER_VPC_CIDR=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]' | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.CidrBlock')
+    wget https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com/gtc_efs_setting.json
+    GTC_EFS_SETTING=$(echo "$(pwd)/gtc_efs_setting.json")
+    GTC_EFS_FILESYSTEM_ID=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").FileSystemId')
+    GTC_EFS_MOUNT_TARGET_IP=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").IpAddress')
+    echo ''${GTC_EFS_FILESYSTEM_ID}':/ /efs efs _netdev,noresvport,tls,mounttargetip='${GTC_EFS_MOUNT_TARGET_IP}' 1 1' | sudo tee -a /etc/fstab
     sudo mount -a || {
         echo "GoToCloud:----------------------------------------------------------------------------------------"
         echo "GoToCloud: [GCT_ERROR] Failed to mount /efs. Please create new cloud9 with correct VPC settings."
@@ -105,10 +111,6 @@ if [[ ! -e  ${GTC_SET_SH_DIR} ]]; then
 fi
 
 source ${GTC_SET_SH_DIR}/gtc_utility_dependencies_install.sh 
-
-#Installe jq
-gtc_dependency_jq_install
-GTC_JQ_INST_STAT=$?
 
 #Installe pcluster
 if [[ ${GTC_PCLUSTER_VER} == "latest" ]]; then

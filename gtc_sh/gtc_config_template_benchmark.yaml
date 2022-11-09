@@ -13,6 +13,9 @@ HeadNode:
   CustomActions:
     OnNodeConfigured:
       Script: XXX_GTC_POST_INSTALL_XXX
+      Args:
+        - XXX_GTC_POST_INSTALL_ARG1_XXX
+        - XXX_GTC_POST_INSTALL_ARG2_XXX
   Iam:
     S3Access:
     - BucketName: XXX_GTC_S3_NAME_XXX
@@ -38,6 +41,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -58,6 +64,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -78,6 +87,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -98,6 +110,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -118,6 +133,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -140,6 +158,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -162,6 +183,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -184,6 +208,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -204,6 +231,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
@@ -226,6 +256,9 @@ Scheduling:
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
     Iam:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX

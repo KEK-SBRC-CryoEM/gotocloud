@@ -102,6 +102,8 @@ GTC_S3_NAME=$(gtc_utility_get_s3_name)
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
 GTC_AWS_REGION=$(gtc_utility_get_aws_region)
+GTC_EFS_FILESYSTEM_ID=$(gtc_utility_get_efs_filesystem_id)
+GTC_EFS_MOUNT_TARGET_IP=$(gtc_utility_get_efs_mount_target_ip)
 GTC_SUBNET_ID=$(gtc_utility_get_subnet_id)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
@@ -129,8 +131,12 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SU
 #GTC_VPC_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).VpcId'`
 #GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).SubnetId'`
 
-GTC_POST_INSTALL="https://kek-gtc-shared.s3.ap-northeast-1.amazonaws.com/post_install_${GTC_AWS_REGION}.sh"
+GTC_POST_INSTALL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com/post_install.sh"
+GTC_POST_INSTALL_ARG1=${GTC_EFS_MOUNT_TARGET_IP}
+GTC_POST_INSTALL_ARG2=${GTC_EFS_FILESYSTEM_ID}
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_POST_INSTAL=${GTC_POST_INSTAL}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_POST_INSTALL_ARG1=${GTC_POST_INSTALL_ARG1}"; fi
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_POST_INSTALL_ARG2=${GTC_POST_INSTALL_ARG2}"; fi
 
 # Create config file
 GTC_CONFIG_INSTANCE_BASE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}
@@ -187,6 +193,11 @@ sed -i "s@XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX@${GTC_COMPUTE_RESOURCE_MAX_COUN
 sed -i "s@XXX_GTC_AWS_REGION_XXX@${GTC_AWS_REGION}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_POST_INSTALL_XXX -> ${GTC_POST_INSTALL}
 sed -i "s@XXX_GTC_POST_INSTALL_XXX@${GTC_POST_INSTALL}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_POST_INSTALL_ARG1_XXX -> ${GTC_POST_INSTALL_ARG1}
+sed -i "s@XXX_GTC_POST_INSTALL_ARG1_XXX@${GTC_POST_INSTALL_ARG1}@g" ${GTC_CONFIG_INSTANCE}
+# XXX_GTC_POST_INSTALL_ARG2_XXX -> ${GTC_POST_INSTALL_ARG2}
+sed -i "s@XXX_GTC_POST_INSTALL_ARG2_XXX@${GTC_POST_INSTALL_ARG2}@g" ${GTC_CONFIG_INSTANCE}
+
 # XXX_GTC_VPC_ID_XXX -> ${GTC_VPC_ID}
 # sed -i "s@XXX_GTC_VPC_ID_XXX@${GTC_VPC_ID}@g" ${GTC_CONFIG_INSTANCE}
 # XXX_GTC_SUBNET_ID_XXX -> ${GTC_SUBNET_ID}

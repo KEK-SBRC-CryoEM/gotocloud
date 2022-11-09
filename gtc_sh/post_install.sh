@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 cd /tmp
 sudo apt-get update
@@ -9,7 +9,7 @@ cd efs-utils
 sudo apt-get -y install /tmp/efs-utils/build/amazon-efs-utils*deb
 
 mkdir /efs
-mount -t efs -o tls,mounttargetip=10.2.4.117 fs-0a8524613d2736fb6 /efs
+mount -t efs -o tls,mounttargetip=$1 $2 /efs
 
 echo '/efs/em/modulefiles' | sudo tee -a /usr/share/modules/init/.modulespath
 echo '/efs/em/modulefiles/oneAPI' | sudo tee -a /usr/share/modules/init/.modulespath
