@@ -27,16 +27,17 @@
 #   $ gtc_utility_get_key_name
 #   $ gtc_utility_get_aws_region
 #   $ gtc_utility_get_vpc_id
-#   $gtc_utility_get_vpc_cidr
+#   $ gtc_utility_get_vpc_cidr
 #   $ gtc_utility_get_accepter_vpc_id
-#   $gtc_utility_get_accepter_vpc_cidr
-#   $gtc_utility_get_efs_filesystem_id
-#   $gtc_utility_get_efs_mount_target_ip
+#   $ gtc_utility_get_accepter_vpc_cidr
+#   $ gtc_utility_get_efs_filesystem_id
+#   $ gtc_utility_get_efs_mount_target_ip
 #   $ gtc_utility_get_subnet_name
 #   $ gtc_utility_get_subnet_id
 #   $ gtc_utility_get_key_dir
 #   $ gtc_utility_get_key_file
 #   $ gtc_utility_get_application_dir
+#   $ gtc_utility_get_virtualenv_name
 #   $ gtc_utility_get_global_varaibles_file
 #   $ gtc_utility_get_debug_mode
 #  
@@ -195,6 +196,9 @@ function gtc_utility_setup_global_variables() {
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_DEBUG_MODE=${GTC_DEBUG_MODE}"; fi
     
     # --------------------
+    # Set name of virtual environment for parallelcluster
+    GTC_VIRTUALENV_NAME="gtc-parallelcluster" 
+    # --------------------
     # Set GoToCloud application directory path on cloud9 and file path of GoToCloud environment settings file for cloud9 as a systemwise environment constant
     GTC_APPLICATION_DIR=${HOME}/.gtc
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_APPLICATION_DIR=${GTC_APPLICATION_DIR}"; fi
@@ -259,6 +263,7 @@ export GTC_SYSTEM_SUBNET_ID=XXX_GTC_SUBNET_ID_XXX
 export GTC_SYSTEM_KEY_DIR=XXX_GTC_KEY_DIR_XXX
 export GTC_SYSTEM_KEY_FILE=XXX_GTC_KEY_FILE_XXX
 export GTC_SYSTEM_APPLICATION_DIR=XXX_GTC_APPLICATION_DIR_XXX
+export GTC_SYSTEM_VIRTUALENV_NAME=XXX_GTC_VIRTUALENV_NAME_XXX
 export GTC_SYSTEM_GLOBAL_VARIABLES_FILE=XXX_GTC_GLOBAL_VARIABLES_FILE_XXX
 export GTC_SYSTEM_DEBUG_MODE=XXX_GTC_DEBUG_MODE_XXX
 # To be causious, put new path at the end
@@ -322,6 +327,8 @@ EOS
     sed -i "s@XXX_GTC_KEY_FILE_XXX@${GTC_KEY_FILE}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_APPLICATION_DIR_XXX -> ${GTC_APPLICATION_DIR}
     sed -i "s@XXX_GTC_APPLICATION_DIR_XXX@${GTC_APPLICATION_DIR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
+    # XXX_GTC_VIRTUALENV_NAME_XXX -> ${GTC_VIRTUALENV_NAME}
+    sed -i "s@XXX_GTC_VIRTUALENV_NAME_XXX@${GTC_VIRTUALENV_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_GLOBAL_VARIABLES_FILE_XXX -> ${GTC_GLOBAL_VARIABLES_FILE}
     sed -i "s@XXX_GTC_GLOBAL_VARIABLES_FILE_XXX@${GTC_GLOBAL_VARIABLES_FILE}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_DEBUG_MODE_XXX -> ${GTC_DEBUG_MODE}
@@ -456,6 +463,10 @@ function gtc_utility_get_key_file() {
 
 function gtc_utility_get_application_dir() {
     echo ${GTC_SYSTEM_APPLICATION_DIR}
+}
+
+function gtc_utility_get_virtualenv_name() {
+    echo ${GTC_SYSTEM_VIRTUALENV_NAME}
 }
 
 function gtc_utility_get_global_varaibles_file() {

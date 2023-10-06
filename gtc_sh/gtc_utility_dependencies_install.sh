@@ -21,6 +21,13 @@ function gtc_dependency_jq_install() {
         }
 }
 
+#Installe python
+function gtc_dependency_virtualenv_create() {
+    echo "GoToCloud: Installing python3.8 ..."
+    sudo amazon-linux-extras install -y python3.8
+    python3 -m virtualenv -p python3.8 ~/$1    #Create virtualenv for parallelcluster with python3.8
+}
+
 #Installe pcluster
 function gtc_dependency_pcluster_install() {
     echo "GoToCloud: Installing parallelcluster ..."
@@ -29,7 +36,8 @@ function gtc_dependency_pcluster_install() {
         echo "GoToCloud: Parallelcluster "${PV}" is already installed."
         #echo "GoToCloud: Done"
     } || {
-        pip3 install --use-feature=2020-resolver "aws-parallelcluster<3.1" --upgrade --user
+        #python3 -m pip install --use-feature=2020-resolver "aws-parallelcluster<3.7.1" --upgrade --user
+        python3 -m pip install --upgrade "aws-parallelcluster<3.7.1"
         echo "GoToCloud: "
         echo "GoToCloud: Check PATH settings for parallelcluster"
         echo "GoToCloud: which pcluster "
@@ -49,7 +57,8 @@ function gtc_dependency_pcluster_latestver_install() {
         echo "GoToCloud: Parallelcluster "${PV}" is already installed."
         #echo "GoToCloud: Done"
     } || {
-        pip3 install --use-feature=2020-resolver aws-parallelcluster --upgrade --user
+        python3 -m pip install --upgrade "aws-parallelcluster"
+        #pip3 install --use-feature=2020-resolver aws-parallelcluster --upgrade --user
         echo "GoToCloud: "
         echo "GoToCloud: Check PATH settings for parallelcluster"
         echo "GoToCloud: which pcluster "

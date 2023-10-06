@@ -110,8 +110,19 @@ if [[ ! -e  ${GTC_SET_SH_DIR} ]]; then
 	exit 1
 fi
 
+#Setup Cloud9 environment 
+${GTC_SET_SH_DIR}/gtc_setup_cloud9_environment.sh -p ${GTC_SET_PROJECT_NAME}
+GTC_CLOUD9_SETUP_STAT=$?
+
+source /home/ec2-user/.gtc/global_variables.sh
+source gtc_utility_global_varaibles.sh 
+GTC_VIRTUALENV_NAME=$(gtc_utility_get_virtualenv_name)
+
 source ${GTC_SET_SH_DIR}/gtc_utility_dependencies_install.sh 
 
+gtc_dependency_virtualenv_create ${GTC_VIRTUALENV_NAME}
+
+source ~/${GTC_VIRTUALENV_NAME}/bin/activate     # Activate  virtual environment for parallelcluster
 #Installe pcluster
 if [[ ${GTC_PCLUSTER_VER} == "latest" ]]; then
     gtc_dependency_pcluster_latestver_install;
@@ -126,15 +137,14 @@ GTC_NODE_INST_VER='16'
 gtc_dependency_node_install
 GTC_NODE_INST_STAT=$?
 
+deactivate           # Deactivate  virtual environment for parallelcluster
+
+# To activate the environment each time new terminal is opened
+echo source ~/${GTC_VIRTUALENV_NAME}/bin/activate >> /home/ec2-user/.gtc/global_variables.sh
+
 #Check if Service-Linked Role "AWSServiceRoleForEC2Spot" exists
 gtc_ec2spotrole_check
 GTC_CHECK_SPOTROLL_STAT=$?
-
-#Setup Cloud9 environment 
-${GTC_SET_SH_DIR}/gtc_setup_cloud9_environment.sh -p ${GTC_SET_PROJECT_NAME}
-GTC_CLOUD9_SETUP_STAT=$?
-
-source /home/ec2-user/.gtc/global_variables.sh
 
 #Create s3 bucket
 ${GTC_SET_SH_DIR}/gtc_aws_s3_create.sh
@@ -154,7 +164,6 @@ cat ~/.parallelcluster/config.yaml
 echo "GoToCloud: "
 #echo "GoToCloud: Done"
 
-source gtc_utility_global_varaibles.sh 
 GTC_S3_NAME=$(gtc_utility_get_s3_name)
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
