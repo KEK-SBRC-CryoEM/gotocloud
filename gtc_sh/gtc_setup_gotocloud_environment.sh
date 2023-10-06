@@ -122,6 +122,7 @@ else
 fi
 
 #Installe Node.js
+GTC_NODE_INST_VER='16'
 gtc_dependency_node_install
 GTC_NODE_INST_STAT=$?
 

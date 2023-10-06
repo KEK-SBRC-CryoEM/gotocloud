@@ -64,24 +64,31 @@ function gtc_dependency_pcluster_latestver_install() {
 #Installe Node.js
 function gtc_dependency_node_install() {
     echo "GoToCloud: Installing Node.js ..."
-    source ~/.nvm/nvm.sh && {
-        nvm use --lts &>/dev/null
-    } && {
-        GTC_NODE_VERSION=$(node --version)
-        echo "GoToCloud: Node.js version "${GTC_NODE_VERSION}" is already installed"
-        #echo "GoToCloud: Done"
-    } || {
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+    source ~/.nvm/nvm.sh
+    if [[ $? != 0 ]]; then
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
         chmod 755 ~/.nvm/nvm.sh
         source ~/.nvm/nvm.sh
         GTC_NODE_VERSION_BF=$(node --version)  #nvm install node  #install latest version
-        nvm install --lts  #install lts version
-        nvm alias default 'lts/*'  #set lts version to default
+        nvm install ${GTC_NODE_INST_VER}  #install specific version
+        nvm alias default ${GTC_NODE_INST_VER}  #set lts version to default
         nvm uninstall ${GTC_NODE_VERSION_BF}
         GTC_NODE_VERSION=$(node --version)
         echo "GoToCloud: Node.js "${GTC_NODE_VERSION}" is installed"
-        #echo "GoToCloud: Done"
-    }
+    else
+        nvm use ${GTC_NODE_INST_VER} &>/dev/null
+        if [[ $? != 0 ]]; then
+            GTC_NODE_VERSION_BF=$(node --version)  #nvm install node  #install latest version
+            nvm install ${GTC_NODE_INST_VER}  #install specific version
+            nvm alias default ${GTC_NODE_INST_VER}  #set lts version to default
+            nvm uninstall ${GTC_NODE_VERSION_BF}
+            GTC_NODE_VERSION=$(node --version)
+            echo "GoToCloud: Node.js "${GTC_NODE_VERSION}" is installed"
+        else
+            GTC_NODE_VERSION=$(node --version)
+            echo "GoToCloud: Node.js version "${GTC_NODE_VERSION}" is already installed"
+        fi
+    fi
 }
 
 #Check if Service-Linked Role "AWSServiceRoleForEC2Spot" exists
