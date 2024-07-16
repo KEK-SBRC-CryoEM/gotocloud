@@ -1,7 +1,7 @@
 Region: XXX_GTC_AWS_REGION_XXX
 Image:
   Os: ubuntu2004
-HeadNode: 
+HeadNode:
   InstanceType: m5.xlarge
   Networking:
     SubnetId: XXX_GTC_SUBNET_ID_XXX
@@ -26,13 +26,38 @@ Scheduling:
   - Name: g5-vcpu192-gpu8
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g5-48xlarge
+      InstanceType: g5.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g5-vcpu192-gpu8-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: g5-48xlarge-spot
       InstanceType: g5.48xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
@@ -51,15 +76,42 @@ Scheduling:
   - Name: g5-vcpu96-gpu4
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g5-24xlarge
       InstanceType: g5.24xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g5-vcpu96-gpu4-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: g5-24xlarge-spot
+      InstanceType: g5.24xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -74,15 +126,42 @@ Scheduling:
   - Name: g5-vcpu48-gpu4
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g5-12xlarge
       InstanceType: g5.12xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g5-vcpu48-gpu4-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: g5-12xlarge-spot
+      InstanceType: g5.12xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -97,15 +176,17 @@ Scheduling:
   - Name: g5-vcpu64-gpu1
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g5-16xlarge
       InstanceType: g5.16xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -120,15 +201,17 @@ Scheduling:
   - Name: g5-vcpu32-gpu1
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g5-8xlarge
       InstanceType: g5.8xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
-        Enabled: false
+        Enabled: true
         GdrSupport: false
     CustomActions:
       OnNodeConfigured:
@@ -143,13 +226,38 @@ Scheduling:
   - Name: g4dn-vcpu96-gpu8
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-metal
+      InstanceType: g4dn.metal
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g4dn-vcpu96-gpu8-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: g4dn-metal-spot
       InstanceType: g4dn.metal
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
@@ -168,13 +276,38 @@ Scheduling:
   - Name: g4dn-vcpu48-gpu4
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-12xlarge
+      InstanceType: g4dn.12xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g4dn-vcpu48-gpu4-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: g4dn-12xlarge-spot
       InstanceType: g4dn.12xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
@@ -193,12 +326,12 @@ Scheduling:
   - Name: g4dn-vcpu32-gpu1
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-8xlarge
       InstanceType: g4dn.8xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -218,10 +351,10 @@ Scheduling:
   - Name: c5d-vcpu96-gpu0
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+    ComputeResources:
     - Name: c5d-24xlarge
       InstanceType: c5d.24xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -241,12 +374,12 @@ Scheduling:
   - Name: c6i-vcpu128-gpu0
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: c6i-32xlarge
       InstanceType: c6i.32xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -263,19 +396,294 @@ Scheduling:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
         EnableWriteAccess: true
+  - Name: c6i-vcpu128-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: c6i-32xlarge-spot
+      InstanceType: c6i.32xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: m6i-vcpu128-gpu0
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: m6i-32xlarge
+      InstanceType: m6i.32xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: m6i-vcpu128-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: m6i-32xlarge-spot
+      InstanceType: m6i.32xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: r6i-vcpu128-gpu0
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: r6i-32xlarge
+      InstanceType: r6i.32xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: r6i-vcpu128-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: r6i-32xlarge-spot
+      InstanceType: r6i.32xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: c7i-vcpu192-gpu0
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: c7i-48xlarge
+      InstanceType: c7i.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: c7i-vcpu192-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: c7i-48xlarge-spot
+      InstanceType: c7i.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: m7i-vcpu192-gpu0
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: m7i-48xlarge
+      InstanceType: m7i.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: m7i-vcpu192-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: m7i-48xlarge-spot
+      InstanceType: m7i.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: r7i-vcpu192-gpu0
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: r7i-48xlarge
+      InstanceType: r7i.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: r7i-vcpu192-gpu0-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds:
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
+    - Name: r7i-48xlarge-spot
+      InstanceType: r7i.48xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: true
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
 SharedStorage:
 - MountDir: /fsx
-  Name: fsx-scratch 
-  StorageType: FsxLustre 
+  Name: fsx-scratch
+  StorageType: FsxLustre
   FsxLustreSettings:
     StorageCapacity: XXX_GTC_FSX_MB_CAPACITY_XXX
-    DeploymentType: SCRATCH_2 
+    DeploymentType: SCRATCH_2
     ExportPath: s3://XXX_GTC_S3_NAME_XXX
     ImportPath: s3://XXX_GTC_S3_NAME_XXX
-Monitoring: 
+Monitoring:
   Logs:
     CloudWatch:
-      Enabled: true 
+      Enabled: true
       RetentionInDays: 180
       DeletionPolicy: Retain
 Tags:

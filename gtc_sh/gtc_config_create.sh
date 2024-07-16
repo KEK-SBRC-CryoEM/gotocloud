@@ -2,24 +2,24 @@
 #
 # Usage:
 #   gtc_config_create.sh [-s STRAGE_CAPACITY] [-m MAX_COUNTS] [-i INSTANCE_ID]
-#   
+#
 # Arguments & Options:
 #   -s STRAGE_CAPACITY : FSX (Lustre) strage capacity in MByte. e.g. "-s 1200". (default "2400", meaning 2.4TByte)
 #   -m MAX_COUNTS      : Maximum number of EC2 instances you can use at the same time. e.g "-m 2".  (default "16")
 #   -i INSTANCE_ID     : AWS Parallel Cluster Instance ID. e.g. "-i 00". (default NONE)
 #   --benchmark        : When using config for benchmark
-#   
+#
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
-#   $ gtc_config_create.sh 
+#   $ gtc_config_create.sh
 #   $ gtc_config_create.sh -s 1200 -m 2
 #   $ gtc_config_create.sh -i 00
 #   $ gtc_config_create.sh -s 1200 -m 2 -i 01 --benchmark
-#   
+#
 # Debug Script:
 #   gtc_config_create_debug.sh
-# 
+#
 
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_config_create.sh"; fi
@@ -35,7 +35,7 @@ usage_exit() {
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] @=$@"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] #=$#"; fi
 #if [[ $# -gt 7 || $# != 1 && $(( $# & 1 )) != 0 ]]; then
-if [[ $# -gt 7 ]]; then
+if [[ $# -gt 9 ]]; then
     echo "GoToCloud: Invalid number of arguments ($#)"
     usage_exit
 fi
@@ -45,9 +45,10 @@ GTC_INSATANCE_ID="GTC_INVALID"
 GTC_FSX_MB_CAPACITY=2400
 GTC_COMPUTE_RESOURCE_MAX_COUNT=16
 GTC_CONFIG_TYPE="general"
+GTC_USED_S3_NAME="S3_bucket_for_Project"
 
 # Parse command line arguments
-while getopts i:s:m:-:h OPT
+while getopts i:s:m:b:-:h OPT
 do
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] OPT=$OPT"; fi
     case "$OPT" in
@@ -59,6 +60,9 @@ do
             ;;
         i)  GTC_INSATANCE_ID=$OPTARG
             echo "GoToCloud: AWS Parallel Cluster Instance ID '${GTC_INSATANCE_ID}' is specified"
+            ;;
+        b)  GTC_USED_S3_NAME=$OPTARG
+            echo "GoToCloud: AWS used S3 bucket '${GTC_USED_S3_NAME}' is specified"
             ;;
         -)  GTC_CONFIG_TYPE=$OPTARG
             echo "GoToCloud: AWS Parallel Cluster Config Type '${GTC_CONFIG_TYPE}' is specified"
@@ -75,6 +79,7 @@ echo "GoToCloud:   FSX (Lustre) strage capacity (MByte) : ${GTC_FSX_MB_CAPACITY}
 echo "GoToCloud:   Maximum number of EC2 instances      : ${GTC_COMPUTE_RESOURCE_MAX_COUNT}"
 echo "GoToCloud:   AWS Parallel Cluster Instance ID     : ${GTC_INSATANCE_ID}"
 echo "GoToCloud:   AWS Parallel Cluster Config Type     : ${GTC_CONFIG_TYPE}"
+echo "GoToCloud:   Used AWS S3 bucket name              : ${GTC_USED_S3_NAME}"
 
 GTC_INSATANCE_SUFFIX=""
 if [[ "${GTC_INSATANCE_ID}" != "GTC_INVALID" ]]; then
@@ -98,13 +103,25 @@ GTC_IAM_USEAR_NAME=$(gtc_utility_get_iam_user_name)
 GTC_METHOD_NAME=$(gtc_utility_get_method_name)
 GTC_PROJECT_NAME=$(gtc_utility_get_project_name)
 GTC_ACCOUNT_ID=$(gtc_utility_get_account_id)
-GTC_S3_NAME=$(gtc_utility_get_s3_name)
+# GTC_S3_NAME=$(gtc_utility_get_s3_name)
 GTC_KEY_NAME=$(gtc_utility_get_key_name)
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
 GTC_AWS_REGION=$(gtc_utility_get_aws_region)
 GTC_EFS_FILESYSTEM_ID=$(gtc_utility_get_efs_filesystem_id)
 GTC_EFS_MOUNT_TARGET_IP=$(gtc_utility_get_efs_mount_target_ip)
 GTC_SUBNET_ID=$(gtc_utility_get_subnet_id)
+
+if [[ ${GTC_USED_S3_NAME} == "S3_bucket_for_Project" ]]; then
+    GTC_S3_NAME=$(gtc_utility_get_s3_name)
+    else
+    GTC_S3_NAME=${GTC_USED_S3_NAME}
+fi
+aws s3 ls s3://${GTC_S3_NAME} || {
+    echo "GoToCloud: [GCT_ERROR] S3 bucket '${GTC_S3_NAME}' does not exist in your account"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
+}
+
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SH_DIR=${GTC_SH_DIR}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_IAMUSER=${GTC_TAG_KEY_IAMUSER}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TAG_KEY_METHOD=${GTC_TAG_KEY_METHOD}"; fi
@@ -127,7 +144,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SU
 #GTC_VPC=$(aws ec2 describe-vpcs | jq '.Vpcs[]')
 #GTC_SN=$(aws ec2 describe-subnets | jq '.Subnets[]')
 #echo "GoToCloud: [GTC_DEBUG] GTC_VPC=${GTC_VPC}"
-#echo "GoToCloud: [GTC_DEBUG] GTC_SN=${GTC_SN}" 
+#echo "GoToCloud: [GTC_DEBUG] GTC_SN=${GTC_SN}"
 #GTC_VPC_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).VpcId'`
 #GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).SubnetId'`
 
@@ -210,4 +227,3 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] "; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_config_create.sh!"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
-
