@@ -223,6 +223,52 @@ Scheduling:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
         EnableWriteAccess: true
+  - Name: g5-vcpu16-gpu1
+    CapacityType: ONDEMAND
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: g5-4xlarge
+      InstanceType: g5.4xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g5-vcpu16-gpu1-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: g5-4xlarge-spot
+      InstanceType: g5.4xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
   - Name: g4dn-vcpu96-gpu8
     CapacityType: ONDEMAND
     Networking:
@@ -348,15 +394,38 @@ Scheduling:
       S3Access:
       - BucketName: XXX_GTC_S3_NAME_XXX
         EnableWriteAccess: true
-  - Name: c5d-vcpu96-gpu0
+  - Name: g4dn-vcpu8-gpu1
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds:
+      SubnetIds: 
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources:
-    - Name: c5d-24xlarge
-      InstanceType: c5d.24xlarge
+    ComputeResources: 
+    - Name: g4dn-2xlarge
+      InstanceType: g4dn.2xlarge
+      MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
+      Efa:
+        Enabled: false
+        GdrSupport: false
+    CustomActions:
+      OnNodeConfigured:
+        Script: XXX_GTC_POST_INSTALL_XXX
+        Args:
+          - XXX_GTC_POST_INSTALL_ARG1_XXX
+          - XXX_GTC_POST_INSTALL_ARG2_XXX
+    Iam:
+      S3Access:
+      - BucketName: XXX_GTC_S3_NAME_XXX
+        EnableWriteAccess: true
+  - Name: g4dn-vcpu8-gpu1-spot
+    CapacityType: SPOT
+    Networking:
+      SubnetIds: 
+      - XXX_GTC_SUBNET_ID_XXX
+      AssignPublicIp: true
+    ComputeResources: 
+    - Name: g4dn-2xlarge-spot
+      InstanceType: g4dn.2xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: false
