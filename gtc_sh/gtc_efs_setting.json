@@ -1,0 +1,37 @@
+{
+    "EfsSettings": [
+        {
+            "FileSystemName": "kek-gtc-master-efs",
+            "MountTargetId": "fsmt-018896700822c62e6", 
+            "VpcId": "vpc-07e4865e942fb3392", 
+            "AvailabilityZoneId": "apne1-az4", 
+            "AvailabilityZoneName": "ap-northeast-1a", 
+            "FileSystemId": "fs-0a3e29571b3b85b78",  
+            "SubnetId": "subnet-0eb299bc9c5a9a0cb", 
+            "OwnerId": "327610663674", 
+            "IpAddress": "10.0.47.180"
+        }, 
+        {
+            "FileSystemName": "kek-gtc-share1-efs", 
+            "MountTargetId": "fsmt-0c0f3dff0d395c594", 
+            "VpcId": "vpc-0dfa1f961b61e4ea9", 
+            "AvailabilityZoneId": "apne1-az4", 
+            "AvailabilityZoneName": "ap-northeast-1a", 
+            "FileSystemId": "fs-0c16cddddca8c3ed5", 
+            "SubnetId": "subnet-0bcbd37a4f1be5eb8", 
+            "OwnerId": "327610663674", 
+            "IpAddress": "10.1.11.52"
+        },
+        {
+            "FileSystemName": "kek-gtc-share1-efs", 
+            "MountTargetId": "fsmt-0561504aa9378019e", 
+            "VpcId": "vpc-06290c92b2b166a29", 
+            "AvailabilityZoneId": "use1-az4", 
+            "AvailabilityZoneName": "us-east-1a", 
+            "FileSystemId": "fs-0cd61963e8a24e8ae", 
+            "SubnetId": "subnet-026afc4dc2fcd15a8", 
+            "OwnerId": "327610663674", 
+            "IpAddress": "10.1.10.155"
+        }
+    ]
+}

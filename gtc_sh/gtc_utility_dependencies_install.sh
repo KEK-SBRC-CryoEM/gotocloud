@@ -24,7 +24,18 @@ function gtc_dependency_jq_install() {
 #Installe python
 function gtc_dependency_virtualenv_create() {
     echo "GoToCloud: Installing python3.8 ..."
-    sudo amazon-linux-extras install -y python3.8
+    GTC_PYTHON3_VERSION=$(python3 -V)
+    if [[ ${GTC_PYTHON3_VERSION} < 3.8 ]]; then
+        echo "GoToCloud: Installing python3.8 ..."
+        sudo amazon-linux-extras install -y python3.8
+    else
+        echo "GoToCloud: Python "${GTC_PYTHON3_VERSION}" is already installed"
+    fi
+    echo "GoToCloud: creating virtual environment for ParallelCluster ..."
+    python3 -m pip virtualenv &>/dev/null || {
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --user --upgrade virtualenv
+    }
     python3 -m virtualenv -p python3.8 ~/$1    #Create virtualenv for parallelcluster with python3.8
 }
 

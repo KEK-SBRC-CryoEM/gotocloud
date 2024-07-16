@@ -151,9 +151,9 @@ echo "GoToCloud: Creating pcluster head node system environment variable setting
 cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
 #!/bin/sh
 
-# load relion 4.0-beta-2
+# load relion 
 source /etc/profile.d/modules.sh
-module load relion/4.0-beta-2-pc3.0/intel_amd-gcc-intelmpi-gpu
+module load relion
 EOS
 
 # Set file permission 
