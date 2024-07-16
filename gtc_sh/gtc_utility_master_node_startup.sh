@@ -154,6 +154,14 @@ cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
 # load relion 
 source /etc/profile.d/modules.sh
 module load relion
+
+# GoToCloud system environment variables
+export RELION_QSUB_EXTRA_COUNT=2
+export RELION_QSUB_EXTRA1="Partition"
+export RELION_QSUB_EXTRA1_DEFAULT=g5-vcpu48-gpu4
+export RELION_QSUB_EXTRA1_HELP="Partitions: g5-vcpu192-gpu8, g5-vcpu192-gpu8-spot, g5-vcpu48-gpu4, g5-vcpu48-gpu4-spot, g5-vcpu16-gpu1, g5-vcpu16-gpu1-spot, g4dn-vcpu96-gpu8, g4dn-vcpu96-gpu8-spot, g4dn-vcpu48-gpu4, g4dn-vcpu48-gpu4-spot, g4dn-vcpu8-gpu1, g4dn-vcpu8-gpu1-spot, c6i-vcpu128-gpu0, c6i-vcpu128-gpu0-spot, m6i-vcpu128-gpu0, m6i-vcpu128-gpu0-spot, r6i-vcpu128-gpu0, r6i-vcpu128-gpu0-spot, c7i-vcpu192-gpu0, c7i-vcpu192-gpu0-spot, m7i-vcpu192-gpu0, m7i-vcpu192-gpu0-spot, r7i-vcpu192-gpu0, r7i-vcpu192-gpu0-spot"
+export RELION_QSUB_EXTRA2="Number of nodes"
+export RELION_QSUB_EXTRA2_DEFAULT=1
 EOS
 
 # Set file permission 
