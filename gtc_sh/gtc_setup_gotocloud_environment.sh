@@ -132,6 +132,9 @@ else
     GTC_PCLUSER_INST_STAT=$?;
 fi
 
+# Downgrade setuptools if necessary    !!! Execution of 'gtc_dependency_pcluster_setuptools_install' is not required after pcluster3.9.2 !!!
+gtc_dependency_pcluster_setuptools_install
+
 #Installe Node.js
 GTC_NODE_INST_VER='16'
 gtc_dependency_node_install

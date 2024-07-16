@@ -123,3 +123,24 @@ function gtc_ec2spotrole_check() {
         echo "GoToCloud: Created Service-Linked Role 'AWSServiceRoleForEC2Spot'."
     }
 }
+
+function gtc_dependency_pcluster_setuptools_install() {
+    GTC_PC_PKG_NAME='setuptools'
+    GTC_PC_PKG_NAME_INFO='pip show '${GTC_PC_PKG_NAME}''
+    GTC_PC_PKG_VER_LIMIT='70'
+
+    $GTC_PC_PKG_NAME_INFO &>/dev/null && {
+        GTC_PC_PKG_VER=$(echo "$($GTC_PC_PKG_NAME_INFO)" | grep ^Version: | awk '{print $2}')
+        echo "GoToCloud: ${GTC_PC_PKG_NAME} version: ${GTC_PC_PKG_VER} is installed."
+        GTC_PC_PKG_VER_MAIN=(${GTC_PC_PKG_VER//./ })
+        if [[ ${GTC_PC_PKG_VER_MAIN[0]} -ge ${GTC_PC_PKG_VER_LIMIT} ]]; then
+            echo "GoToCloud: Downgrading setuptools ..."
+            pip install setuptools==69.5.1
+            GTC_PC_PKG_VER=$(echo "$($GTC_PC_PKG_NAME_INFO)" | grep ^Version: | awk '{print $2}')
+            echo "GoToCloud: ${GTC_PC_PKG_NAME} has been downgraded to version: ${GTC_PC_PKG_VER}."    
+            PV=$(pcluster version | jq -r '.version')   # To enable pcluster
+            echo "GoToCloud: Parallelcluster "${PV}" is already installed."
+        fi
+    }
+
+}
