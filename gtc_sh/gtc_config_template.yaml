@@ -630,6 +630,9 @@ Monitoring:
       Enabled: true 
       RetentionInDays: 180
       DeletionPolicy: Retain
+DevSettings:
+  Timeouts:
+    HeadNodeBootstrapTimeout: 3600
 Tags:
 - Key: XXX_GTC_TAG_KEY_IAMUSER_XXX
   Value: XXX_GTC_IAM_USER_NAME_XXX

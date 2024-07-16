@@ -161,7 +161,7 @@ if [ ! -e ${GTC_CONFIG_INSTANCE} ]; then
 fi
 
 GTC_STATUS_CHECK_INTERVAL=60 # in seconds
-GTC_TIME_OUT=1800 # in seconds
+GTC_TIME_OUT=3600 # in seconds
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_STATUS_CHECK_INTERVAL=${GTC_STATUS_CHECK_INTERVAL}"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_TIME_OUT=${GTC_TIME_OUT}"; fi
 
