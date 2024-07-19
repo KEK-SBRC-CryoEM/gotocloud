@@ -2,19 +2,36 @@
 
 GoToCloud is a cloud-computing-based platform for advanced data analysis and data management for Cryo-EM SPA.
 
+## Building GoToCloud Platform
+You can construct GoToCloud Platform by AWS CloudFormation
 
-## Installation
+### Creating Master EFS
+Execute cloudformation using a template file "kek-gtc-master.yml"
 
+### Creating Shared EFS
+Execute cloudformation using a template file "kek-gtc-share.yml"
+
+### Creating VPC peering to data analysis VPC
+This operation must be done for each analysis VPC 
+1. Add the AWS account ID you want to connect VPC peering to shred VPC by CloudFomration stack "VPCPeeringAcceptorRole" on AWS account that owns shared EFS.
+1. Execute cloudformation using a template file "kek_gtc_user.yml" on user's AWS accounts
+1. Crearte route tables on AWS account that owns shared EFS.
+
+For installation, please see here: https://sites.google.com/sbrc.jp/gotocloud-doc/build
+
+## Installation to master EFS
+You should install GoToCloud scripts to master EFS.
+1. IAM user with Administrator Access authority logs into an AWS account that owns master EFS from the AWS console.
+1. Go to Cloud9 service page in AWS console and create environment like "Creating AWS Cloud9" in "Getting Start" below. 
+1. Go to EC2 service page and modify iam role to above cloud9 instance
 ```
+cd /efs
 git clone https://github.com/KEK-SBRC-CryoEM/gotocloud.git
 ``` 
 
-
-For installation, please see here: https://sites.google.com/sbrc.jp/gotocloud-doc/installation
-
 ## Getting Start
 
-### AWS Cloud9 Creation
+### Creating AWS Cloud9
 You should create Cloud9 from AWS console first.
 1. Go to Cloud9 service page in AWS console.
 1. Create environment.
