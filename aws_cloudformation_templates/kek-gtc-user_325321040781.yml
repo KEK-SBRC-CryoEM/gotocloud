@@ -1,0 +1,256 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: kek-gtc-user
+
+Parameters:
+  VpcCidrBlock:
+    Type: String
+    Description: VPC Cidr Block
+    Default: 10.103.0.0/16
+  Subnet1CidrBlock:
+    Type: String
+    Description: Subnet 1 Cidr Block
+    Default: 10.103.0.0/20
+  AvailabilityZone1:
+    Type: 'AWS::EC2::AvailabilityZone::Name'
+    Default: ap-northeast-1a
+    Description: The Availability Zone
+  PeerOwnerAccountId:
+    Type: String
+    Description: PeerOwnerAccountId
+    Default: 327610663674
+  PeerOwnerAccountVpc:
+    Type: String
+    Description: PeerOwnerAccountVpc
+    Default: vpc-0dfa1f961b61e4ea9
+  PeerOwnerAccountVpcCidrBlock:
+    Type: String
+    Description: PeerOwnerAccountVpcCidrBlock
+    Default: 10.1.0.0/16
+  Password:
+    Type: String
+    Description: Password for kek-gtc-user01
+    Default: kek-gtc-user01-password
+  IsFirstStack:
+    Type: String
+    Description: Whether any gtc-user stacks exist on other region
+    ConstraintDescription: must specify true or false.
+    AllowedValues: 
+      - 'true'
+      - 'false'
+    Default: 'true'
+
+Conditions:
+  FirstStack: !Equals
+    - !Ref IsFirstStack
+    - 'true'
+
+#################################
+# VPC / Subnet
+# Create VPC
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: VpcCidrBlock
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-vpc"
+# Create Subnet
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Ref: AvailabilityZone1
+      CidrBlock:
+        Ref: Subnet1CidrBlock
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-subnet1"
+# Create/Attach RouteTable ForVPC
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-rtb"
+  IGRouteSet:
+    Type: AWS::EC2::Route
+    DependsOn:
+      - InternetGateway
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      GatewayId:
+        Ref: InternetGateway
+      DestinationCidrBlock: "0.0.0.0/0"
+  Subnet1AssociationRouteTable:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId:
+        Ref: Subnet1
+      RouteTableId:
+        Ref: RouteTable
+# SecurityGroup Create
+  # SecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupName: !Sub "${BaseName}-sg"
+  #     GroupDescription: kek-analysis-SecurityGroup
+  #     VpcId:
+  #       Ref: Vpc
+  #     SecurityGroupIngress:
+  #       -
+  #         IpProtocol: "-1"
+  #         FromPort: '0'
+  #         ToPort: '65535'
+  #         CidrIp: "10.0.0.0/24"
+# InternetGateway Create
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-igw"
+# IGW Attach
+  InternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId:
+        Ref: InternetGateway
+      VpcId:
+        Ref: Vpc
+#######################
+# KEKAdminUser
+  # KEKAdminUser:
+  #   Type: 'AWS::IAM::User'
+  #   Properties:
+  #     UserName: 'kek-admin'
+  #     LoginProfile:
+  #       Password: !Ref PasswordAdmin
+  # KEKAdminGroup:
+  #   Type: 'AWS::IAM::Group'
+  #   Properties:
+  #     GroupName: 'kek-admins'
+  #     ManagedPolicyArns:
+  #       - "arn:aws:iam::aws:policy/AdministratorAccess"
+  # Admins:
+  #   Type: 'AWS::IAM::UserToGroupAddition'
+  #   Properties:
+  #     GroupName: !Ref KEKAdminGroup
+  #     Users:
+  #       - !Ref KEKAdminUser
+#######################
+# GTCUser
+  GTCUser:
+    Type: 'AWS::IAM::User'
+    Condition: FirstStack
+    Properties:
+      Path: "/"
+      UserName: kek-gtc-user01
+      LoginProfile:
+        Password: !Ref Password
+  GTCUserGroup:
+    Type: 'AWS::IAM::Group'
+    Condition: FirstStack
+    Properties:
+      GroupName: 'pcluster-user'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSCloud9Administrator"
+        - "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
+        - "arn:aws:iam::aws:policy/AWSLambda_FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonFSxFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  Users:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    Condition: FirstStack
+    Properties:
+      GroupName: !Ref GTCUserGroup
+      Users:
+        - !Ref GTCUser
+  GTCUserPolicies:
+    Type: 'AWS::IAM::Policy'
+    Condition: FirstStack
+    Properties:
+      PolicyName: pclusterPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              -  "iam:CreateInstanceProfile"
+              -  "iam:DeleteInstanceProfile"
+              -  "iam:GetRole"
+              -  "iam:RemoveRoleFromInstanceProfile"
+              -  "iam:CreateRole"
+              -  "iam:DeleteRole"
+              -  "iam:AttachRolePolicy"
+              -  "iam:PutRolePolicy"
+              -  "iam:AddRoleToInstanceProfile"
+              -  "iam:PassRole"
+              -  "iam:TagRole"
+              -  "iam:DetachRolePolicy"
+              -  "iam:DeleteRolePolicy"
+              -  "iam:GetRolePolicy"
+            Resource: '*'
+      Groups:
+        - !Ref GTCUserGroup
+# VPC Peering to KEK GTC sharing VPC
+  VPCPeering:
+    Type: "AWS::EC2::VPCPeeringConnection"
+    Properties:
+      VpcId:
+        Ref: Vpc
+      PeerVpcId:
+        Ref: PeerOwnerAccountVpc
+      PeerOwnerId:
+        Ref: PeerOwnerAccountId
+      PeerRegion: !Sub ${AWS::Region}
+      PeerRoleArn: !Sub arn:aws:iam::${PeerOwnerAccountId}:role/KEKVPCPeeringAcceptorRole
+      Tags:
+        - Key: Name
+          Value: !Ref VpcCidrBlock
+  PeerRouteSet:
+    Type: AWS::EC2::Route
+    DependsOn:
+      - VPCPeering
+    Properties:
+      RouteTableId:
+        Ref: RouteTable
+      VpcPeeringConnectionId:
+        Ref: VPCPeering
+      DestinationCidrBlock:
+        Ref: PeerOwnerAccountVpcCidrBlock
+
+Outputs:
+  VpcId:
+    Description: VpcId
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub ${AWS::AccountId}-Vpc
+  Subnet1cId:
+    Description: Subnet1Id
+    Value: !Ref Subnet1
+    Export:
+      Name: !Sub ${AWS::AccountId}-Subnet1c
+  RouteTableId:
+    Description: RouteTableId
+    Value:
+      Ref: RouteTable
+    Export:
+      Name: !Sub ${AWS::AccountId}-RouteTable
+  # IAMUserPass:
+  #   Value: !Ref GTCUserSecret
+  #   Export:
+  #     Name: !Sub ${AWS::AccountId}-kek-gtc-user01-pass

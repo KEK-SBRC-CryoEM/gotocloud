@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: kek-gtc-share
+Parameters:
+  VpcCidrBlock:
+    Type: String
+    Description: VPC Cidr Block
+    Default: 10.1.0.0/16
+  Subnet1CidrBlock:
+    Type: String
+    Description: Subnet 1 Cidr Block
+    Default: 10.1.0.0/20
+  AvailabilityZone1:
+    Type: 'AWS::EC2::AvailabilityZone::Name'
+    Default: ap-northeast-1a
+    Description: The Availability Zone
+  DataSyncRole:
+    Type: String
+    Description: ARN of the IAM role for DataSync
+    Default: arn:aws:iam::327610663674:role/DataSyncEFSFullAccessRole
+    AllowedPattern: ^arn:(aws|aws-cn|aws-us-gov|aws-iso|aws-iso-b):iam::[0-9]{12}:role/.*$
+  MasterEFSLocation:
+    Type: String
+    Description: ARN of the master EFS's location
+    Default: arn:aws:datasync:ap-northeast-1:327610663674:location/loc-083e6350ae82370c9
+    AllowedPattern: ^arn:(aws|aws-cn|aws-us-gov|aws-iso|aws-iso-b):datasync:[a-z\-0-9]+:[0-9]{12}:location/loc-[0-9a-z]{17}$
+
+#################################
+# VPC / Subnet
+# Create VPC
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: VpcCidrBlock
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-vpc"
+# Create Subnet
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: Vpc
+      AvailabilityZone:
+        Ref: AvailabilityZone1
+      CidrBlock:
+        Ref: Subnet1CidrBlock
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-subnet1"
+# Create/Attach RouteTable ForVPC
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-rtb"
+  Subnet1AssociationRouteTable:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId:
+        Ref: Subnet1
+      RouteTableId:
+        Ref: RouteTable
+####################################
+# Create EFS
+#
+  FileSystemResource:
+    Type: 'AWS::EFS::FileSystem'
+    Properties:
+      AvailabilityZoneName:
+        Ref: AvailabilityZone1
+      BackupPolicy:
+        Status: DISABLED
+      Encrypted: false
+      LifecyclePolicies:
+        - TransitionToIA: AFTER_30_DAYS
+      FileSystemPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "elasticfilesystem:ClientMount"
+            Principal:
+                AWS: "*"
+            Condition:
+              Bool:
+                "elasticfilesystem:AccessedViaMountTarget": "true"
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-efs"
+  MountTargetResource1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: 
+        Ref: FileSystemResource
+      SubnetId: 
+        Ref: Subnet1
+      SecurityGroups: 
+      - Ref: EfsSecurityGroup
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${AWS::StackName}-efs-sg"
+      GroupDescription: !Sub "${AWS::StackName}-efs-sg"
+      VpcId:
+        Ref: Vpc
+      SecurityGroupIngress:
+        -
+          IpProtocol: "-1"
+          FromPort: '2049'
+          ToPort: '2049'
+          CidrIp: "10.0.0.0/8"
+  DataSyncLocationEfs:
+    Type: AWS::DataSync::LocationEFS
+    DependsOn: MountTargetResource1
+    Properties:
+      Ec2Config:
+        SecurityGroupArns:
+          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:security-group/${EfsSecurityGroup}'
+        SubnetArn:  
+          !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${Subnet1}'
+      EfsFilesystemArn: !GetAtt FileSystemResource.Arn
+      FileSystemAccessRoleArn: !Ref DataSyncRole
+      InTransitEncryption: TLS1_2
+  DataSyncTask:
+    Type: AWS::DataSync::Task
+    Properties:
+      SourceLocationArn: !Ref MasterEFSLocation
+      DestinationLocationArn: !GetAtt DataSyncLocationEfs.LocationArn
+      Name: !Sub "${AWS::StackName}-datasync"
+      Schedule:
+        ScheduleExpression: "cron(0 * * * ? *)"
+      
+Outputs:
+  VpcId:
+    Description: VpcId
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub "${AWS::StackName}-VPC"
+  Subnet1cId:
+    Description: Subnet1Id
+    Value: !Ref Subnet1
+    Export:
+      Name: !Sub "${AWS::StackName}-Subnet"
+  RouteTable:
+    Description: RouteTableId
+    Value: !Ref RouteTable
+    Export:
+      Name: !Sub "${AWS::StackName}-RouteTable"
+  EFS:
+    Description: EFS
+    Value: !Ref FileSystemResource
+    Export:
+      Name: !Sub "${AWS::StackName}-EFS"
+  MountTarget:
+    Description: EFS
+    Value: !GetAtt MountTargetResource1.IpAddress
+    Export:
+      Name: !Sub "${AWS::StackName}-EFSMountTarget"
