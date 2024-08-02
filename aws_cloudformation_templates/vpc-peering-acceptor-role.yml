@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: KEKVPCPeeringAcceptorRole
+Parameters:
+  PeeringAccount:
+    Type: CommaDelimitedList
+    Description: VPC Peering Acceptor Account
+    Default: 327610663674
+Resources:
+  # VPC Peering?Accepte?????Role
+  KEKVPCPeeringAcceptorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: KEKVPCPeeringAcceptorRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                Ref: PeeringAccount
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:AcceptVpcPeeringConnection'
+                Resource: '*'
