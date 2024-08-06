@@ -2,12 +2,11 @@
 
 GoToCloud is a cloud-computing-based platform for advanced data analysis and data management for Cryo-EM SPA.
 
-## Getting Start
+## Getting Started
 The following instructions are for using the GoToCloud platform provided by KEK.
-<br>
 Instructions on how to build your own GoToCloud platform are provided at the end.
 <br>
-For more information, see: https://sites.google.com/sbrc.jp/gotocloud-doc/procedure
+For more information on how to use GoToCloud, see: https://sites.google.com/sbrc.jp/gotocloud-doc/procedure
 <br>
 ### Preparation: Create AWS Cloud9
 You should create Cloud9 from AWS console first.
@@ -59,7 +58,7 @@ Finally, delete Cloud9 instance from the AWS Cloud9 console page.
 
 ## Building your own GoToCloud platform
 You can construct your own GoToCloud platform by AWS CloudFormation.
-Our Web site describes the following steps are required.
+<br>
 You can find more eraborated instruction here: https://sites.google.com/sbrc.jp/gotocloud-doc/build
 
 ### Step1.Creating Master EFS
