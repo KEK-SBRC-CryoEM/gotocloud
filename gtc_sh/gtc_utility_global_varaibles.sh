@@ -119,7 +119,7 @@ function gtc_utility_setup_global_variables() {
         GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
         GTC_ACCEPTER_VPC_ID=`echo ${GTC_PEERING_INFO} | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.VpcId'`
         GTC_ACCEPTER_VPC_CIDR=`echo ${GTC_PEERING_INFO} | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.CidrBlock'`
-        GTC_EFS_SETTING="${GTC_SH_DIR}/gtc_efs_setting.json"
+        GTC_EFS_SETTING=$(echo "$(pwd)/gtc_efs_setting.json")
         GTC_EFS_FILESYSTEM_ID=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").FileSystemId')
         GTC_EFS_MOUNT_TARGET_IP=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").IpAddress')
         GTC_SUBNET_ID=`echo ${GTC_CLOUD9_NETWORK_INFO} | jq -r '.SubnetId'`

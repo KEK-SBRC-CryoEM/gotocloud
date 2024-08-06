@@ -7,6 +7,7 @@
 #   -s STRAGE_CAPACITY : FSX (Lustre) strage capacity in MByte. e.g. "-s 1200". (default "2400", meaning 2.4TByte)
 #   -m MAX_COUNTS      : Maximum number of EC2 instances you can use at the same time. e.g "-m 2".  (default "16")
 #   -i INSTANCE_ID     : AWS Parallel Cluster Instance ID. e.g. "-i 00". (default NONE)
+#   -o SHARED_S3_URL   : Shared S3 bucket URL. e.g. https://<shared S3 bucket name>.s3.<Region name>.amazonaws.com  (default kek owned S3 bucket URL "https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com")
 #   --benchmark        : When using config for benchmark
 #
 #   -h                 : Help option displays usage
@@ -16,6 +17,7 @@
 #   $ gtc_config_create.sh -s 1200 -m 2
 #   $ gtc_config_create.sh -i 00
 #   $ gtc_config_create.sh -s 1200 -m 2 -i 01 --benchmark
+#   $ gtc_config_create.sh -s 1200 -m 2 -i 01 --benchmark -o https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com
 #
 # Debug Script:
 #   gtc_config_create_debug.sh
@@ -35,7 +37,7 @@ usage_exit() {
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] @=$@"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] #=$#"; fi
 #if [[ $# -gt 7 || $# != 1 && $(( $# & 1 )) != 0 ]]; then
-if [[ $# -gt 9 ]]; then
+if [[ $# -gt 10 ]]; then
     echo "GoToCloud: Invalid number of arguments ($#)"
     usage_exit
 fi
@@ -46,9 +48,9 @@ GTC_FSX_MB_CAPACITY=2400
 GTC_COMPUTE_RESOURCE_MAX_COUNT=16
 GTC_CONFIG_TYPE="general"
 GTC_USED_S3_NAME="S3_bucket_for_Project"
-
+GTC_SHARED_S3_URL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com"
 # Parse command line arguments
-while getopts i:s:m:b:-:h OPT
+while getopts i:s:m:b:o:-:h OPT
 do
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] OPT=$OPT"; fi
     case "$OPT" in
@@ -63,6 +65,9 @@ do
             ;;
         b)  GTC_USED_S3_NAME=$OPTARG
             echo "GoToCloud: AWS used S3 bucket '${GTC_USED_S3_NAME}' is specified"
+            ;;
+        o)  GTC_SHARED_S3_URL=$OPTARG
+            echo "GoToCloud: Shared S3 bucket '${GTC_SHARED_S3_URL}' is specified"
             ;;
         -)  GTC_CONFIG_TYPE=$OPTARG
             echo "GoToCloud: AWS Parallel Cluster Config Type '${GTC_CONFIG_TYPE}' is specified"
@@ -80,6 +85,7 @@ echo "GoToCloud:   Maximum number of EC2 instances      : ${GTC_COMPUTE_RESOURCE
 echo "GoToCloud:   AWS Parallel Cluster Instance ID     : ${GTC_INSATANCE_ID}"
 echo "GoToCloud:   AWS Parallel Cluster Config Type     : ${GTC_CONFIG_TYPE}"
 echo "GoToCloud:   Used AWS S3 bucket name              : ${GTC_USED_S3_NAME}"
+echo "GoToCloud:   Shared S3 bucket URL                 : ${GTC_SHARED_S3_URL}"
 
 GTC_INSATANCE_SUFFIX=""
 if [[ "${GTC_INSATANCE_ID}" != "GTC_INVALID" ]]; then
@@ -148,7 +154,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_SU
 #GTC_VPC_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).VpcId'`
 #GTC_SUBNET_ID=`echo ${GTC_SN} | jq -r 'select(.AvailabilityZoneId == "apne1-az4" and .DefaultForAz == false).SubnetId'`
 
-GTC_POST_INSTALL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com/post_install.sh"
+GTC_POST_INSTALL="${GTC_SHARED_S3_URL}/post_install.sh"
 GTC_POST_INSTALL_ARG1=${GTC_EFS_MOUNT_TARGET_IP}
 GTC_POST_INSTALL_ARG2=${GTC_EFS_FILESYSTEM_ID}
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_POST_INSTAL=${GTC_POST_INSTAL}"; fi

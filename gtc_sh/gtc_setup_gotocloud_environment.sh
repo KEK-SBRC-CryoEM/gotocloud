@@ -6,11 +6,12 @@
 # Arguments & Options:
 #   -p                 : Project name (default value is cloud9 name)
 #   -v                 : gtc_sh script version (default value is latest version)
+#   -o                 : Shared S3 bucket URL. e.g. https://<shared S3 bucket name>.s3.<Region name>.amazonaws.com  (default kek owned S3 bucket URL "https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com")
 #   --                 : pcluster version (default version is "fix", set when using pcluster of latest version)
 #   -h                 : Help option displays usage
 #
 # Examples:
-#   $ gtc_setup_gotocloud_environment.sh -p protein20211111 -v 00o04o02 --latest
+#   $ gtc_setup_gotocloud_environment.sh -p protein20211111 -v 00o04o02 --latest -o https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com
 #
 # Debug Script:
 #
@@ -26,25 +27,30 @@ GTC_SYSTEM_DEBUG_MODE=0
 # Check if the number of command line arguments is valid
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] @=$@"; fi
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] #=$#"; fi
-if [[ $# -gt 5 ]]; then
+if [[ $# -gt 6 ]]; then
     echo "GoToCloud: Invalid number of arguments ($#)"
     usage_exit
 fi
 
 GTC_SET_PROJECT_NAME="cloud9-name"
-GTC_SH_VERSION="latest"
+GTC_SH_VERSION=""
 GTC_PCLUSTER_VER="fix"
+GTC_SHARED_S3_URL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com"
 
 # Parse command line arguments
-while getopts p:v:-:h OPT
+while getopts p:v:o:-:h OPT
 do
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] OPT=$OPT"; fi
     case "$OPT" in
         p)  GTC_SET_PROJECT_NAME=$OPTARG
             echo "GoToCloud: project name '${GTC_SET_PROJECT_NAME}' is specified"
             ;;
-        v)  GTC_SH_VERSION="ver"$OPTARG
-            echo "GoToCloud: gtc_sh verion '${GTC_SH_VERSION}' is specified"
+        v)  GTC_SH_VERSION="_ver"$OPTARG
+            #echo "GoToCloud: gtc_sh verion '${GTC_SH_VERSION}' is specified"
+            echo "GoToCloud: gtc_sh verion '$OPTARG' is specified"
+            ;;
+        o)  GTC_SHARED_S3_URL=$OPTARG
+            echo "GoToCloud: Shared S3 bucket '${GTC_SHARED_S3_URL}' is specified"
             ;;
         -)  GTC_PCLUSTER_VER=$OPTARG
             echo "GoToCloud: pcluster verion '${GTC_PCLUSTER_VER}' is specified"
@@ -58,7 +64,7 @@ do
 done
 echo "GoToCloud: Run setup with following settings..."
 echo "GoToCloud: Project name         : ${GTC_SET_PROJECT_NAME}"
-echo "GoToCloud: gtc_sh script verion : ${GTC_SH_VERSION}"
+
 
 #Installe jq
 jq -V &>/dev/null || {
@@ -82,8 +88,18 @@ mountpoint -q /efs && {
     GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
     GTC_ACCEPTER_VPC_ID=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]' | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.VpcId')
     GTC_ACCEPTER_VPC_CIDR=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]' | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.CidrBlock')
-    wget https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com/gtc_efs_setting.json
+
+    wget ${GTC_SHARED_S3_URL}/gtc_efs_setting.json
     GTC_EFS_SETTING=$(echo "$(pwd)/gtc_efs_setting.json")
+    if [ ! -f "$GTC_EFS_SETTING" ]; then
+        echo "GoToCloud:----------------------------------------------------------------------------------------"
+        echo "GoToCloud: [GCT_ERROR] '$GTC_EFS_SETTING' dose not exist. "
+        echo "GoToCloud: [GCT_ERROR] Please make sure the efs setting file is in shared S3 bucket '${GTC_SHARED_S3_URL}'"
+        echo "GoToCloud:----------------------------------------------------------------------------------------"
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
+
     GTC_EFS_FILESYSTEM_ID=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").FileSystemId')
     GTC_EFS_MOUNT_TARGET_IP=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").IpAddress')
     echo ''${GTC_EFS_FILESYSTEM_ID}':/ /efs efs _netdev,noresvport,tls,mounttargetip='${GTC_EFS_MOUNT_TARGET_IP}' 1 1' | sudo tee -a /etc/fstab
@@ -100,7 +116,7 @@ mountpoint -q /efs && {
 } 
 
 #Setup SH directory path
-GTC_SET_SH_DIR="/efs/em/gtc_sh_"${GTC_SH_VERSION}
+GTC_SET_SH_DIR="/efs/em/gtc_sh"${GTC_SH_VERSION}
 # echo "GoToCloud: GTC_SET_SH_DIR=${GTC_SET_SH_DIR}"
 if [[ ! -e  ${GTC_SET_SH_DIR} ]]; then
     echo "GoToCloud:----------------------------------------------------------------------------------------------------------------"
@@ -158,7 +174,7 @@ ${GTC_SET_SH_DIR}/gtc_aws_ec2_create_key_pair.sh
 GTC_KEY_CREATE_STAT=$?
 
 #Create config 
-${GTC_SET_SH_DIR}/gtc_config_create.sh -s 2400 -m 16
+${GTC_SET_SH_DIR}/gtc_config_create.sh -s 2400 -m 16 -o ${GTC_SHARED_S3_URL}
 GTC_CONFIG_CREATE_STAT=$?
 
 echo "GoToCloud: "
