@@ -190,9 +190,9 @@ echo "GoToCloud: Creating pcluster head node system environment variable setting
 cat > ${GTC_CHIMERA_SETTINGS_FILE} <<'EOS'
 #!/bin/sh
 
-# USFS chimera 1.15
-# To be causious, put new path at the end
-export PATH=$PATH:/efs/em/UCSF-Chimera64-1.15rc/bin
+# load USFS chimera
+source /etc/profile.d/modules.sh
+module load chimera
 EOS
 
 # Set file permission 
