@@ -1,0 +1,3 @@
+#%Module -*- tcl -*-
+set root /efs/em/pyenv/versions/anaconda3-5.3.1/envs/topaz
+prepend-path PATH $root/bin

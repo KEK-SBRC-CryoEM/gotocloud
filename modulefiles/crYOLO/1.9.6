@@ -1,0 +1,7 @@
+#%Module -*- tcl -*-
+set root /efs/em/pyenv/versions/anaconda3-2023.03/envs/cryolo-1.9.6
+setenv CRYOLOPATH $root
+prepend-path PATH $root/bin
+
+setenv CRYOLO_SUBMIT_CMD		sbatch
+setenv CRYOLO_SUBMIT_SCRIPT		/efs/em/aws_slurm_cryolo.sh

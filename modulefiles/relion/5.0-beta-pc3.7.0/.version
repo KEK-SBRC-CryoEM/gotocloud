@@ -1,0 +1,2 @@
+#%Module 1.0
+set ModulesVersion intel_amd-gcc-intelmpi-gpu
