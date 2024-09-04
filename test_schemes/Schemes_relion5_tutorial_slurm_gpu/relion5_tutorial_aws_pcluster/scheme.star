@@ -42,8 +42,8 @@ ctffind_exe               /efs/em/ctffind-4.1.14-linux64/bin/ctffind            
 gctf_exe                  /efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64                /efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64
 motioncor2_exe            ""                                                                  ""
 topaz_exe                 relion_python_topaz                                                 relion_python_topaz
-cryolo_repo               /efs/em/crYOLO                                                      /efs/em/crYOLO
-cryolo_exe                /efs/em/crYOLO/gtf_relion4_run_cryolo_system.sh                     /efs/em/crYOLO/gtf_relion4_run_cryolo_system.sh
+cryolo_repo               /efs/em/cryolo                                                      /efs/em/cryolo
+cryolo_exe                /efs/em/cryolo/gtf_relion4_run_cryolo_system.sh                     /efs/em/cryolo/gtf_relion4_run_cryolo_system.sh
 
 
 # version 30001
