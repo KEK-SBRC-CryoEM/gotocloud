@@ -44,5 +44,13 @@ ETX
 
 echo "---- Hello Relion ----"
 module load relion/5.0-beta-pc3.7.0/intel_amd-gcc-intelmpi-gpu
-module list
-time mpirun -n ${SLURM_NTASKS} -ppn XXXdedicatedXXX -machinefile ${NODEFILE} XXXcommandXXX
+env time -V
+
+STARTTIME=`date -u +%s`
+echo "Started (Unix time): $STARTTIME"
+
+env time mpirun -n ${SLURM_NTASKS} -ppn XXXdedicatedXXX -machinefile ${NODEFILE} XXXcommandXXX
+
+ENDTIME=`date -u +%s`
+echo "Ended (Unix time): $ENDTIME"
+echo "Elapsed (Unix time): `echo $ENDTIME - $STARTTIME | bc`"
