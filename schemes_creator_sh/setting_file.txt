@@ -1,0 +1,21 @@
+# preread_images #1
+# scratch_directory #2
+# use_gpu #3
+# gpu_ids_to_use #4
+# number_of_MPI #5
+# number_of_threads #6
+# minimum_dedicated_cores #7
+# partition #8
+# queue_submit_command #9
+# submission_script #10
+# additional_arguments #11
+
+No  /scratch  Yes  0:1:2:3:4:5:6:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6  63  12   8  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh ""
+No  /scratch  Yes  0:1:2:3:4:5:6:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6  31  12   8  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7                              17  12   9  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:3:4:5:6:7                                               9  12   9  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2  63  6   4  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2  31  6   4  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:0:1:2:3:0:1:2:3:0:1:2                                  15  6   4  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:3:0:1:2:3                                               9  6   5  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
+No  /scratch  Yes  0:1:2:3                                                       5  6   5  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""

@@ -1,0 +1,12 @@
+# number_of_MPI #1
+# number_of_threads #2
+# minimum_dedicated_cores #3
+# partition #4
+# queue_submit_command #5
+# submission_script #6
+# additional_arguments #7
+
+
+64	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion.sh  ""
+32	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion.sh  ""
+16	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion.sh  ""
