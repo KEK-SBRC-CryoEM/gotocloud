@@ -43,6 +43,14 @@ OMP_NUM_THREADS = "${OMP_NUM_THREADS}"
 ETX
 
 echo "---- Hello Relion ----"
-
 module list
-time mpirun -n ${SLURM_NTASKS} -ppn XXXdedicatedXXX -machinefile ${NODEFILE} XXXcommandXXX
+env time -V
+
+STARTTIME=`date -u +%s`
+echo "Started (Unix time): $STARTTIME"
+
+env time mpirun -n ${SLURM_NTASKS} -ppn XXXdedicatedXXX -machinefile ${NODEFILE} XXXcommandXXX
+
+ENDTIME=`date -u +%s`
+echo "Ended (Unix time): $ENDTIME"
+echo "Elapsed (Unix time): `echo $ENDTIME - $STARTTIME | bc`"
