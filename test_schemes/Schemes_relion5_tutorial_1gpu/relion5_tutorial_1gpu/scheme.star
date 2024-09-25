@@ -38,12 +38,12 @@ loop_
 _rlnSchemeStringVariableName #1 
 _rlnSchemeStringVariableValue #2 
 _rlnSchemeStringVariableResetValue #3 
-ctffind_exe               /efs/em/ctffind-4.1.14-linux64/bin/ctffind                          /efs/em/ctffind-4.1.14-linux64/bin/ctffind
-gctf_exe                  /efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64                /efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64
+ctffind_exe               /home/ubuntu/ctffind-4.1.14-linux64/bin/ctffind                     /home/ubuntu/ctffind-4.1.14-linux64/bin/ctffind
+gctf_exe                  ""                                                                  ""
 motioncor2_exe            ""                                                                  ""
 topaz_exe                 relion_python_topaz                                                 relion_python_topaz
-cryolo_repo               /efs/em/cryolo                                                      /efs/em/cryolo
-cryolo_exe                /efs/em/cryolo/gtf_relion4_run_cryolo_system.sh                     /efs/em/cryolo/gtf_relion4_run_cryolo_system.sh
+cryolo_repo               /home/ubuntu/cryolo                                                 /home/ubuntu/cryolo
+cryolo_exe                /home/ubuntu/cryolo/gtf_relion4_run_cryolo_system.sh                /home/ubuntu/cryolo/gtf_relion4_run_cryolo_system.sh 
 
 
 # version 30001
