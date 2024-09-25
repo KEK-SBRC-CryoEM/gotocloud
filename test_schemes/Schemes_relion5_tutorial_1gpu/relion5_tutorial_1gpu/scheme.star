@@ -3,7 +3,7 @@
 
 data_scheme_general
 
-_rlnSchemeName                       Schemes/relion5_tutorial_aws_pcluster/
+_rlnSchemeName                       Schemes/relion5_tutorial_1gpu/
 _rlnSchemeCurrentNodeName            Job001_Import
 
 # version 30001
