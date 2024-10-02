@@ -1,3 +1,2 @@
-#%Module -*- tcl -*-
-set root /efs/em/UCSF-Chimera64-1.15rc
-prepend-path PATH $root/bin
+#%Module1.0
+set-alias chimera /efs/em/UCSF-Chimera64-1.15rc/bin/chimera
