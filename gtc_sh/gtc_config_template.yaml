@@ -1,7 +1,7 @@
 Region: XXX_GTC_AWS_REGION_XXX
 Image:
   Os: ubuntu2004
-HeadNode: 
+HeadNode:
   InstanceType: m5.xlarge
   Networking:
     SubnetId: XXX_GTC_SUBNET_ID_XXX
@@ -26,12 +26,12 @@ Scheduling:
   - Name: g5-vcpu192-gpu8
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g5-48xlarge
       InstanceType: g5.48xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -51,12 +51,12 @@ Scheduling:
   - Name: g5-vcpu192-gpu8-spot
     CapacityType: SPOT
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g5-48xlarge-spot
       InstanceType: g5.48xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -126,10 +126,12 @@ Scheduling:
   - Name: g5-vcpu16-gpu1
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g5-4xlarge
       InstanceType: g5.4xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -149,10 +151,12 @@ Scheduling:
   - Name: g5-vcpu16-gpu1-spot
     CapacityType: SPOT
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g5-4xlarge-spot
       InstanceType: g5.4xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -172,12 +176,12 @@ Scheduling:
   - Name: g4dn-vcpu96-gpu8
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-metal
       InstanceType: g4dn.metal
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -197,12 +201,12 @@ Scheduling:
   - Name: g4dn-vcpu96-gpu8-spot
     CapacityType: SPOT
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-metal-spot
       InstanceType: g4dn.metal
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -222,12 +226,12 @@ Scheduling:
   - Name: g4dn-vcpu48-gpu4
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-12xlarge
       InstanceType: g4dn.12xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -247,12 +251,12 @@ Scheduling:
   - Name: g4dn-vcpu48-gpu4-spot
     CapacityType: SPOT
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: g4dn-12xlarge-spot
       InstanceType: g4dn.12xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -272,10 +276,12 @@ Scheduling:
   - Name: g4dn-vcpu8-gpu1
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g4dn-2xlarge
       InstanceType: g4dn.2xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -295,10 +301,12 @@ Scheduling:
   - Name: g4dn-vcpu8-gpu1-spot
     CapacityType: SPOT
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-    ComputeResources: 
+      PlacementGroup:
+        Enabled: true
+    ComputeResources:
     - Name: g4dn-2xlarge-spot
       InstanceType: g4dn.2xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -318,12 +326,12 @@ Scheduling:
   - Name: c6i-vcpu128-gpu0
     CapacityType: ONDEMAND
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: c6i-32xlarge
       InstanceType: c6i.32xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -343,12 +351,12 @@ Scheduling:
   - Name: c6i-vcpu128-gpu0-spot
     CapacityType: SPOT
     Networking:
-      SubnetIds: 
+      SubnetIds:
       - XXX_GTC_SUBNET_ID_XXX
       AssignPublicIp: true
-      PlacementGroup: 
+      PlacementGroup:
         Enabled: true
-    ComputeResources: 
+    ComputeResources:
     - Name: c6i-32xlarge-spot
       InstanceType: c6i.32xlarge
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
@@ -617,17 +625,17 @@ Scheduling:
         EnableWriteAccess: true
 SharedStorage:
 - MountDir: /fsx
-  Name: fsx-scratch 
-  StorageType: FsxLustre 
+  Name: fsx-scratch
+  StorageType: FsxLustre
   FsxLustreSettings:
     StorageCapacity: XXX_GTC_FSX_MB_CAPACITY_XXX
-    DeploymentType: SCRATCH_2 
+    DeploymentType: SCRATCH_2
     ExportPath: s3://XXX_GTC_S3_NAME_XXX
     ImportPath: s3://XXX_GTC_S3_NAME_XXX
-Monitoring: 
+Monitoring:
   Logs:
     CloudWatch:
-      Enabled: true 
+      Enabled: true
       RetentionInDays: 180
       DeletionPolicy: Retain
 DevSettings:
