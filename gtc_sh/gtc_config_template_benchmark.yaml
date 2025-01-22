@@ -37,7 +37,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -62,7 +61,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -87,7 +85,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -112,7 +109,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -137,7 +133,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -162,7 +157,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -187,7 +181,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -212,7 +205,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -237,7 +229,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: false
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -262,7 +253,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: false
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -287,7 +277,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -312,7 +301,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -337,7 +325,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -362,7 +349,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -387,7 +373,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -412,7 +397,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: false
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -437,7 +421,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: false
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -462,7 +445,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -487,7 +469,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -512,7 +493,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -537,7 +517,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -562,7 +541,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -587,7 +565,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -612,7 +589,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -637,7 +613,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -662,7 +637,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -687,7 +661,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -712,7 +685,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
@@ -737,7 +709,6 @@ Scheduling:
       MaxCount: XXX_GTC_COMPUTE_RESOURCE_MAX_COUNT_XXX
       Efa:
         Enabled: true
-        GdrSupport: false
     CustomActions:
       OnNodeConfigured:
         Script: XXX_GTC_POST_INSTALL_XXX
