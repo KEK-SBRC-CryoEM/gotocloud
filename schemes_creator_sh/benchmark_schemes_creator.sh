@@ -61,13 +61,15 @@ function job_star_create_for_each_instance() {
             SCHEMES_JOB_STAR=${SCHEMES_JOB_DIR}/job.star
             cp ${JOB_STAR_TEMPLATE} ${SCHEMES_JOB_STAR}
             if [ $jobname == "Polish" ]; then
-                NUMBER_OF_MPI=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $1}')
-                NUMBER_OF_THREADS=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $2}')
-                MINIMUM_DEDICATED=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $3}')
-                PARTITION=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $4}')
-                SUBMIT_COMMAND=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $5}')
-                SUBMIT_SCRIPT=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $6}')
-                ADDITIONAL_ARGS=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $7}')
+                NUMBER_OF_NODES=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $1}')
+                NUMBER_OF_MPI=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $2}')
+                NUMBER_OF_THREADS=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $3}')
+                MINIMUM_DEDICATED=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $4}')
+                PARTITION=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $5}')
+                SUBMIT_COMMAND=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $6}')
+                SUBMIT_SCRIPT=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $7}')
+                ADDITIONAL_ARGS=$(cat ${SETTING_FILE_PL} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $8}')
+                sed -i "s@XXX_NUMBER_OF_NODES_XXX@${NUMBER_OF_NODES}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_NUMBER_OF_MPI_XXX@${NUMBER_OF_MPI}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_NUMBER_OF_THREADS_XXX@${NUMBER_OF_THREADS}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_MINIMUM_DEDICATED_XXX@${MINIMUM_DEDICATED}@g" ${SCHEMES_JOB_STAR}
@@ -80,20 +82,24 @@ function job_star_create_for_each_instance() {
                 SCRATCH_DIR=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $2}')
                 USE_GPU=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $3}')
                 GPU_IDS=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $4}')
-                NUMBER_OF_MPI=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $5}')
-                NUMBER_OF_THREADS=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $6}')
-                MINIMUM_DEDICATED=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $7}')
-                PARTITION=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $8}')
-                SUBMIT_COMMAND=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $9}')
-                SUBMIT_SCRIPT=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $10}')
-                ADDITIONAL_ARGS=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $11}')
+                NUMBER_OF_NODES=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $5}')
+                NUMBER_OF_MPI=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $6}')
+                NUMBER_OF_THREADS=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $7}')
+                MINIMUM_DEDICATED=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $8}')
+                PARTITION=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $9}')
+                NR_POOL=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $10}')
+                SUBMIT_COMMAND=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $11}')
+                SUBMIT_SCRIPT=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $12}')
+                ADDITIONAL_ARGS=$(cat ${SETTING_FILE} | awk '! /^#/' | awk 'NF' | awk 'NR == '$no' {print $13}')
                 sed -i "s@XXX_PREREAD_IMAGES_XXX@${PREREAD_IMAGES}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_SCRATCH_DIR_XXX@${SCRATCH_DIR}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_USE_GPU_XXX@${USE_GPU}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_GPU_IDS_XXX@${GPU_IDS}@g" ${SCHEMES_JOB_STAR}
+                sed -i "s@XXX_NUMBER_OF_NODES_XXX@${NUMBER_OF_NODES}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_NUMBER_OF_MPI_XXX@${NUMBER_OF_MPI}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_NUMBER_OF_THREADS_XXX@${NUMBER_OF_THREADS}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_MINIMUM_DEDICATED_XXX@${MINIMUM_DEDICATED}@g" ${SCHEMES_JOB_STAR}
+                sed -i "s@XXX_NR_POOL_XXX@${NR_POOL}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_PARTITION_XXX@${PARTITION}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_SUBMIT_COMMAND_XXX@${SUBMIT_COMMAND}@g" ${SCHEMES_JOB_STAR}
                 sed -i "s@XXX_SUBMIT_SCRIPT_XXX@${SUBMIT_SCRIPT}@g" ${SCHEMES_JOB_STAR}
