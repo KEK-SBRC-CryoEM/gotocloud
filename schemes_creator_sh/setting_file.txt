@@ -12,16 +12,8 @@
 # submission_script #12
 # additional_arguments #13
 
-# No  /scratch  Yes  0:1:2:3:4:5:6:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6  63  12   8  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh ""
-# No  /scratch  Yes  0:1:2:3:4:5:6:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7:0:1:2:3:4:5:6  31  12   8  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:3:4:5:6:7:0:1:2:3:4:5:6:7                              17  12   9  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:3:4:5:6:7                                               9  12   9  g5-vcpu192-gpu8  sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2  63  6   4  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2:3:0:1:2  31  6   4  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:0:1:2:3:0:1:2:3:0:1:2                                  15  6   4  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:3:0:1:2:3                                               9  6   5  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
-# No  /scratch  Yes  0:1:2:3                                                       5  6   5  g5-vcpu48-gpu4   sbatch  /efs/em/aws_slurm_relion.sh  ""
-No  /scratch  Yes  0:1:2:3                                                       1   5  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  ""
-No  /scratch  Yes  0:1:2:3                                                       2   9  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  ""
-No  /scratch  Yes  0:1:2:3                                                       4  17  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  ""
-No  /scratch  Yes  0:1:2:3                                                       8  33  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  ""
+No  /scratch  Yes  0:1:2:3                                                      16  65  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  "--random_seed 0"
+No  /scratch  Yes  0:1:2:3                                                       8  33  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  "--random_seed 0"
+No  /scratch  Yes  0:1:2:3                                                       4  17  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  "--random_seed 0"
+No  /scratch  Yes  0:1:2:3                                                       2   9  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  "--random_seed 0"
+No  /scratch  Yes  0:1:2:3                                                       1   5  12   1  g6-vcpu48-gpu4  30  sbatch  /efs/em/aws_slurm_relion500_gpu.sh  "--random_seed 0"

@@ -32,6 +32,10 @@ do
     esac
 done
 
+function awk() {
+    command awk -v FPAT='[^[:space:]]+|\"[^\"]*\"' "$@"
+}
+
 function job_star_create_for_each_instance() {
     #Create job directory and job.star
     SCHEME_JOB_NAME1=$1

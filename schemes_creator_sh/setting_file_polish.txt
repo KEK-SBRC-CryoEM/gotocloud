@@ -7,11 +7,6 @@
 # submission_script #7
 # additional_arguments #8
 
-
-#64	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion.sh  ""
-#32	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion.sh  ""
-#16	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion.sh  ""
-
-16  64	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion500_cpu_sse42.sh  ""
-8   32	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion500_cpu_sse42.sh  ""
-4   16	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion500_cpu_sse42.sh  ""
+16  64	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion500_cpu_sse42.sh  "--random_seed 0"
+8   32	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion500_cpu_sse42.sh  "--random_seed 0"
+4   16	16	4	c6i-vcpu128-gpu0   sbatch  /efs/em/aws_slurm_relion500_cpu_sse42.sh  "--random_seed 0"
