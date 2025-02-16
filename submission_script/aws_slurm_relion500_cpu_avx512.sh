@@ -3,6 +3,7 @@
 #SBATCH --exclusive
 #SBATCH --partition=XXXextra1XXX
 #SBATCH --nodes=XXXextra2XXX
+#SBATCH --open-mode=append
 #SBATCH --error=XXXerrfileXXX
 #SBATCH --output=XXXoutfileXXX
 #SBATCH --job-name=XXXqueueXXX
