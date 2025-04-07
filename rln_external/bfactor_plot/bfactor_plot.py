@@ -12,18 +12,17 @@ the name of a file containing options if needed. See the relion_it_options.py
 file for an example.
 
 Usage example: 
-    ./bfactor_plot.py -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200
+    python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200
 
-@2025.03:
-Modified by: (2025.03.10) Jair Pereira and Toshio Moriya
-- Added support to .ymal files instead of raw .py for parameters
-- Added argparse instead of sys.args
-- Setting output_node.star
-- Handling matplotlib and numpy imports
-- np.int (deprecated) -> int
-- Fixed outputting \u00C5 for Å
-- Fixed matplotlib UserWarning for settings tick labels before setting ticks on ax2 and ax3
-- Load parameters from Refine3D and PostProcess job.star files (parameter priority terminal > yaml > job.star files)
+Modified by: (2025.March) Jair Pereira and Toshio Moriya
+- Added support for **YAML files** instead of raw `.py` for parameter input.
+- Replaced `sys.argv` with **argparse** for better argument handling.
+- Added functionality for setting the **output_node.star** file.
+- Improved handling of **matplotlib** and **numpy** imports.
+- Replaced **np.int** (deprecated) with **int** for compatibility.
+- Fixed the issue with outputting `\u00C5` for **Å** (angstrom symbol).
+- Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
+- Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, with parameter priority order: `terminal > yaml > job.star`.
 """
 
 from __future__ import print_function
@@ -35,7 +34,6 @@ import time
 import glob
 from math import log, sqrt
 
-# @2025.03.10
 import yaml
 import argparse
 from pathlib import Path
@@ -57,6 +55,7 @@ SETUP_CHECK_FILE = 'SUBMITTED_JOBS' # prefix is appended in main()
 
 # The parameter names on the original bfactor plot are different from the Refine3D job.star
 #   this dictionary is used to translate them
+#   this is a layer of compatibility, refactoring should ensure the same name on the related jobs
 params_trans = {
     "queue_name":                "queuename",
     "queue_submit_command":      "qsub",
@@ -88,9 +87,12 @@ class RelionItOptions:
     # most likely run.job file in the job directory contains garbage bytes.
 
     def __init__(self, from_terminal=None, from_yaml=None, from_jobstar=None):
-        self._load_parameters_from_dictionary(from_jobstar)
-        self._load_parameters_from_dictionary(from_yaml)
-        self._load_parameters_from_terminal(from_terminal)
+        if from_jobstar is not None:
+            self._load_parameters_from_dictionary(from_jobstar)
+        if from_yaml is not None:
+            self._load_parameters_from_dictionary(from_yaml)
+        if from_terminal is not None:
+            self._load_parameters_from_terminal(from_terminal)
 
     def _load_parameters_from_terminal(self, args):
         for arg, value in vars(args).items():
@@ -112,10 +114,12 @@ def load_yaml_parameters(filepath):
     """
     Receives a string filepath for a .yaml file and loads it as a dictionary
     """
-    parameters = yaml.safe_load(filepath)
-    with open(filepath, 'r') as yaml_file:
-        yaml_dict = yaml.safe_load(yaml_file)
-    return yaml_dict
+    if filepath is not None and filepath.strip()!="":
+        parameters = yaml.safe_load(filepath)
+        with open(filepath, 'r') as yaml_file:
+            yaml_dict = yaml.safe_load(yaml_file)
+        return yaml_dict
+    return None
 
 def read_and_merge_job_parameters(filename_list, d_name_trans):
     '''Merges parameters from a list of RELION job.star files based on a translation mapping d_name_trans,
@@ -213,10 +217,18 @@ def make_rln_output_node_file(outpath, outfiles):
 def validate_args(args):
     errors = []
 
-    if args.parameter_file is None:
-        errors.append("RELION_IT: ERROR! You must specify the .yaml parameter file path!")
+    # if the essential parameters were not set by terminal (or in relion)
+    if(args.maximum_nr_particles is None or
+        args.minimum_nr_particles is None or
+        args.input_postprocess_job is None or
+        args.input_refine3d_job is None):
+        # then we must receive a parameter file
+        if args.parameter_file is None or args.parameter_file.strip()=="": 
+            errors.append("You must provide following parameters: --maximum_nr_particles, --minimum_nr_particles, --input_postprocess_job, and --input_refine3d_job")
+            errors.append("Or provide a yaml parameter file using --parameter_file")
     
-    if args.output is None: # This is for runs from the terminal, since Relion always provides the output directory
+    # This is for runs from the terminal, since Relion always provides the output directory
+    if args.output is None: 
         errors.append("RELION_IT: ERROR! You must specify the output directory!")
 
     if errors:
@@ -428,7 +440,7 @@ def run_pipeline(opts):
                      'Minimum dedicated cores per node: == {}'.format(opts.queue_minimum_dedicated)]
 
     # Get the original STAR file
-    refine3d_run_file = opts.input_refine3d_job+'job.star'
+    refine3d_run_file = os.path.join(opts.input_refine3d_job, "job.star")
     all_particles_star_file = None
     if os.path.exists(refine3d_run_file):
         for line in open(refine3d_run_file,'r'):
@@ -436,7 +448,7 @@ def run_pipeline(opts):
                 all_particles_star_file = line.split()[1].replace('\n','')
                 break
     else:
-        refine3d_run_file = opts.input_refine3d_job+'run.job' # old style
+        refine3d_run_file = os.path.join(opts.input_refine3d_job, "job.star") # old style
         for line in open(refine3d_run_file,'r'):
             if 'Input images STAR file' in line:
                 all_particles_star_file = line.split(' == ')[1].replace('\n','')
@@ -525,10 +537,10 @@ def run_pipeline(opts):
             print(" RELION_IT: For now, making the plot without this job.")
 
         if halfmap_filename is not None:
-            # C. Run PostProcess
-            postprocess_run_file = opts.input_postprocess_job+'job.star'
+            # C. Run PostProcess            
+            postprocess_run_file = os.path.join(opts.input_postprocess_job, "job.star")
             if not os.path.exists(postprocess_run_file):
-                postprocess_run_file = opts.input_postprocess_job+'run.job'
+                postprocess_run_file = os.path.join(opts.input_postprocess_job, "run.star")
             post_options = ['One of the 2 unfiltered half-maps: == {}'.format(halfmap_filename)]
             post_job_name = 'post_job_' + str(current_nr_particles)
             post_alias = opts.prefix + str(current_nr_particles)
@@ -652,7 +664,7 @@ def main():
     print(' RELION_IT: Script for automated Bfactor-plot generation in RELION (>= 3.1)')
     print(' RELION_IT: Authors: Sjors H.W. Scheres & Takanori Nakane')
     print(' RELION_IT: Modified by: (2025.03) Jair Pereira and Toshio Moriya')
-    print(' RELION_IT: Usage example: ./bfactor_plot.py -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
+    print(' RELION_IT: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
     print(' RELION_IT: ')
     print(' RELION_IT: This script keeps track of already submitted jobs in a filed called', SETUP_CHECK_FILE)
     print(' RELION_IT:   upon a restart, jobs present in this file will be ignored.')
@@ -674,7 +686,7 @@ def main():
 
     args, unknown = parser.parse_known_args()
     print(" RELION_IT: B-Factor Plot running...")
-    print(" RELION_IT: Reading parameters (.yaml) from: ", args.parameter_file)
+    # print(" RELION_IT: Reading parameters (.yaml) from: ", args.parameter_file)
 
     ## safeguards for missing parameter_file and output file
     if not validate_args(args): sys.exit(0)
@@ -682,6 +694,7 @@ def main():
     ## Here we load parameters into RelionItOptions from 
     ##  (1) terminal (2) yaml (3) Refine3D and PostProcess job.star files
     ##   if the same parameter is found across those sources, the priority is terminal>yaml>job.star files
+    ##   (note: parameters set on the relion external job params tab are passed to this script by terminal)
     ## ideally users define the parameters once on the .yaml, then use the terminal to ajust the job inputs and number of particles
     ## parameters from the job.star are mostly machine depedent (mpi) that the user has set already when doing the Refine3D / PostProcess
     opts = RelionItOptions(
@@ -695,8 +708,8 @@ def main():
     opts.output  = args.output
     opts.outfile = opts.prefix+"rosenthal-henderson-plot.pdf"
     opts.outtext = opts.prefix+"estimated.txt"
-    print(" RELION_IT: Using Refine3D Job directory as: ", opts.input_refine3d_job)
-    print(" RELION_IT: Using PostProcess Job directory as: ", opts.input_postprocess_job)
+    print(" RELION_IT: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
+    print(" RELION_IT: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
     print(" RELION_IT: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
     print(" RELION_IT: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
     print(" RELION_IT: Writing output to: ", opts.output, flush=True)
