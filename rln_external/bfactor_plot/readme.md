@@ -30,7 +30,7 @@ git clone https://github.com/KEK-SBRC-CryoEM/gotocloud.git
 Next, copy the **bfactor_plot** directory into your RELION project directory:
 
 ```bash
-cp -r gotocloud/external/bfactor_plot ./path/to/relion/project/
+cp -r gotocloud/rln_external/bfactor_plot ./path/to/relion/project/
 ```
 
 Replace `./path/to/relion/project` with the actual path to your RELION project directory.
