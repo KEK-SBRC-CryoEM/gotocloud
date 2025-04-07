@@ -22,7 +22,7 @@ Follow these steps to install and set up the script in your working directory:
 First, clone the GitHub repository to your local machine:
 
 ```bash
-git clone https://github.com/KEK-SBRC-CryoEM/gotocloud.git
+git clone -b add_bfactor_plot https://github.com/KEK-SBRC-CryoEM/gotocloud.git
 ```
 
 ### 2. Copy the Script to Your RELION Project
@@ -34,6 +34,11 @@ cp -r gotocloud/rln_external/bfactor_plot ./path/to/relion/project/
 ```
 
 Replace `./path/to/relion/project` with the actual path to your RELION project directory.
+
+### 3. Add permission to run the script
+```bash
+ chmod +x bfactor_plot/bfactor_plot.py
+ ```
 
 ## Running from RELION's External Tab
 
