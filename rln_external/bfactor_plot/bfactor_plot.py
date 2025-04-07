@@ -94,6 +94,10 @@ class RelionItOptions:
         if from_terminal is not None:
             self._load_parameters_from_terminal(from_terminal)
 
+        # handling path simple appending
+        self.input_refine3d_job = os.path.join(self.input_refine3d_job, "")
+        self.input_postprocess_job = os.path.join(self.input_postprocess_job, "")
+
     def _load_parameters_from_terminal(self, args):
         for arg, value in vars(args).items():
             if value is not None:

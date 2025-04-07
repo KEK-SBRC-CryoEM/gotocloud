@@ -29,9 +29,9 @@ other_args         ""
 param10_label         "" 
 param10_value         "" 
 param1_label    input_refine3d_job
-param1_value    "Refine3D/jobXX"
+param1_value    "Refine3D/jobXXX/"
 param2_label    input_postprocess_job
-param2_value    "PostProcess/jobXX"
+param2_value    "PostProcess/jobXXX/"
 param3_label    minimum_nr_particles
 param3_value    225
 param4_label    maximum_nr_particles
