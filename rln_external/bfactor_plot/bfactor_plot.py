@@ -645,7 +645,7 @@ def run_pipeline(opts):
         print('WARNING: Failed to plot. Probably matplotlib and/or numpy is missing.')
 
 
-def move_files():
+def move_files(opts):
     if os.path.isfile(RUNNING_FILE):
         os.remove(RUNNING_FILE)
 
