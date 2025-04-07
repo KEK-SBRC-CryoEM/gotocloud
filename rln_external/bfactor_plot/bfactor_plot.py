@@ -644,6 +644,8 @@ def run_pipeline(opts):
     else:
         print('WARNING: Failed to plot. Probably matplotlib and/or numpy is missing.')
 
+
+def move_files():
     if os.path.isfile(RUNNING_FILE):
         os.remove(RUNNING_FILE)
 
@@ -653,7 +655,7 @@ def run_pipeline(opts):
     for file in glob.glob("pipeline_batch*.log"):
         os.rename(file, os.path.join(opts.output, file))
 
-    print(' RELION_IT: exiting now... ')
+
 
 def main():
     """
@@ -728,13 +730,19 @@ def main():
         print(" RELION_IT: ERROR:", RUNNING_FILE, "is already present: delete this file and make sure no other copy of this script is running. Exiting now ...")
         exit(0)
 
-    # bfactor pipeline
-    run_pipeline(opts)
+    try:
+        # Run the bfactor pipeline
+        run_pipeline(opts)
+        ## Creates RELION_OUTPUT_NODES star file
+        make_rln_output_node_file(outpath=opts.output, outfiles=[opts.outfile, opts.outtext] if IMPORTS_OK else [opts.outtext]) # cant produce .pdf if numpy and matplot are missing...
+        open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
+    finally:
+        move_files() # move all files to the output directory
+        print(' RELION_IT: exiting now... ')
     
-    ## Creating RELION_OUTPUT_NODES star file @2025.03.10
-    make_rln_output_node_file(outpath=opts.output, outfiles=[opts.outfile, opts.outtext] if IMPORTS_OK else [opts.outtext]) # cant produce .pdf if numpy and matplot are missing...
-    open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
 
 if __name__ == "__main__":
     main()
+        
+
 
