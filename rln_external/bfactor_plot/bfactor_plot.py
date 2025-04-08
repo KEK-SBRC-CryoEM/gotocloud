@@ -737,7 +737,7 @@ def main():
         make_rln_output_node_file(outpath=opts.output, outfiles=[opts.outfile, opts.outtext] if IMPORTS_OK else [opts.outtext]) # cant produce .pdf if numpy and matplot are missing...
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
     finally:
-        move_files() # move all files to the output directory
+        move_files(opts) # move all files to the output directory
         print(' RELION_IT: exiting now... ')
     
 
