@@ -102,7 +102,7 @@ External/<job_name>/BFACTOR_PLOT_rosenthal-henderson-plot.pdf
 You can also run the script directly from the terminal using the following command:
 
 ```bash
-python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200
+python3 ./bfactor_plot.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200
 ```
 Where:
 - `-o path_output`: Specify the output path.
