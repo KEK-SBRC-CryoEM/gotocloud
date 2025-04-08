@@ -116,7 +116,7 @@ Where:
 
 ## About the Script
 
-This script is an improved version of the `bfactor_plot.py` from the RELION project ([GitHub Link](https://github.com/3dem/relion/blob/master/scripts/bfactor_plot.py)).
+This script is an improved version of the `bfactor_plot.py` from the RELION project ([GitHub Link](https://github.com/3dem/relion/blob/master/scripts/bfactor_plot.py)). The core functionality for computing the **B-factor** has **not** been changed or refactored. The improvements focus mainly on input handling and script compatibility.
 
 ### Changes from the original script:
 - Added support for **YAML files** instead of raw `.py` for parameter input.
@@ -128,8 +128,7 @@ This script is an improved version of the `bfactor_plot.py` from the RELION proj
 - Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
 - Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, with parameter priority order: `terminal > yaml > job.star`.
 
-### Core Functionality
-The core functionality for computing the **B-factor** has **not** been changed or refactored. The improvements focus mainly on input handling and script compatibility.
+
 
 
 
