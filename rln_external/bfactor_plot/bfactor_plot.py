@@ -86,24 +86,26 @@ class RelionItOptions:
     # If program crahses saying "'utf-8' codec can't decode byte 0xXX in position YY",
     # most likely run.job file in the job directory contains garbage bytes.
 
-    def __init__(self, from_terminal=None, from_yaml=None, from_jobstar=None):
-        if from_jobstar is not None:
-            self._load_parameters_from_dictionary(from_jobstar)
-        if from_yaml is not None:
-            self._load_parameters_from_dictionary(from_yaml)
+    def __init__(self, from_terminal=None, from_yaml=None):
         if from_terminal is not None:
-            self._load_parameters_from_terminal(from_terminal)
+            self.load_parameters_from_terminal(from_terminal)
+        if from_yaml is not None:
+            self.load_parameters_from_dictionary(from_yaml)
 
         # handling path simple appending
         self.input_refine3d_job = os.path.join(self.input_refine3d_job, "")
         self.input_postprocess_job = os.path.join(self.input_postprocess_job, "")
 
-    def _load_parameters_from_terminal(self, args):
+        # opts.output  = args.output
+        self.outfile = self.prefix+"rosenthal-henderson-plot.pdf"
+        self.outtext = self.prefix+"estimated.txt"
+
+    def load_parameters_from_terminal(self, args):
         for arg, value in vars(args).items():
             if value is not None:
                 setattr(self, arg, value if value is not None else getattr(self, arg))
 
-    def _load_parameters_from_dictionary(self, dict_params):
+    def load_parameters_from_dictionary(self, dict_params):
         """
         Receives a python dictionary and set the keys as attributes name
             and the values as the attribute value
@@ -111,8 +113,9 @@ class RelionItOptions:
         Expects a flat dictionary (does not accept nested dictionary)
         """
         if dict_params is not None:
-            for key, value in dict_params.items(): 
-                setattr(self, key, value)
+            for key, value in dict_params.items():
+                if not hasattr(self, key) or getattr(self, key) is None: #dont overwrite if attribute already exist
+                    setattr(self, key, value)
 
 def load_yaml_parameters(filepath):
     """
@@ -672,8 +675,8 @@ def main():
     print(' RELION_IT: Modified by: (2025.03) Jair Pereira and Toshio Moriya')
     print(' RELION_IT: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
     print(' RELION_IT: ')
-    print(' RELION_IT: This script keeps track of already submitted jobs in a filed called', SETUP_CHECK_FILE)
-    print(' RELION_IT:   upon a restart, jobs present in this file will be ignored.')
+    # print(' RELION_IT: This script keeps track of already submitted jobs in a filed called', SETUP_CHECK_FILE)
+    # print(' RELION_IT:   upon a restart, jobs present in this file will be ignored.')
     # print(' RELION_IT: If you would like to re-do a specific job from scratch (e.g. because you changed its parameters)')
     # print(' RELION_IT:   remove that job, and those that depend on it, from the', SETUP_CHECK_FILE)
     print(' RELION_IT: -------------------------------------------------------------------------------------------------------------------')
@@ -701,19 +704,14 @@ def main():
     ##  (1) terminal (2) yaml (3) Refine3D and PostProcess job.star files
     ##   if the same parameter is found across those sources, the priority is terminal>yaml>job.star files
     ##   (note: parameters set on the relion external job params tab are passed to this script by terminal)
-    ## ideally users define the parameters once on the .yaml, then use the terminal to ajust the job inputs and number of particles
-    ## parameters from the job.star are mostly machine depedent (mpi) that the user has set already when doing the Refine3D / PostProcess
     opts = RelionItOptions(
-        from_terminal = args, # highest priority; for often changing parameters
-        from_yaml     = load_yaml_parameters(args.parameter_file),
-        from_jobstar  = read_and_merge_job_parameters([os.path.join(jobs, "job.star") 
-            for jobs in [args.input_refine3d_job, args.input_postprocess_job]], params_trans)
-            # least priority; for machine specific parameters (hardly changes)
+        from_terminal = args,
+        from_yaml     = load_yaml_parameters(args.parameter_file)
     )
+    from_jobstar = read_and_merge_job_parameters([os.path.join(jobs, "job.star") 
+                    for jobs in [opts.input_refine3d_job, opts.input_postprocess_job]], params_trans)
+    opts.load_parameters_from_dictionary(from_jobstar)
 
-    opts.output  = args.output
-    opts.outfile = opts.prefix+"rosenthal-henderson-plot.pdf"
-    opts.outtext = opts.prefix+"estimated.txt"
     print(" RELION_IT: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
     print(" RELION_IT: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
     print(" RELION_IT: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
