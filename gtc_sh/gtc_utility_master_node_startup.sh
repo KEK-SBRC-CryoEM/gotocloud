@@ -182,6 +182,7 @@ cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
 # load relion 
 source /etc/profile.d/modules.sh
 module load relion
+module load schemes-editing
 
 # GoToCloud system environment variables
 export RELION_QSUB_EXTRA_COUNT=2
