@@ -1,0 +1,22 @@
+#%Module -*- tcl -*-
+set RELION /efs/em/relion-v40-arm/relion-4.0-beta-2-arm
+prepend-path    PATH                $RELION/bin
+prepend-path    LD_LIBRARY_PATH     $RELION/lib
+
+setenv RELION_CTFFIND_EXECUTABLE    /efs/em/ctffind-4.1.14-linux64/bin/ctffind
+setenv RELION_GCTF_EXECUTABLE       /efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64
+setenv RELION_PDFVIEWER_EXECUTABLE  /usr/bin/evince
+setenv RELION_ERROR_LOCAL_MPI       96
+
+setenv RELION_QSUB_TEMPLATE         /efs/em/aws_slurm_relion-arm.sh
+setenv RELION_QSUB_EXTRA_COUNT      1
+setenv RELION_QSUB_EXTRA1           Partition
+setenv RELION_QSUB_EXTRA1_DEFAULT   g5g-vcpu64-gpu2
+setenv RELION_QSUB_EXTRA1_HELP      "Partitions: g5g-vcpu64-gpu2, g4dn-vcpu32-gpu1, g5g-vcpu16-gpu1"
+
+# The mpi runtime ('mpirun' by default)
+# setenv RELION_MPI_RUN             srun
+setenv RELION_QUEUE_USE             yes
+setenv RELION_QSUB_COMMAND          sbatch
+
+setenv RELION_SCRIPT_DIRECTORY        $RELION/bin

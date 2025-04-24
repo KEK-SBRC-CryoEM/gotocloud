@@ -1,0 +1,21 @@
+#%Module
+conflict relion
+set RELION /efs/em/relion-v500-4e57a4d/gcc-intelmpi-gpu-cudaarch89
+prepend-path    PATH                $RELION/bin
+prepend-path    LD_LIBRARY_PATH     $RELION/lib
+
+setenv RELION_CTFFIND_EXECUTABLE    /efs/em/ctffind-4.1.14-linux64/bin/ctffind
+setenv RELION_GCTF_EXECUTABLE       /efs/em/Gctf_v1.06/bin/Gctf-v1.06_sm_20_cu7.5_x86_64
+setenv RELION_PDFVIEWER_EXECUTABLE  /usr/bin/evince
+setenv RELION_ERROR_LOCAL_MPI       96
+
+setenv RELION_QSUB_TEMPLATE         /efs/em/aws_slurm_relion.sh
+
+# The mpi runtime ('mpirun' by default)
+setenv RELION_QUEUE_USE             yes
+setenv RELION_QSUB_COMMAND          sbatch
+
+setenv RELION_SCRIPT_DIRECTORY      $RELION/bin
+
+# Load required dependencies
+if { ![ is-loaded intelmpi ] }      { module load intelmpi }
