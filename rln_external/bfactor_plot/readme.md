@@ -119,12 +119,13 @@ Where:
 This script is an improved version of the `bfactor_plot.py` from the RELION project ([GitHub Link](https://github.com/3dem/relion/blob/master/scripts/bfactor_plot.py)). The core functionality for computing the **B-factor** has **not** been changed or refactored. The improvements focus mainly on input handling and script compatibility.
 
 ### Changes from the original script:
-- Added support for **YAML files** instead of raw `.py` for parameter input.
+- Added support for **YAML files** instead of raw `.py` for parameter input (mpi parameters).
+
 - Replaced `sys.argv` with **argparse** for better argument handling.
 - Added functionality for setting the **output_node.star** file.
 - Improved handling of **matplotlib** and **numpy** imports.
 - Replaced **np.int** (deprecated) with **int** for compatibility.
 - Fixed the issue with outputting `\u00C5` for **Å** (angstrom symbol).
 - Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
-- Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, with parameter priority order: `terminal > yaml > job.star`.
+- Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, when the YAML file is not provided, the mpi parameters are the same as in `job.star`.
 
