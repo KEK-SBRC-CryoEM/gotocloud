@@ -126,12 +126,21 @@ def gtf_get_timestamp(file_format=False):
 		return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 def make_output_directory(output_path):
-    # if the directory already exists, create another with a timestamp
-    if os.path.exists(output_path):
+    """
+        Creates the output directory
+            
+        If running from relion, 
+            we keep the output directory as is since relion enforces unique directory
+
+        If running from the terminal,
+            we create a timestamped subdirectory
+            
+    """
+    running_from_relion = os.path.exists(os.path.join(output_path, "job.star"))
+
+    if not running_from_relion:
         output_path = os.path.join(output_path, gtf_get_timestamp(True))
-    
-    # make directory
-    Path(output_path).mkdir(parents=True, exist_ok=True)
+        Path(output_path).mkdir(parents=True, exist_ok=True)
 
     # return path
     return output_path
@@ -701,23 +710,17 @@ def main():
     args, unknown = parser.parse_known_args()
     print(" BFACTOR | MESSAGE: B-Factor Plot running...")
 
-    ## safeguards for missing mpi_parameters and output file
-    # if not validate_args(args): sys.exit(0) # todo parameters come from terminal always
-
-    ## Here we load parameters into RelionItOptions from 
-    ##  (1) terminal (2) yaml (3) Refine3D and PostProcess job.star files
-    ##   if the same parameter is found across those sources, the priority is terminal>yaml>job.star files
-    ##   (note: parameters set on the relion external job params tab are passed to this script by terminal)
     opts = RelionItOptions(
         from_terminal = args,
-        from_yaml     = load_yaml_parameters(args.mpi_parameters)
+        from_yaml     = load_yaml_parameters(args.mpi_parameters) # if provided
     )
     from_jobstar = read_and_merge_job_parameters([os.path.join(jobs, "job.star") 
                     for jobs in [opts.input_refine3d_job, opts.input_postprocess_job]], PARAMS_TRANS)
-    opts.load_parameters_from_dictionary(from_jobstar)
+    opts.load_parameters_from_dictionary(from_jobstar) # if no yaml, get from input jobs
 
     # Make output directory
     opts.output = make_output_directory(output_path=args.output)
+    )
 
     print(" BFACTOR | MESSAGE: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
     print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
