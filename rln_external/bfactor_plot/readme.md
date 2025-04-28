@@ -58,7 +58,7 @@ In the left-hand job list, select **External**.
 ### 3. Load the Initial Settings File
 
 - On the top toolbar, go to **Load** → **Load job.star**
-- Choose the file: [`config/job.star`](config/job.star)
+- Choose the file: [`bfactor_plot/config/job.star`](config/job.star)
 
 This file loads default settings required to run the script.
 
@@ -79,7 +79,7 @@ By default, the script will automatically use the same parameter values from the
 
 However, if you'd like to **manually define these parameters**, you can:
 
-1. Edit the [`config/bfactor.yaml`](config/bfactor.yaml) file.
+1. Edit the [`bfactor_plot/config/bfactor.yaml`](config/bfactor.yaml) file.
 2. In the "Params" tab, set the **path** to this file in the `parameter_file` input field:
    - Param label: `parameter_file`  
    - Param input: `<path/to/config/bfactor.yaml>`
@@ -94,7 +94,7 @@ Click **Run!**
 
 Once finished, the script will save its output:
 ```
-External/<job_name>/FACTOR_PLOT_estimated.txt
+External/<job_name>/BFACTOR_PLOT_estimated.txt
 External/<job_name>/BFACTOR_PLOT_rosenthal-henderson-plot.pdf
 ```
 
@@ -102,15 +102,15 @@ External/<job_name>/BFACTOR_PLOT_rosenthal-henderson-plot.pdf
 You can also run the script directly from the terminal using the following command:
 
 ```bash
-python3 ./bfactor_plot.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200
+python3 ./bfactor_plot/bfactor_plot.py -o path/to/output -i3d path/to/Refine3D/jobXXX/ -ipp path/to/PostProcess/jobYYY/ --minimum_nr_particles 225 --maximum_nr_particles 7200 -p path_parameter.yaml
 ```
 Where:
-- `-o path_output`: Specify the output path.
-- `-p path_parameter.yaml`: (Optional) Provide a path to the parameter YAML file. This can be omitted if you don’t need to manually set machine-specific parameters (as explained above).
-- `-i3d Refine3D/job049/`: Path to the Refine3D job folder.
-- `-ipp PostProcess/job050/`: Path to the PostProcess job folder.
-- `--minimum_nr_particles 225`: Set the minimum number of particles.
-- `--maximum_nr_particles 7200`: Set the maximum number of particles.
+- `-o`: Specify the output path. The script creates the directory if it does not exist.
+- `-i3d`: Path to the Refine3D job folder.
+- `-ipp`: Path to the PostProcess job folder.
+- `-minp`: Set the minimum number of particles.
+- `-maxp`: Set the maximum number of particles.
+- `-p`: (Optional) Provide a path to the parameter YAML file. This can be omitted if you don’t need to manually set machine-specific parameters (as explained above).
 
 **Note:** The `-p` flag (for the parameter file) can be omitted if you don’t need to specify custom settings. The script will automatically use values from the input **Refine3D** or **PostProcess** jobs.
 
