@@ -25,19 +25,9 @@ First, clone the GitHub repository to your local machine:
 git clone -b add_bfactor_plot https://github.com/KEK-SBRC-CryoEM/gotocloud.git
 ```
 
-### 2. Copy the Script to Your RELION Project
-
-Next, copy the **bfactor_plot** directory into your RELION project directory:
-
+### 2. Add permission to run the script
 ```bash
-cp -r gotocloud/rln_external/bfactor_plot ./path/to/relion/project/
-```
-
-Replace `./path/to/relion/project` with the actual path to your RELION project directory.
-
-### 3. Add permission to run the script
-```bash
- chmod +x bfactor_plot/bfactor_plot.py
+ chmod +x gotocloud/rln_external/bfactor_plot/bfactor_plot.py
  ```
 
 ## Running from RELION's External Tab
@@ -55,22 +45,25 @@ relion &
 
 In the left-hand job list, select **External**.
 
-### 3. Load the Initial Settings File
+### 3. Configure script path (Input Tab)
 
-- On the top toolbar, go to **Load** → **Load job.star**
-- Choose the file: [`bfactor_plot/config/job.star`](config/job.star)
+In the Input tab of the External job:
+- Set **External executable** to: `full/path/to/gotocloud/rln_external/bfactor_plot/bfactor_plot.py`
 
-This file loads default settings required to run the script.
+### 4. Configure Parameters (Params Tab)
 
-### 4. Set Parameters in the External Job
+In the Params tab of the External job, add parameters in the following way:
 
-In the **Params** section of the External job, the user must provide the following:
+> **Left side** = Parameter **label** (copy exactly)  
+> **Right side** = Parameter **value** (you provide)
 
 #### **Required Parameters**
-- `input_refine3d_job`: Path to the input Refine3D job
-- `input_postprocess_job`: Path to the input PostProcess job
-- `minimum_nr_particles`: Minimum number of particles
-- `maximum_nr_particles`: Maximum number of particles
+| Label                    | Value                                 |
+|:-------------------------|:--------------------------------------|
+| `input_refine3d_job`     | Path to the input Refine3D job        |
+| `input_postprocess_job`  | Path to the input PostProcess job     |
+| `minimum_nr_particles`   | Minimum number of particles           |
+| `maximum_nr_particles`   | Maximum number of particles           |
 
 #### **Optional: `mpi_parameters.yaml`**
 This is used to provide machine-specific parameters (e.g.: MPI settings). You can leave it **empty** in most cases.
@@ -79,10 +72,12 @@ By default, the script will automatically use the same parameter values from the
 
 However, if you'd like to **manually define these parameters**, you can:
 
-1. Edit the [`bfactor_plot/config/mpi_parameters.yaml`](config/mpi_parameters.yaml) file.
-2. In the "Params" tab, set the **path** to this file in the `mpi_parameters` input field:
-   - Param label: `mpi_parameters`  
-   - Param input: `<path/to/config/mpi_parameters.yaml>`
+1. Edit the [`config/mpi_parameters.yaml`](config/mpi_parameters.yaml) file.
+2. In the Params tab, set the **path** to this file in the `mpi_parameters` input field:
+
+| Label                    | Value                              |
+|:-------------------------|:-----------------------------------|
+| `mpi_parameters`         | Path to mpi_parameters.yaml        |
 
 
 ### 5. Run the Script
@@ -101,6 +96,7 @@ You can also run the script directly from the terminal using the following comma
 ```bash
 python3 ./bfactor_plot/bfactor_plot.py -o path/to/output -i3d path/to/Refine3D/jobXXX/ -ipp path/to/PostProcess/jobYYY/ --minimum_nr_particles 225 --maximum_nr_particles 7200 -p path_parameter.yaml
 ```
+
 Where:
 - `-o`: Specify the output path. 
    - The script creates the directory if it does not exist. 
@@ -110,9 +106,11 @@ Where:
 - `-ipp`: Path to the PostProcess job folder.
 - `-minp`: Set the minimum number of particles (default: 5000).
 - `-maxp`: Set the maximum number of particles (default: 400000).
-- `-p`: (Optional) Provide a path to the parameter YAML file. This can be omitted if you don't need to manually set machine-specific parameters (as explained above).
+- `-p`: (Optional) Provide a path to the parameter YAML file. This can be omitted if you don't need to manually set machine-specific parameters (as explained above). In this case, the script will automatically use values from the input **Refine3D** or **PostProcess** jobs.
 
-**Note:** The `-p` flag (for the parameter file) can be omitted if you don't need to specify custom settings. The script will automatically use values from the input **Refine3D** or **PostProcess** jobs.
+> **Note:**  
+> The script must be executed **inside** the RELION project directory (where your `Refine3D` and `PostProcess` jobs are).  
+> The `.py` script itself can be located anywhere on your system. 
 
 ## About the Script
 

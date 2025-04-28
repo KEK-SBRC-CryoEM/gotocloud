@@ -725,9 +725,11 @@ def main():
     print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
     print(" BFACTOR | MESSAGE: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
     print(" BFACTOR | MESSAGE: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
-    print(" BFACTOR | MESSAGE: Writing output to: ", opts.output, flush=True)
+    print(" BFACTOR | MESSAGE: Writing output to: ", opts.output)
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
-    
+    print(" BFACTOR | MESSAGE: Please wait, running... ", flush=True)
+
+
     SETUP_CHECK_FILE = opts.prefix + SETUP_CHECK_FILE
     RUNNING_FILE = opts.prefix + RUNNING_FILE
 
