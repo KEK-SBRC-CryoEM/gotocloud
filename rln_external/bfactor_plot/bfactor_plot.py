@@ -249,32 +249,6 @@ def make_rln_output_node_file(outpath, outfiles):
             file.write("{} LogFile.pdf.relion.postprocess \n".format(os.path.join(outpath, of)))
         file.write("\n")
 
-def validate_args(args):
-    errors = []
-
-    # if the essential parameters were not set by terminal (or in relion)
-    if(args.maximum_nr_particles is None or
-        args.minimum_nr_particles is None or
-        args.input_postprocess_job is None or
-        args.input_refine3d_job is None):
-        # then we must receive a parameter file
-        if args.mpi_parameters is None or args.mpi_parameters.strip()=="": 
-            errors.append("You must provide following parameters: --maximum_nr_particles, --minimum_nr_particles, --input_postprocess_job, and --input_refine3d_job")
-            errors.append("Or provide a yaml parameter file using --mpi_parameters")
-    
-    # This is for runs from the terminal, since Relion always provides the output directory
-    #(this becomes a warning as it defaults to "External/bfactor_<timestamp>")
-    # if args.output is None: 
-    #     errors.append("RELION_IT: ERROR! You must specify the output directory!")
-
-    if errors:
-        for err in errors:
-            print(err)
-        if args.output: 
-            open(os.path.join(args.output, "RELION_JOB_EXIT_FAILURE"), "w").close()
-        return False
-    return True
-
 def load_star(filename):
     from collections import OrderedDict
     
@@ -676,7 +650,6 @@ def run_pipeline(opts):
     else:
         print('WARNING: Failed to plot. Probably matplotlib and/or numpy is missing.')
 
-
 def move_files(opts):
     if os.path.isfile(RUNNING_FILE):
         os.remove(RUNNING_FILE)
@@ -700,10 +673,10 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
-    parser.add_argument("-j", "--j", "--threads",          type=str, default='1',  help="Number of threads (Input from RELION. Not used here).")
-    parser.add_argument("-p", "--mpi_parameters",          type=str, default=None, help="A .yaml file specifying machine parameters")
-    parser.add_argument("-i3d", "--input_refine3d_job",    type=str, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
-    parser.add_argument("-ipp", "--input_postprocess_job", type=str, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
+    parser.add_argument("-j", "--j", "--threads",          type=str, default='1',   help="Number of threads (Input from RELION. Not used here).")
+    parser.add_argument("-p", "--mpi_parameters",          type=str, default=None,  help="A .yaml file specifying machine parameters")
+    parser.add_argument("-i3d", "--input_refine3d_job",    type=str, required=True, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
+    parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
     parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
     parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
 
