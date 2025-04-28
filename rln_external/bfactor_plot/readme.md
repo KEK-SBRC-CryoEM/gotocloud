@@ -72,21 +72,18 @@ In the **Params** section of the External job, the user must provide the followi
 - `minimum_nr_particles`: Minimum number of particles
 - `maximum_nr_particles`: Maximum number of particles
 
-#### **Optional: `parameter_file.yaml`**
+#### **Optional: `mpi_parameters.yaml`**
 This is used to provide machine-specific parameters (e.g.: MPI settings). You can leave it **empty** in most cases.
 
 By default, the script will automatically use the same parameter values from the input **Refine3D** or **PostProcess** jobs.
 
 However, if you'd like to **manually define these parameters**, you can:
 
-1. Edit the [`bfactor_plot/config/bfactor.yaml`](config/bfactor.yaml) file.
-2. In the "Params" tab, set the **path** to this file in the `parameter_file` input field:
-   - Param label: `parameter_file`  
-   - Param input: `<path/to/config/bfactor.yaml>`
+1. Edit the [`bfactor_plot/config/mpi.yaml`](config/bfactor.yaml) file.
+2. In the "Params" tab, set the **path** to this file in the `mpi_parameters` input field:
+   - Param label: `mpi_parameters`  
+   - Param input: `<path/to/config/mpi_parameters.yaml>`
 
-**Notes**  
-- Parameters from the **Params tab** will override those in the YAML file.  
-- Only the four required parameters above (`input_refine3d_job`, etc.) can be set via the Relion's GUI.  
 
 ### 5. Run the Script
 
@@ -105,14 +102,17 @@ You can also run the script directly from the terminal using the following comma
 python3 ./bfactor_plot/bfactor_plot.py -o path/to/output -i3d path/to/Refine3D/jobXXX/ -ipp path/to/PostProcess/jobYYY/ --minimum_nr_particles 225 --maximum_nr_particles 7200 -p path_parameter.yaml
 ```
 Where:
-- `-o`: Specify the output path. The script creates the directory if it does not exist.
+- `-o`: Specify the output path. 
+   - The script creates the directory if it does not exist. 
+   - If the directory already exists, it appends a timestamp at the end of the directory name. 
+   - If no output path is provided, it writes the output to `"External/bfactor_<timestamp>"`.
 - `-i3d`: Path to the Refine3D job folder.
 - `-ipp`: Path to the PostProcess job folder.
-- `-minp`: Set the minimum number of particles.
-- `-maxp`: Set the maximum number of particles.
-- `-p`: (Optional) Provide a path to the parameter YAML file. This can be omitted if you don’t need to manually set machine-specific parameters (as explained above).
+- `-minp`: Set the minimum number of particles (default: 5000).
+- `-maxp`: Set the maximum number of particles (default: 400000).
+- `-p`: (Optional) Provide a path to the parameter YAML file. This can be omitted if you don't need to manually set machine-specific parameters (as explained above).
 
-**Note:** The `-p` flag (for the parameter file) can be omitted if you don’t need to specify custom settings. The script will automatically use values from the input **Refine3D** or **PostProcess** jobs.
+**Note:** The `-p` flag (for the parameter file) can be omitted if you don't need to specify custom settings. The script will automatically use values from the input **Refine3D** or **PostProcess** jobs.
 
 ## About the Script
 
@@ -127,8 +127,4 @@ This script is an improved version of the `bfactor_plot.py` from the RELION proj
 - Fixed the issue with outputting `\u00C5` for **Å** (angstrom symbol).
 - Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
 - Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, with parameter priority order: `terminal > yaml > job.star`.
-
-
-
-
 

@@ -45,7 +45,7 @@ try:
     from matplotlib.ticker import FixedLocator, FixedFormatter
     IMPORTS_OK = True
 except ImportError as e:
-    print(f" RELION_IT WARNING: {e}. It will NOT produce the b-factor plot as pdf!!!")
+    print(f" BFACTOR | WARNING: {e}. It will NOT produce the b-factor plot as pdf!!!")
     IMPORTS_OK = False
 
 # Constants
@@ -56,7 +56,7 @@ SETUP_CHECK_FILE = 'SUBMITTED_JOBS' # prefix is appended in main()
 # The parameter names on the original bfactor plot are different from the Refine3D job.star
 #   this dictionary is used to translate them
 #   this is a layer of compatibility, refactoring should ensure the same name on the related jobs
-params_trans = {
+PARAMS_TRANS = {
     "queue_name":                "queuename",
     "queue_submit_command":      "qsub",
     "queue_submission_template": "qsubscript",
@@ -74,12 +74,6 @@ params_trans = {
 
 
 class RelionItOptions:
-    """
-    Options for the relion_it pipeline setup script.
-    
-    When initialised, this contains default values for all options. Call
-    ``update_from()`` to override the defaults with a dictionary of new values.
-    """
     # job prefix
     prefix = 'BFACTOR_PLOT_'
 
@@ -92,8 +86,8 @@ class RelionItOptions:
         if from_yaml is not None:
             self.load_parameters_from_dictionary(from_yaml)
 
-        # handling path simple appending
-        self.input_refine3d_job = os.path.join(self.input_refine3d_job, "")
+        # handling path simple appending (where the user adds "/" or not at the end)
+        self.input_refine3d_job    = os.path.join(self.input_refine3d_job,    "")
         self.input_postprocess_job = os.path.join(self.input_postprocess_job, "")
 
         # opts.output  = args.output
@@ -116,6 +110,31 @@ class RelionItOptions:
             for key, value in dict_params.items():
                 if not hasattr(self, key) or getattr(self, key) is None: #dont overwrite if attribute already exist
                     setattr(self, key, value)
+
+def gtf_get_timestamp(file_format=False):
+	"""
+	Utility function to get a properly formatted timestamp. 
+
+	Args:
+		file_format (bool): If true, timestamp will not include ':' characters
+			for a more OS-friendly string that can be used in less risky file 
+			names [default: False ]
+	"""
+	if file_format:
+		return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
+	else:
+		return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+def make_output_directory(output_path, default_path):
+    # append timestamp if directory already exist or if the user did not specify a output directory
+    if os.path.exists(output_path) or output_path==default_path:
+        output_path = output_path+"_"+gtf_get_timestamp(True)
+    
+    # make directory
+    Path(output_path).mkdir(parents=True, exist_ok=True)
+
+    # return path
+    return output_path
 
 def load_yaml_parameters(filepath):
     """
@@ -230,13 +249,14 @@ def validate_args(args):
         args.input_postprocess_job is None or
         args.input_refine3d_job is None):
         # then we must receive a parameter file
-        if args.parameter_file is None or args.parameter_file.strip()=="": 
+        if args.mpi_parameters is None or args.mpi_parameters.strip()=="": 
             errors.append("You must provide following parameters: --maximum_nr_particles, --minimum_nr_particles, --input_postprocess_job, and --input_refine3d_job")
-            errors.append("Or provide a yaml parameter file using --parameter_file")
+            errors.append("Or provide a yaml parameter file using --mpi_parameters")
     
     # This is for runs from the terminal, since Relion always provides the output directory
-    if args.output is None: 
-        errors.append("RELION_IT: ERROR! You must specify the output directory!")
+    #(this becomes a warning as it defaults to "External/bfactor_<timestamp>")
+    # if args.output is None: 
+    #     errors.append("RELION_IT: ERROR! You must specify the output directory!")
 
     if errors:
         for err in errors:
@@ -364,12 +384,12 @@ def RunJobs(jobs, repeat, wait, schedulename):
 
 def CheckForExit():
     if not os.path.isfile(RUNNING_FILE):
-        print(" RELION_IT:", RUNNING_FILE, "file no longer exists, exiting now ...")
+        print(" BFACTOR | MESSAGE:", RUNNING_FILE, "file no longer exists, exiting now ...")
         exit(0)
 
 def WaitForJob(wait_for_this_job, seconds_wait):
     time.sleep(seconds_wait)
-    print(" RELION_IT: waiting for job to finish in", wait_for_this_job)
+    print(" BFACTOR | MESSAGE: waiting for job to finish in", wait_for_this_job)
     while True:
         pipeline = load_star(PIPELINE_STAR)
         myjobnr = -1
@@ -383,7 +403,7 @@ def WaitForJob(wait_for_this_job, seconds_wait):
 
         status = pipeline['pipeline_processes']['rlnPipeLineProcessStatusLabel'][myjobnr]
         if status == "Succeeded":
-            print(" RELION_IT: job in", wait_for_this_job, "has finished now")
+            print(" BFACTOR | MESSAGE: job in", wait_for_this_job, "has finished now")
             return
         else:
             CheckForExit()
@@ -539,9 +559,9 @@ def run_pipeline(opts):
                     break
             assert halfmap_filename != None
         except:
-            print(" RELION_IT: Refinement job " + refine_job + " does not contain expected output maps.")
-            print(" RELION_IT: This job should have finished, but you may continue it from the GUI.")
-            print(" RELION_IT: For now, making the plot without this job.")
+            print(" BFACTOR | MESSAGE: Refinement job " + refine_job + " does not contain expected output maps.")
+            print(" BFACTOR | MESSAGE: This job should have finished, but you may continue it from the GUI.")
+            print(" BFACTOR | MESSAGE: For now, making the plot without this job.")
 
         if halfmap_filename is not None:
             # C. Run PostProcess            
@@ -564,7 +584,7 @@ def run_pipeline(opts):
                 resolutions.append(resolution)
                 pp_bfactors.append(pp_bfactor)
             except:
-                print(' RELION_IT: WARNING: Failed to get post-processed resolution for {} particles'.format(current_nr_particles))
+                print(' BFACTOR | WARNING: Failed to get post-processed resolution for {} particles'.format(current_nr_particles))
 
         # Update the current number of particles
         current_nr_particles = 2 * current_nr_particles
@@ -643,7 +663,7 @@ def run_pipeline(opts):
 
         output_name = os.path.join(opts.output, opts.outfile) # @2025.03.10: save it to the output folder
         plt.savefig(output_name, bbox_inches='tight')
-        print(" RELION_IT: Plot written to " + output_name)
+        print(" BFACTOR | MESSAGE: Plot written to " + output_name)
     else:
         print('WARNING: Failed to plot. Probably matplotlib and/or numpy is missing.')
 
@@ -658,8 +678,6 @@ def move_files(opts):
     for file in glob.glob("pipeline_batch*.log"):
         os.rename(file, os.path.join(opts.output, file))
 
-
-
 def main():
     """
     Run the RELION 3 pipeline.
@@ -669,36 +687,36 @@ def main():
     global RUNNING_FILE
     global SETUP_CHECK_FILE
 
-    print(' RELION_IT: -------------------------------------------------------------------------------------------------------------------')
-    print(' RELION_IT: Script for automated Bfactor-plot generation in RELION (>= 3.1)')
-    print(' RELION_IT: Authors: Sjors H.W. Scheres & Takanori Nakane')
-    print(' RELION_IT: Modified by: (2025.03) Jair Pereira and Toshio Moriya')
-    print(' RELION_IT: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
-    print(' RELION_IT: ')
-    # print(' RELION_IT: This script keeps track of already submitted jobs in a filed called', SETUP_CHECK_FILE)
-    # print(' RELION_IT:   upon a restart, jobs present in this file will be ignored.')
-    # print(' RELION_IT: If you would like to re-do a specific job from scratch (e.g. because you changed its parameters)')
-    # print(' RELION_IT:   remove that job, and those that depend on it, from the', SETUP_CHECK_FILE)
-    print(' RELION_IT: -------------------------------------------------------------------------------------------------------------------')
-    print(' RELION_IT: ')
+    print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
+    print(' BFACTOR | MESSAGE: Script for automated Bfactor-plot generation in RELION (>= 3.1)')
+    print(' BFACTOR | MESSAGE: Authors: Sjors H.W. Scheres & Takanori Nakane')
+    print(' BFACTOR | MESSAGE: Modified by: (2025.03) Jair Pereira and Toshio Moriya')
+    print(' BFACTOR | MESSAGE: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
+    print(' BFACTOR | MESSAGE: ')
+    # print(' BFACTOR | MESSAGE: This script keeps track of already submitted jobs in a filed called', SETUP_CHECK_FILE)
+    # print(' BFACTOR | MESSAGE:   upon a restart, jobs present in this file will be ignored.')
+    # print(' BFACTOR | MESSAGE: If you would like to re-do a specific job from scratch (e.g. because you changed its parameters)')
+    # print(' BFACTOR | MESSAGE:   remove that job, and those that depend on it, from the', SETUP_CHECK_FILE)
+    print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
+    print(' BFACTOR | MESSAGE: ')
 
     ### @2025.03.10: changing from sys.argv to argparser
     parser = argparse.ArgumentParser()
     # Relion default arguments
-    parser.add_argument("-o", "--output",         type=str, help = "RELION requirement! Output job directory path (relative)")
-    parser.add_argument("-j", "--j", "--threads", type=str, default='1', help="Number of threads (Input from RELION. Not used here).")
-    parser.add_argument("-p", "--parameter_file",          type=str, help="A .yaml file specifying user parameters is required! Path relative to RELION")
-    parser.add_argument("-i3d", "--input_refine3d_job",    type=str, help="Refine 3D job output directory is required! Path relative to RELION (e.g: PostProcess/job050/)")
-    parser.add_argument("-ipp", "--input_postprocess_job", type=str, help="Postprocess job output directory is required! Path relative to RELION (e.g: Refine3D/job049/)")
-    parser.add_argument("-minp", "--minimum_nr_particles", type=int, help="Minimun Number of Particles (int)")
-    parser.add_argument("-maxp", "--maximum_nr_particles", type=int, help="Maximum Number of Particles (int)")  
+    parser.add_argument("-o", "--output",                  type=str, default="External/bfactor_", help = "Output job directory path")
+    parser.add_argument("-j", "--j", "--threads",          type=str, default='1',  help="Number of threads (Input from RELION. Not used here).")
+    parser.add_argument("-p", "--mpi_parameters",          type=str, default=None, help="A .yaml file specifying machine parameters")
+    parser.add_argument("-i3d", "--input_refine3d_job",    type=str, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
+    parser.add_argument("-ipp", "--input_postprocess_job", type=str, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
+    parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
+    parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
 
     args, unknown = parser.parse_known_args()
-    print(" RELION_IT: B-Factor Plot running...")
-    # print(" RELION_IT: Reading parameters (.yaml) from: ", args.parameter_file)
+    print(" BFACTOR | MESSAGE: B-Factor Plot running...")
+    # print(" BFACTOR | MESSAGE: Reading parameters (.yaml) from: ", args.mpi_parameters)
 
-    ## safeguards for missing parameter_file and output file
-    if not validate_args(args): sys.exit(0)
+    ## safeguards for missing mpi_parameters and output file
+    # if not validate_args(args): sys.exit(0) # todo parameters come from terminal always
 
     ## Here we load parameters into RelionItOptions from 
     ##  (1) terminal (2) yaml (3) Refine3D and PostProcess job.star files
@@ -706,26 +724,27 @@ def main():
     ##   (note: parameters set on the relion external job params tab are passed to this script by terminal)
     opts = RelionItOptions(
         from_terminal = args,
-        from_yaml     = load_yaml_parameters(args.parameter_file)
+        from_yaml     = load_yaml_parameters(args.mpi_parameters)
     )
     from_jobstar = read_and_merge_job_parameters([os.path.join(jobs, "job.star") 
-                    for jobs in [opts.input_refine3d_job, opts.input_postprocess_job]], params_trans)
+                    for jobs in [opts.input_refine3d_job, opts.input_postprocess_job]], PARAMS_TRANS)
     opts.load_parameters_from_dictionary(from_jobstar)
 
-    print(" RELION_IT: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
-    print(" RELION_IT: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
-    print(" RELION_IT: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
-    print(" RELION_IT: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
-    print(" RELION_IT: Writing output to: ", opts.output, flush=True)
-    Path(opts.output).mkdir(parents=True, exist_ok=True)
-    ### end 
+    # Make output directory
+    opts.output = make_output_directory(output_path=args.output, default_path="External/bfactor")
+
+    print(" BFACTOR | MESSAGE: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
+    print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
+    print(" BFACTOR | MESSAGE: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
+    print(" BFACTOR | MESSAGE: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
+    print(" BFACTOR | MESSAGE: Writing output to: ", opts.output, flush=True)
 
     SETUP_CHECK_FILE = opts.prefix + SETUP_CHECK_FILE
     RUNNING_FILE = opts.prefix + RUNNING_FILE
 
     # Make sure no other version of this script are running...
     if os.path.isfile(RUNNING_FILE):
-        print(" RELION_IT: ERROR:", RUNNING_FILE, "is already present: delete this file and make sure no other copy of this script is running. Exiting now ...")
+        print(" BFACTOR | ERROR:", RUNNING_FILE, "is already present: delete this file and make sure no other copy of this script is running. Exiting now ...")
         exit(0)
 
     try:
@@ -736,7 +755,7 @@ def main():
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
     finally:
         move_files(opts) # move all files to the output directory
-        print(' RELION_IT: exiting now... ')
+        print(' BFACTOR | MESSAGE: exiting now... ')
     
 
 if __name__ == "__main__":
@@ -744,3 +763,4 @@ if __name__ == "__main__":
         
 
 
+|
