@@ -126,8 +126,9 @@ def gtf_get_timestamp(file_format=False):
 		return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 def make_output_directory(output_path):
-    # append timestamp to directory name
-    output_path = os.path.join(output_path, gtf_get_timestamp(True))
+    # if the directory already exists, create another with a timestamp
+    if os.path.exists(output_path):
+        output_path = os.path.join(output_path, gtf_get_timestamp(True))
     
     # make directory
     Path(output_path).mkdir(parents=True, exist_ok=True)
@@ -678,11 +679,6 @@ def move_files(opts):
         os.rename(file, os.path.join(opts.output, file))
 
 def main():
-    """
-    Run the RELION 3 pipeline.
-    
-    Options files given as command line arguments will be opened in order and used to update the default options.
-    """
     global RUNNING_FILE
     global SETUP_CHECK_FILE
 
@@ -691,17 +687,9 @@ def main():
     print(' BFACTOR | MESSAGE: Authors: Sjors H.W. Scheres & Takanori Nakane')
     print(' BFACTOR | MESSAGE: Modified by: (2025.03) Jair Pereira and Toshio Moriya')
     print(' BFACTOR | MESSAGE: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
-    print(' BFACTOR | MESSAGE: ')
-    # print(' BFACTOR | MESSAGE: This script keeps track of already submitted jobs in a filed called', SETUP_CHECK_FILE)
-    # print(' BFACTOR | MESSAGE:   upon a restart, jobs present in this file will be ignored.')
-    # print(' BFACTOR | MESSAGE: If you would like to re-do a specific job from scratch (e.g. because you changed its parameters)')
-    # print(' BFACTOR | MESSAGE:   remove that job, and those that depend on it, from the', SETUP_CHECK_FILE)
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
-    print(' BFACTOR | MESSAGE: ')
 
-    ### @2025.03.10: changing from sys.argv to argparser
     parser = argparse.ArgumentParser()
-    # Relion default arguments
     parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
     parser.add_argument("-j", "--j", "--threads",          type=str, default='1',  help="Number of threads (Input from RELION. Not used here).")
     parser.add_argument("-p", "--mpi_parameters",          type=str, default=None, help="A .yaml file specifying machine parameters")
@@ -712,7 +700,6 @@ def main():
 
     args, unknown = parser.parse_known_args()
     print(" BFACTOR | MESSAGE: B-Factor Plot running...")
-    # print(" BFACTOR | MESSAGE: Reading parameters (.yaml) from: ", args.mpi_parameters)
 
     ## safeguards for missing mpi_parameters and output file
     # if not validate_args(args): sys.exit(0) # todo parameters come from terminal always
@@ -737,7 +724,8 @@ def main():
     print(" BFACTOR | MESSAGE: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
     print(" BFACTOR | MESSAGE: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
     print(" BFACTOR | MESSAGE: Writing output to: ", opts.output, flush=True)
-
+    print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
+    
     SETUP_CHECK_FILE = opts.prefix + SETUP_CHECK_FILE
     RUNNING_FILE = opts.prefix + RUNNING_FILE
 
