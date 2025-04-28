@@ -125,10 +125,9 @@ def gtf_get_timestamp(file_format=False):
 	else:
 		return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-def make_output_directory(output_path, default_path):
-    # append timestamp if directory already exist or if the user did not specify a output directory
-    if os.path.exists(output_path) or output_path==default_path:
-        output_path = output_path+"_"+gtf_get_timestamp(True)
+def make_output_directory(output_path):
+    # append timestamp to directory name
+    opts.output = os.path.join(opts.output, gtf_get_timestamp(True))
     
     # make directory
     Path(output_path).mkdir(parents=True, exist_ok=True)
@@ -703,7 +702,7 @@ def main():
     ### @2025.03.10: changing from sys.argv to argparser
     parser = argparse.ArgumentParser()
     # Relion default arguments
-    parser.add_argument("-o", "--output",                  type=str, default="External/bfactor_", help = "Output job directory path")
+    parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
     parser.add_argument("-j", "--j", "--threads",          type=str, default='1',  help="Number of threads (Input from RELION. Not used here).")
     parser.add_argument("-p", "--mpi_parameters",          type=str, default=None, help="A .yaml file specifying machine parameters")
     parser.add_argument("-i3d", "--input_refine3d_job",    type=str, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
@@ -731,7 +730,7 @@ def main():
     opts.load_parameters_from_dictionary(from_jobstar)
 
     # Make output directory
-    opts.output = make_output_directory(output_path=args.output, default_path="External/bfactor")
+    opts.output = make_output_directory(output_path=args.output)
 
     print(" BFACTOR | MESSAGE: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
     print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
