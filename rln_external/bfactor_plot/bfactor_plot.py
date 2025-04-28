@@ -127,7 +127,7 @@ def gtf_get_timestamp(file_format=False):
 
 def make_output_directory(output_path):
     # append timestamp to directory name
-    opts.output = os.path.join(opts.output, gtf_get_timestamp(True))
+    output_path = os.path.join(output_path, gtf_get_timestamp(True))
     
     # make directory
     Path(output_path).mkdir(parents=True, exist_ok=True)
