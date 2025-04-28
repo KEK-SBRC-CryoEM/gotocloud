@@ -79,7 +79,7 @@ By default, the script will automatically use the same parameter values from the
 
 However, if you'd like to **manually define these parameters**, you can:
 
-1. Edit the [`bfactor_plot/config/mpi_parameters.yaml`](config/bfactor.yaml) file.
+1. Edit the [`bfactor_plot/config/mpi_parameters.yaml`](config/mpi_parameters.yaml) file.
 2. In the "Params" tab, set the **path** to this file in the `mpi_parameters` input field:
    - Param label: `mpi_parameters`  
    - Param input: `<path/to/config/mpi_parameters.yaml>`
