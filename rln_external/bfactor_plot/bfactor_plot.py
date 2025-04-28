@@ -720,7 +720,6 @@ def main():
 
     # Make output directory
     opts.output = make_output_directory(output_path=args.output)
-    )
 
     print(" BFACTOR | MESSAGE: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
     print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
