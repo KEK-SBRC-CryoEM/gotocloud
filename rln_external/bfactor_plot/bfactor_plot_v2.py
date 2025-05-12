@@ -809,7 +809,7 @@ def main():
     opts.output = make_output_directory(output_path=args.output)
     opts.outfilepath_list = {"rosenthal":           os.path.join(opts.output, opts.prefix+"rosenthal-henderson-plot.pdf"),
                              "analysis_gradient":   os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"),
-                             "analysis_breakpoint": os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"), #analysis_breakpoint
+                             "analysis_breakpoint": os.path.join(opts.output, opts.prefix+"analysis_breakpoint.pdf"),
                              "estimated":           os.path.join(opts.output, opts.prefix+"estimated_bfactor.txt"),
     }
 
