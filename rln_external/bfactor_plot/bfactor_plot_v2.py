@@ -44,6 +44,7 @@ try:
     mpl.use('pdf')
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FixedLocator, FixedFormatter
+    from sklearn.metrics import root_mean_squared_error, mean_squared_error
     IMPORTS_OK = True
 except ImportError as e:
     print(f" BFACTOR | WARNING: {e}. It will NOT produce the b-factor plot as pdf!!!\n")
@@ -665,7 +666,7 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None
         dy = np.gradient(ys, xs)
         d2y = np.gradient(dy, xs)
         line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
-        plt.savefig(savepath+"2", bbox_inches='tight')
+        plt.savefig(savepath_gradient, bbox_inches='tight')
 
     return fig, ax1
 
