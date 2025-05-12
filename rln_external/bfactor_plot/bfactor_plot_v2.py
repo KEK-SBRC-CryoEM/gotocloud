@@ -625,7 +625,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
     }
     return result
 
-def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, plot_gradient=False):
+def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(xs, ys, '.')
@@ -661,7 +661,7 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, plot_gradient=False):
 
     plt.savefig(savepath, bbox_inches='tight')
 
-    if plot_gradient:
+    if savepath_gradient:
         dy = np.gradient(ys, xs)
         d2y = np.gradient(dy, xs)
         line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
