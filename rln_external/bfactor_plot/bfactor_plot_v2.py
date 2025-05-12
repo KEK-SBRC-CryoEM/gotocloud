@@ -754,9 +754,8 @@ def plot_breakpoint(x, y1, y2, savepath):
     fig.savefig(savepath, dpi=300)
     return
 
-plot_breakpoint(savepath="data/error_both_error.png")
-
-def calc_breakpoint(log_n_particles, inv_resolution_squared): data_size?
+def calc_breakpoint(log_n_particles, inv_resolution_squared):
+    data_size = len(log_n_particles)
     # mse of the left side line fit
     mse_leftside  = [calc_mse(xs=data_bf["LnNrParticles"][i:], ys=data_bf["InvResSq"][i:])
                         for i in range(data_size)]
@@ -766,7 +765,7 @@ def calc_breakpoint(log_n_particles, inv_resolution_squared): data_size?
                         for i in range(data_size)]
 
     # plot
-    plot_breakpoint(mse_leftside, mse_rightside, savepath)
+    plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath)
 
 
 def main():
