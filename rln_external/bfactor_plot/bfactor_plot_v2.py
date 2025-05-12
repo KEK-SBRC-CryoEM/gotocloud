@@ -685,6 +685,7 @@ def save_to_text(
     pred_resolution,
     slope,
     intercept,
+    fitted_line,
     prediction_range,
     outputpath=None
 ):
@@ -719,10 +720,6 @@ def calc_mse(xs, ys):
 def plot_breakpoint(x, y1, y2, savepath):
     fig, ax1 = plt.subplots(figsize=(8, 5))
     
-    # x = range(data_size)
-    # y1 = el
-    # y2 = er
-    
     # error line
     line1 = ax1.plot(x, y1, label='MSE', color='blue', marker="o")
     line2 = ax1.plot(x, y2[::-1], label='MSE', color='red', marker="o")   
@@ -754,18 +751,21 @@ def plot_breakpoint(x, y1, y2, savepath):
     fig.savefig(savepath, dpi=300)
     return
 
-def calc_breakpoint(log_n_particles, inv_resolution_squared):
+def calc_and_plot_breakpoint(log_n_particles, inv_resolution_squared, savepath):
     data_size = len(log_n_particles)
+    log_n_particles = np.array(log_n_particles)
+    inv_resolution_squared = np.array(inv_resolution_squared)
+
     # mse of the left side line fit
-    mse_leftside  = [calc_mse(xs=data_bf["LnNrParticles"][i:], ys=data_bf["InvResSq"][i:])
+    mse_leftside  = [calc_mse(xs=log_n_particles[i:], ys=inv_resolution_squared[i:])
                         for i in range(data_size)]
 
     # mse of the right side line fit
-    mse_rightside = [calc_mse(xs=data_bf["LnNrParticles"][:11-i], ys=data_bf["InvResSq"][:11-i])
+    mse_rightside = [calc_mse(xs=log_n_particles[:11-i], ys=inv_resolution_squared[:11-i])
                         for i in range(data_size)]
 
     # plot
-    plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath=None)
+    plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath=savepath)
 
 
 def main():
@@ -858,8 +858,9 @@ def main():
                          savepath_gradient = opts.outfilepath_list["analysis_gradient"])
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
-            # additional plots (testing)
-            # 
+            # additional plot (breakpoint)
+            # calc_and_plot_breakpoint(log_n_particles, inv_resolution_squared, savepath)
+            
         else:
             print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
 
