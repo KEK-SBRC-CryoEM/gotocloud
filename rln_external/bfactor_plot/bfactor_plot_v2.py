@@ -46,7 +46,7 @@ try:
     from matplotlib.ticker import FixedLocator, FixedFormatter
     IMPORTS_OK = True
 except ImportError as e:
-    print(f" BFACTOR | WARNING: {e}. It will NOT produce the b-factor plot as pdf!!!")
+    print(f" BFACTOR | WARNING: {e}. It will NOT produce the b-factor plot as pdf!!!\n")
     IMPORTS_OK = False
 
 # Constants
@@ -687,7 +687,7 @@ def save_to_text(
                        for nr_part, res, pp_bf, log_npart, inv_res2 in zip(nr_particles, resolutions, pp_bfactors, log_n_particles, inv_resolution_squared)]
     
     output_info += [""]
-    output_info += ["ESTIMATED B-FACTOR from {0:d} points is {1:.2f}".format(len(xs), b_factor)]
+    output_info += [f"ESTIMATED B-FACTOR from {len(log_n_particles):d} points is {b_factor:.2f}"]
     output_info += ["The fitted line is: Resolution = 1 / Sqrt(2 / {0:.3f} * Log_e(#Particles) + {1:.3f})".format(b_factor, intercept)]
     output_info += ["IF this trend holds, you will get:"]
     
@@ -788,7 +788,7 @@ def main():
             # additional plots
             # ...
         else:
-            print('WARNING: Failed to plot. Probably matplotlib and/or numpy is missing.')
+            print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
 
         # create RELION_OUTPUT_NODES star file
         make_rln_output_node_file(outpath=opts.output, outfiles=[opts.outfile, opts.outtext] if IMPORTS_OK else [opts.outtext]) # cant produce .pdf if numpy and matplot are missing...
