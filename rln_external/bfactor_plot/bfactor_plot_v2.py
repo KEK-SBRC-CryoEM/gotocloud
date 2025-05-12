@@ -602,8 +602,8 @@ def line_fit(xs, ys):
 
 def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_range):
     # input data
-    log_n_particles        = [log(particle_i) in for nr_particles]    # x-axis
-    inv_resolution_squared = [1.0/(resolution**2) in for resolutions] # y-axis
+    log_n_particles        = [log(pi) for pi in nr_particles]    # x-axis
+    inv_resolution_squared = [1.0/(r**2) for r in resolutions] # y-axis
 
     # fit line to data
     slope, intercept = line_fit(log_n_particles, inv_resolution_squared)
