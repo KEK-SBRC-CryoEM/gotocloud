@@ -765,7 +765,7 @@ def calc_breakpoint(log_n_particles, inv_resolution_squared):
                         for i in range(data_size)]
 
     # plot
-    plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath)
+    plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath=None)
 
 
 def main():
