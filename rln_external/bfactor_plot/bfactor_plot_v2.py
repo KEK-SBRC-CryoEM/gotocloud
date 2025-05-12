@@ -629,11 +629,11 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
     }
     return result
 
-def plot_bfactor(xs, ys, fitted, savepath):
+def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(xs, ys, '.')
-    ax1.plot(xs, fitted)
+    ax1.plot(xs, fitted_line)
     ax1.set_xlabel("ln(#particles)")
     ax1.set_ylabel("1/Resolution$^2$ in 1/$\u00C5^2$") #@2025.03.10 locale friendly
     ax1.set_title("Rosenthal & Henderson plot: B = 2.0 / slope = {:.1f}".format(b_factor))
@@ -738,11 +738,11 @@ def main():
     # Make output directory
     opts.output = make_output_directory(output_path=args.output)
 
-    print(" BFACTOR | MESSAGE: Using Refine3D Job directory as: ",      opts.input_refine3d_job)
-    print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
+    print(" BFACTOR | MESSAGE: Using Refine3D data from: ",      opts.input_refine3d_job)
+    print(" BFACTOR | MESSAGE: Using PostProcess data from: ",   opts.input_postprocess_job)
     print(" BFACTOR | MESSAGE: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
     print(" BFACTOR | MESSAGE: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
-    print(" BFACTOR | MESSAGE: Using MPI parameters from: ", args.mpi_parameters if args.mpi_parameters else "Input Refine3D and PostProcess jobs")
+    print(" BFACTOR | MESSAGE: Using MPI parameters from: ", args.mpi_parameters if args.mpi_parameters else "Refine3D and PostProcess jobs")
     print(" BFACTOR | MESSAGE: Writing output to: ", opts.output)
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------', flush=True)
 
@@ -784,7 +784,8 @@ def main():
             fitted = [x * bfactor_data["slope"] + bfactor_data["intercept"] for x in bfactor_data["log_n_particles"]]
             plot_bfactor(xs       = bfactor_data["log_n_particles"],
                          ys       = bfactor_data["inv_resolution_squared"],
-                         fitted   = fitted,
+                         b_factor = bfactor_data["b_factor"]
+                         fitted_line = fitted,
                          savepath = output_name)
             print(" BFACTOR | MESSAGE: Plot written to " + output_name)
 
