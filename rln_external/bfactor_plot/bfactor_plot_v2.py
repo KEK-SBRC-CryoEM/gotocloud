@@ -255,7 +255,7 @@ def make_rln_output_node_file(outpath, outfiles):
         file.write("_rlnPipeLineNodeName #1 \n")
         file.write("_rlnPipeLineNodeTypeLabel #2 \n")
         for of in outfiles:
-            file.write("{} LogFile.pdf.relion.postprocess \n".format(os.path.join(outpath, of)))
+            file.write("{} LogFile.pdf.relion.postprocess \n".format(of))
         file.write("\n")
 
 def load_star(filename):
@@ -751,17 +751,15 @@ def plot_breakpoint(x, y1, y2, savepath):
     fig.savefig(savepath, dpi=300)
     return
 
-def calc_and_plot_breakpoint(log_n_particles, inv_resolution_squared, savepath):
+def calc_and_plot_breakpoint(xs, ys, savepath):
     data_size = len(log_n_particles)
-    log_n_particles = np.array(log_n_particles)
-    inv_resolution_squared = np.array(inv_resolution_squared)
 
     # mse of the left side line fit
-    mse_leftside  = [calc_mse(xs=log_n_particles[i:], ys=inv_resolution_squared[i:])
+    mse_leftside  = [calc_mse(xs=xs[i:], ys=ys[i:])
                         for i in range(data_size)]
 
     # mse of the right side line fit
-    mse_rightside = [calc_mse(xs=log_n_particles[:11-i], ys=inv_resolution_squared[:11-i])
+    mse_rightside = [calc_mse(xs=xs[:11-i], ys=ys[:11-i])
                         for i in range(data_size)]
 
     # plot
@@ -859,7 +857,9 @@ def main():
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # additional plot (breakpoint)
-            # calc_and_plot_breakpoint(log_n_particles, inv_resolution_squared, savepath)
+            calc_and_plot_breakpoint(xs=np.array(bfactor_data["log_n_particles"]), 
+                                     ys=np.array(bfactor_data["inv_resolution_squared"]),
+                                     savepath=opts.outfilepath_list["analysis_breakpoint"])
             
         else:
             print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
