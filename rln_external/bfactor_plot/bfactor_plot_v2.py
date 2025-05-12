@@ -793,7 +793,7 @@ def main():
                          ys       = bfactor_data["inv_resolution_squared"],
                          b_factor = bfactor_data["b_factor"],
                          fitted_line = fitted,
-                         savepath = output_name
+                         savepath = output_name,
                          plot_gradient = True)
             print(" BFACTOR | MESSAGE: Plot written to " + output_name)
 
