@@ -24,6 +24,7 @@ Modified by: (2025) Jair Pereira and Toshio Moriya
 - Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
 - Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, with parameter priority order: `terminal > yaml > job.star`.
 - Separated the Relion Pipeline from the BFactor computation and plotting
+- Added two additional plots for analysis: gradient and breakpoint plots
 """
 
 from __future__ import print_function
@@ -668,6 +669,10 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None
         dy = np.gradient(ys, xs)
         d2y = np.gradient(dy, xs)
         line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
+
+        idx = np.argmax(d2y)
+        ax.axvspan(xs[idx-1], xs[idx+1], color='gray', alpha=0.3)
+
         plt.savefig(savepath_gradient, bbox_inches='tight')
 
     return fig, ax1
@@ -711,10 +716,13 @@ def save_to_text(
     return output_info
 
 def calc_mse(xs, ys):
-    slope, intercept = line_fit(xs, ys)
-    y_pred = [x * slope + intercept for x in xs]
+    if len(xs)>1:
+        slope, intercept = line_fit(xs, ys)
+        y_pred = [x * slope + intercept for x in xs]
 
-    mse = np.square(np.subtract(ys, y_pred)).mean()
+        mse = np.square(np.subtract(ys, y_pred)).mean()
+    else:
+        mse = 0
     return mse
 
 def plot_breakpoint(x, y1, y2, savepath):
@@ -740,8 +748,8 @@ def plot_breakpoint(x, y1, y2, savepath):
     ax2.set_xlabel("Number of datapoints on the rightmost line")
     
     # simple knee detection (find biggest error "jump" pairwise)
-    idx_left  = np.argmax(np.array([np.abs(i-j) for i, j in zip(y1[:-1], y1[1:])]))
-    idx_right = np.argmax(np.array([np.abs(i-j) for i, j in zip(y2[:-1][::-1], y2[1:][::-1])]))
+    idx_left  = np.argmax(np.abs(np.diff(y1)))
+    idx_right = np.argmax(np.abs(np.diff(y2[::-1])))
     ax1.axvspan(idx_left, idx_left+1, color='gray', alpha=0.3, label='Breakpoint')
     ax1.axvspan(idx_right, idx_right+1, color='gray', alpha=0.3, label='Breakpoint')
     
