@@ -111,6 +111,7 @@ class RelionItOptions:
                 if not hasattr(self, key) or getattr(self, key) is None: #dont overwrite if attribute already exist
                     setattr(self, key, value)
 
+### UTILS ###
 def gtf_get_timestamp(file_format=False):
 	"""
 	Utility function to get a properly formatted timestamp. 
@@ -145,6 +146,17 @@ def make_output_directory(output_path):
     # return path
     return output_path
 
+def move_files(opts):
+    if os.path.isfile(RUNNING_FILE):
+        os.remove(RUNNING_FILE)
+
+    #@2025.03.31: move SUBMITTED_JOB and .log to the output directory
+    if os.path.isfile(SETUP_CHECK_FILE):
+        os.rename(SETUP_CHECK_FILE, os.path.join(opts.output, SETUP_CHECK_FILE))
+    for file in glob.glob("pipeline_batch*.log"):
+        os.rename(file, os.path.join(opts.output, file))
+
+### Input handling ###
 def load_yaml_parameters(filepath):
     """
     Receives a string filepath for a .yaml file and loads it as a dictionary
@@ -177,6 +189,7 @@ def read_and_merge_job_parameters(filename_list, d_name_trans):
 
     return d_result
 
+### Relion Pipeline and auxiliary functions ###
 def parse_jobstar_parameters(filename):
     """
     Parses the 'data_joboptions_values' section of a RELION job.star file 
@@ -400,72 +413,11 @@ def find_split_job_output(prefix, n, max_digits=6):
             return filename
     return None
 
-def line_fit(xs, ys):
-    n = len(xs)
-    assert n == len(ys)
-
-    mean_x = 0.0
-    mean_y = 0.0
-    for x, y in zip(xs, ys):
-        mean_x += x
-        mean_y += y
-
-    mean_x /= n
-    mean_y /= n
-
-    var_x = 0.0
-    cov_xy = 0.0
-    for x, y in zip(xs, ys):
-        var_x += (x - mean_x) ** 2
-        cov_xy += (x - mean_x) * (y - mean_y)
-
-    slope = cov_xy / var_x
-    intercept = mean_y - slope * mean_x
-
-    return slope, intercept
-
 def get_postprocess_result(post_star):
     result = load_star(post_star)['general']
     resolution = float(result['rlnFinalResolution'])
     pp_bfactor = float(result['rlnBfactorUsedForSharpening'])
     return resolution, pp_bfactor
-
-def plot_bfactor(xs, ys, fitted, savepath):
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.plot(xs, ys, '.')
-    ax1.plot(xs, fitted)
-    ax1.set_xlabel("ln(#particles)")
-    ax1.set_ylabel("1/Resolution$^2$ in 1/$\u00C5^2$") #@2025.03.10 locale friendly
-    ax1.set_title("Rosenthal & Henderson plot: B = 2.0 / slope = {:.1f}".format(b_factor))
-
-    ax2 = ax1.twiny()
-    ax2.xaxis.set_ticks_position("bottom")
-    ax2.xaxis.set_label_position("bottom")
-    ax2.set_xlim(ax1.get_xlim())
-    ax2.spines["bottom"].set_position(("axes", -0.15)) # In matplotlib 1.2, the order seems to matter
-    ax2.set_xlabel("#particles")
-    #@2025.03.18: fixed UserWarning for not setting ticks before setting labels
-    ax2.xaxis.set_major_locator(FixedLocator(ax1.get_xticks()))
-    ax2.xaxis.set_major_formatter(FixedFormatter(np.exp(ax1.get_xticks()).astype(int)))
-
-    ax3 = ax1.twinx()
-    ax3.set_ylabel("Resolution in $\u00C5$")
-    ax3.set_ylim(ax1.get_ylim())
-    ax3.yaxis.set_ticks_position("right")
-    ax3.yaxis.set_label_position("right")
-    yticks = ax1.get_yticks()
-    yticks[yticks <= 0] = 1.0 / (999 * 999) # to avoid zero division and negative sqrt
-    ndigits = 1
-    if np.max(yticks) > 0.25:
-        ndigits = 2
-
-    #@2025.03.18: fixed UserWarning for not setting ticks before setting labels
-    ax3.yaxis.set_major_locator(FixedLocator(ax1.get_yticks()))
-    ax3.yaxis.set_major_formatter(FixedFormatter(np.sqrt(1 / yticks).round(ndigits)))
-
-    plt.savefig(savepath, bbox_inches='tight')
-    return
 
 def run_rln_pipeline(opts):
     """
@@ -623,15 +575,132 @@ def run_rln_pipeline(opts):
     }
     return result
 
-def move_files(opts):
-    if os.path.isfile(RUNNING_FILE):
-        os.remove(RUNNING_FILE)
+### BFACTOR Computation and Data saving ###
+def line_fit(xs, ys):
+    n = len(xs)
+    assert n == len(ys)
 
-    #@2025.03.31: move SUBMITTED_JOB and .log to the output directory
-    if os.path.isfile(SETUP_CHECK_FILE):
-        os.rename(SETUP_CHECK_FILE, os.path.join(opts.output, SETUP_CHECK_FILE))
-    for file in glob.glob("pipeline_batch*.log"):
-        os.rename(file, os.path.join(opts.output, file))
+    mean_x = 0.0
+    mean_y = 0.0
+    for x, y in zip(xs, ys):
+        mean_x += x
+        mean_y += y
+
+    mean_x /= n
+    mean_y /= n
+
+    var_x = 0.0
+    cov_xy = 0.0
+    for x, y in zip(xs, ys):
+        var_x += (x - mean_x) ** 2
+        cov_xy += (x - mean_x) * (y - mean_y)
+
+    slope = cov_xy / var_x
+    intercept = mean_y - slope * mean_x
+
+    return slope, intercept
+
+def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_range):
+    # input data
+    log_n_particles        = [log(particle_i) in for nr_particles]    # x-axis
+    inv_resolution_squared = [1.0/(resolution**2) in for resolutions] # y-axis
+
+    # fit line to data
+    slope, intercept = line_fit(log_n_particles, inv_resolution_squared)
+    b_factor = 2.0 / slope
+
+    # extrapolate based on the fitted line
+    pred_nr_particles = [int(all_nr_particles * x) 
+                             for x in prediction_range]
+    
+    pred_resolution   = [1 / sqrt(slope * log(x) + intercept)
+                             for x in pred_nr_particles]
+
+    result = {
+        "nr_particles": nr_particles,
+        "resolutions": resolutions, 
+        "log_n_particles": log_n_particles,
+        "inv_resolution_squared": inv_resolution_squared,
+        "b_factor": b_factor,
+        "pred_nr_particles": pred_nr_particles,
+        "pred_resolution": pred_resolution,
+        "slope": slope,
+        "intercept": intercept,
+    }
+    return result
+
+def plot_bfactor(xs, ys, fitted, savepath):
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.plot(xs, ys, '.')
+    ax1.plot(xs, fitted)
+    ax1.set_xlabel("ln(#particles)")
+    ax1.set_ylabel("1/Resolution$^2$ in 1/$\u00C5^2$") #@2025.03.10 locale friendly
+    ax1.set_title("Rosenthal & Henderson plot: B = 2.0 / slope = {:.1f}".format(b_factor))
+
+    ax2 = ax1.twiny()
+    ax2.xaxis.set_ticks_position("bottom")
+    ax2.xaxis.set_label_position("bottom")
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.spines["bottom"].set_position(("axes", -0.15)) # In matplotlib 1.2, the order seems to matter
+    ax2.set_xlabel("#particles")
+    #@2025.03.18: fixed UserWarning for not setting ticks before setting labels
+    ax2.xaxis.set_major_locator(FixedLocator(ax1.get_xticks()))
+    ax2.xaxis.set_major_formatter(FixedFormatter(np.exp(ax1.get_xticks()).astype(int)))
+
+    ax3 = ax1.twinx()
+    ax3.set_ylabel("Resolution in $\u00C5$")
+    ax3.set_ylim(ax1.get_ylim())
+    ax3.yaxis.set_ticks_position("right")
+    ax3.yaxis.set_label_position("right")
+    yticks = ax1.get_yticks()
+    yticks[yticks <= 0] = 1.0 / (999 * 999) # to avoid zero division and negative sqrt
+    ndigits = 1
+    if np.max(yticks) > 0.25:
+        ndigits = 2
+
+    #@2025.03.18: fixed UserWarning for not setting ticks before setting labels
+    ax3.yaxis.set_major_locator(FixedLocator(ax1.get_yticks()))
+    ax3.yaxis.set_major_formatter(FixedFormatter(np.sqrt(1 / yticks).round(ndigits)))
+
+    plt.savefig(savepath, bbox_inches='tight')
+    return
+
+def save_to_text(
+    *,
+    nr_particles,
+    resolutions,
+    pp_bfactors,
+    log_n_particles,
+    inv_resolution_squared,
+    b_factor,
+    pred_nr_particles,
+    pred_resolution,
+    slope,
+    intercept,
+    outputpath=None
+):
+    output_info = ["NrParticles Ln(NrParticles) Resolution(A) 1/Resolution^2 PostProcessBfactor"]
+    
+    output_info += [f"{nr_part:11d} {log_npart:15.3f} {res:13.2f} {-pp_bf:14.4f} {4:18.2f}\n"
+                       for nr_part, res, pp_bf, log_npart, inv_res2 in zip(nr_particles, resolutions, pp_bfactors, log_n_particles, inv_resolution_squared)]
+    
+    output_info += [""]
+    output_info += ["ESTIMATED B-FACTOR from {0:d} points is {1:.2f}".format(len(xs), b_factor)]
+    output_info += ["The fitted line is: Resolution = 1 / Sqrt(2 / {0:.3f} * Log_e(#Particles) + {1:.3f})".format(b_factor, intercept)]
+    output_info += ["IF this trend holds, you will get:"]
+    
+    output_info += [f"   {pred_res:.2f} A from {pred_npart:d} particles ({int(x*100):d} % of the current number of particles)"
+                        for x, pred_npart, pred_res in zip(prediction_range, pred_nr_particles, pred_resolution)]
+    
+    output_info+=[""]
+
+    if outputpath:
+        with open(outputpath, mode='w') as file:
+            file.write("\n".join(output_info))
+
+    return output_info
+
 
 def main():
     global RUNNING_FILE
@@ -710,10 +779,10 @@ def main():
             # main bfactor plot
             output_name = os.path.join(opts.output, opts.outfile)
             fitted = [x * bfactor_data["slope"] + bfactor_data["intercept"] for x in bfactor_data["log_n_particles"]]
-            fig = plot_bfactor(xs       = bfactor_data["log_n_particles"],
-                               ys       = bfactor_data["inv_resolution_squared"],
-                               fitted   = fitted,
-                               savepath = output_name)
+            plot_bfactor(xs       = bfactor_data["log_n_particles"],
+                         ys       = bfactor_data["inv_resolution_squared"],
+                         fitted   = fitted,
+                         savepath = output_name)
             print(" BFACTOR | MESSAGE: Plot written to " + output_name)
 
             # additional plots
