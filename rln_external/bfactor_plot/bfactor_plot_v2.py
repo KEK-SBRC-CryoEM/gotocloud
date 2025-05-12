@@ -670,8 +670,8 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None
         d2y = np.gradient(dy, xs)
         line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
 
-        idx = np.argmax(d2y)
-        ax1.axvspan(xs[idx-1], xs[idx+1], color='gray', alpha=0.3)
+        idx = np.argmax(d2y) ##!!
+        ax1.axvspan(xs[max(0, idx-1)], xs[min(len(xs), idx+1)], color='gray', alpha=0.3)
 
         plt.savefig(savepath_gradient, bbox_inches='tight')
 
