@@ -752,7 +752,7 @@ def plot_breakpoint(x, y1, y2, savepath):
     return
 
 def calc_and_plot_breakpoint(xs, ys, savepath):
-    data_size = len(log_n_particles)
+    data_size = len(xs)
 
     # mse of the left side line fit
     mse_leftside  = [calc_mse(xs=xs[i:], ys=ys[i:])
