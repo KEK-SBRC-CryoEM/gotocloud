@@ -624,7 +624,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
         "pred_resolution": pred_resolution,
         "slope": slope,
         "intercept": intercept,
-        "fitted_line", fitted_line,
+        "fitted_line": fitted_line,
     }
     return result
 
