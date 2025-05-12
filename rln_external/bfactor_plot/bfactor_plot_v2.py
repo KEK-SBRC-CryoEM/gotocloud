@@ -44,7 +44,6 @@ try:
     mpl.use('pdf')
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FixedLocator, FixedFormatter
-    from sklearn.metrics import root_mean_squared_error, mean_squared_error
     IMPORTS_OK = True
 except ImportError as e:
     print(f" BFACTOR | WARNING: {e}. It will NOT produce the b-factor plot as pdf!!!\n")
