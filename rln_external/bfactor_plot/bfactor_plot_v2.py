@@ -90,10 +90,6 @@ class RelionItOptions:
         self.input_refine3d_job    = os.path.join(self.input_refine3d_job,    "")
         self.input_postprocess_job = os.path.join(self.input_postprocess_job, "")
 
-        # opts.output  = args.output
-        self.outfile = self.prefix+"rosenthal-henderson-plot.pdf"
-        self.outtext = self.prefix+"estimated.txt"
-
     def load_parameters_from_terminal(self, args):
         for arg, value in vars(args).items():
             if value is not None:
@@ -742,8 +738,13 @@ def main():
                     for jobs in [opts.input_refine3d_job, opts.input_postprocess_job]], PARAMS_TRANS)
     opts.load_parameters_from_dictionary(from_jobstar) # if no yaml, get from input jobs
 
-    # Make output directory
+    # Make output directory and list of output paths
     opts.output = make_output_directory(output_path=args.output)
+    opts.outfilepath_list = {"rosenthal":           os.path.join(opts.output, opts.prefix+"rosenthal-henderson-plot.pdf"),
+                             "analysis_gradient":   os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"),
+                             "analysis_breakpoint": os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"), #analysis_breakpoint
+                             "estimated":           os.path.join(opts.output, opts.prefix+"estimated_bfactor.txt"),
+    }
 
     print(" BFACTOR | MESSAGE: Using Refine3D data from: ",      opts.input_refine3d_job)
     print(" BFACTOR | MESSAGE: Using PostProcess data from: ",   opts.input_postprocess_job)
@@ -780,21 +781,20 @@ def main():
 
         ### 3. OUTPUT ###
         # print and save to text
-        output_txt = save_to_text(**bfactor_data, outputpath=os.path.join(opts.output, opts.outtext))
+        output_txt = save_to_text(**bfactor_data, outputpath=opts.outfilepath_list["estimated"])
         print("\n".join(output_txt))
 
         # BFactor Plots
         print(" BFACTOR | MESSAGE: Generating plots... ", flush=True)
         if IMPORTS_OK:
             # main bfactor plot
-            output_name = os.path.join(opts.output, opts.outfile)
             fitted = [x * bfactor_data["slope"] + bfactor_data["intercept"] for x in bfactor_data["log_n_particles"]]
             plot_bfactor(xs       = bfactor_data["log_n_particles"],
                          ys       = bfactor_data["inv_resolution_squared"],
                          b_factor = bfactor_data["b_factor"],
                          fitted_line = fitted,
-                         savepath = output_name,
-                         plot_gradient = True)
+                         savepath          = opts.outfilepath_list["rosenthal"],
+                         savepath_gradient = opts.outfilepath_list["analysis_gradient"])
             print(" BFACTOR | MESSAGE: Plot written to " + output_name)
 
             # additional plots (testing)
@@ -803,7 +803,7 @@ def main():
             print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
 
         # create RELION_OUTPUT_NODES star file
-        make_rln_output_node_file(outpath=opts.output, outfiles=[opts.outfile, opts.outtext] if IMPORTS_OK else [opts.outtext]) # cant produce .pdf if numpy and matplot are missing...
+        make_rln_output_node_file(outpath=opts.output, outfiles=list(opts.outfilepath_list.values()) if IMPORTS_OK else [opts.outfilepath_list["estimated"]]) # cant produce .pdf if numpy and matplot are missing...
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
     finally:
         move_files(opts) # move all files to the output directory
