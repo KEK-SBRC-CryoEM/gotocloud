@@ -679,6 +679,7 @@ def save_to_text(
     pred_resolution,
     slope,
     intercept,
+    prediction_range,
     outputpath=None
 ):
     output_info = ["NrParticles Ln(NrParticles) Resolution(A) 1/Resolution^2 PostProcessBfactor"]
@@ -724,7 +725,7 @@ def main():
     parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
 
     args, unknown = parser.parse_known_args()
-    print(" BFACTOR | MESSAGE: B-Factor Plot running...")
+    print(" BFACTOR | MESSAGE: Running B-Factor Plot.")
 
     opts = RelionItOptions(
         from_terminal = args,
@@ -741,6 +742,7 @@ def main():
     print(" BFACTOR | MESSAGE: Using PostProcess Job directory as: ",   opts.input_postprocess_job)
     print(" BFACTOR | MESSAGE: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
     print(" BFACTOR | MESSAGE: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
+    print(" BFACTOR | MESSAGE: Using MPI parameters from: ", args.mpi_parameters if args.mpi_parameters else "Input Refine3D and PostProcess jobs")
     print(" BFACTOR | MESSAGE: Writing output to: ", opts.output)
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------', flush=True)
 
@@ -762,10 +764,11 @@ def main():
         ### 2. BFACTOR ###
         # fit line to data, compute bfactor, extrapolate data
         print(" BFACTOR | MESSAGE: Computing B-Factor... ", flush=True)
+        bfactor_data["prediction_range"] = [1.5, 2, 4, 8]
         data_new = compute_bfactor(all_nr_particles = bfactor_data["all_nr_particles"],
                                    nr_particles     = bfactor_data["nr_particles"], 
                                    resolutions      = bfactor_data["resolutions"], 
-                                   prediction_range = [1.5, 2, 4, 8])
+                                   prediction_range = bfactor_data["prediction_range"])
         bfactor_data.update(data_new)
 
         ### 3. OUTPUT ###
