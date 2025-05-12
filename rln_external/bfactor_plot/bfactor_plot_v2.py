@@ -629,7 +629,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
     }
     return result
 
-def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
+def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, plot_gradient=False):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(xs, ys, '.')
@@ -664,7 +664,14 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
     ax3.yaxis.set_major_formatter(FixedFormatter(np.sqrt(1 / yticks).round(ndigits)))
 
     plt.savefig(savepath, bbox_inches='tight')
-    return
+
+    if plot_gradient:
+        dy = np.gradient(ys, xs)
+        d2y = np.gradient(dy, xs)
+        line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
+        plt.savefig(savepath+"2", bbox_inches='tight')
+
+    return fig, ax1
 
 def save_to_text(
     *,
@@ -784,13 +791,14 @@ def main():
             fitted = [x * bfactor_data["slope"] + bfactor_data["intercept"] for x in bfactor_data["log_n_particles"]]
             plot_bfactor(xs       = bfactor_data["log_n_particles"],
                          ys       = bfactor_data["inv_resolution_squared"],
-                         b_factor = bfactor_data["b_factor"]
+                         b_factor = bfactor_data["b_factor"],
                          fitted_line = fitted,
-                         savepath = output_name)
+                         savepath = output_name
+                         plot_gradient = True)
             print(" BFACTOR | MESSAGE: Plot written to " + output_name)
 
-            # additional plots
-            # ...
+            # additional plots (testing)
+            # 
         else:
             print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
 
