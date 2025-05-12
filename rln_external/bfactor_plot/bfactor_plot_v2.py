@@ -668,6 +668,7 @@ def plot_bfactor(xs, ys, fitted, savepath):
 
 def save_to_text(
     *,
+    all_nr_particles,
     nr_particles,
     resolutions,
     pp_bfactors,
@@ -741,9 +742,7 @@ def main():
     print(" BFACTOR | MESSAGE: Using Minimum Number of Particles as: ", opts.minimum_nr_particles)
     print(" BFACTOR | MESSAGE: Using Maximum Number of Particles as: ", opts.maximum_nr_particles)
     print(" BFACTOR | MESSAGE: Writing output to: ", opts.output)
-    print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
-    print(" BFACTOR | MESSAGE: Please wait, running... ", flush=True)
-
+    print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------', flush=True)
 
     SETUP_CHECK_FILE = opts.prefix + SETUP_CHECK_FILE
     RUNNING_FILE = opts.prefix + RUNNING_FILE
@@ -756,8 +755,9 @@ def main():
     # Run the bfactor pipeline
     try:
         ### 1. RELION PIPELINE ###
-        print(" BFACTOR | MESSAGE: Running Relion Pipeline... ", flush=True)
+        print(" BFACTOR | MESSAGE: Please wait, running Relion Pipeline (may take a while)... ", flush=True)
         bfactor_data = run_rln_pipeline(opts)
+        print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------', flush=True)
         
         ### 2. BFACTOR ###
         # fit line to data, compute bfactor, extrapolate data
