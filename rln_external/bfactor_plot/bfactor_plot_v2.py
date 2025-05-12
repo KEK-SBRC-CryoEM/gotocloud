@@ -598,11 +598,13 @@ def line_fit(xs, ys):
 
 def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_range):
     # input data
-    log_n_particles        = [log(pi) for pi in nr_particles]    # x-axis
+    log_n_particles        = [log(p) for p in nr_particles]    # x-axis
     inv_resolution_squared = [1.0/(r**2) for r in resolutions] # y-axis
 
     # fit line to data
     slope, intercept = line_fit(log_n_particles, inv_resolution_squared)
+    fitted_line = [x * slope + intercept for x in log_n_particles]
+
     b_factor = 2.0 / slope
 
     # extrapolate based on the fitted line
@@ -622,6 +624,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
         "pred_resolution": pred_resolution,
         "slope": slope,
         "intercept": intercept,
+        "fitted_line", fitted_line,
     }
     return result
 
@@ -687,7 +690,7 @@ def save_to_text(
 ):
     output_info = ["NrParticles Ln(NrParticles) Resolution(A) 1/Resolution^2 PostProcessBfactor"]
     
-    output_info += [f"{nr_part:11d} {log_npart:15.3f} {res:13.2f} {-pp_bf:14.4f} {4:18.2f}\n"
+    output_info += [f"{nr_part:11d} {log_npart:15.3f} {res:13.2f} {-pp_bf:14.4f} {4:18.2f}"
                        for nr_part, res, pp_bf, log_npart, inv_res2 in zip(nr_particles, resolutions, pp_bfactors, log_n_particles, inv_resolution_squared)]
     
     output_info += [""]
@@ -705,6 +708,65 @@ def save_to_text(
             file.write("\n".join(output_info))
 
     return output_info
+
+def calc_mse(xs, ys):
+    slope, intercept = line_fit(xs, ys)
+    y_pred = [x * slope + intercept for x in xs]
+
+    mse = np.square(np.subtract(ys, y_pred)).mean()
+    return mse
+
+def plot_breakpoint(x, y1, y2, savepath):
+    fig, ax1 = plt.subplots(figsize=(8, 5))
+    
+    # x = range(data_size)
+    # y1 = el
+    # y2 = er
+    
+    # error line
+    line1 = ax1.plot(x, y1, label='MSE', color='blue', marker="o")
+    line2 = ax1.plot(x, y2[::-1], label='MSE', color='red', marker="o")   
+    
+    ax1.set_xlabel("Number of datapoints on the leftmost line")
+    ax1.set_ylabel("MSE")
+    ax1.set_xticks(x)
+    
+    ax2 = ax1.twiny()
+    ax2.xaxis.set_ticks_position("bottom")
+    ax2.xaxis.set_label_position("bottom")
+    ax2.spines["bottom"].set_position(("axes", -0.15))
+    
+    ax2.xaxis.set_major_locator(FixedLocator(ax1.get_xticks()))
+    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xticklabels((np.array(x)+1)[::-1])
+    
+    ax2.set_xlabel("Number of datapoints on the rightmost line")
+    
+    # simple knee detection (find biggest error "jump" pairwise)
+    idx_left  = np.argmax(np.array([np.abs(i-j) for i, j in zip(y1[:-1], y1[1:])]))
+    idx_right = np.argmax(np.array([np.abs(i-j) for i, j in zip(y2[:-1][::-1], y2[1:][::-1])]))
+    ax1.axvspan(idx_left, idx_left+1, color='gray', alpha=0.3, label='Breakpoint')
+    ax1.axvspan(idx_right, idx_right+1, color='gray', alpha=0.3, label='Breakpoint')
+    
+    ax1.legend(line1+line2, ["Rightmost line", "Leftmost line"], loc='upper right')
+    fig.tight_layout()
+    
+    fig.savefig(savepath, dpi=300)
+    return
+
+plot_breakpoint(savepath="data/error_both_error.png")
+
+def calc_breakpoint(log_n_particles, inv_resolution_squared): data_size?
+    # mse of the left side line fit
+    mse_leftside  = [calc_mse(xs=data_bf["LnNrParticles"][i:], ys=data_bf["InvResSq"][i:])
+                        for i in range(data_size)]
+
+    # mse of the right side line fit
+    mse_rightside = [calc_mse(xs=data_bf["LnNrParticles"][:11-i], ys=data_bf["InvResSq"][:11-i])
+                        for i in range(data_size)]
+
+    # plot
+    plot_breakpoint(mse_leftside, mse_rightside, savepath)
 
 
 def main():
@@ -789,13 +851,13 @@ def main():
         if IMPORTS_OK:
             # main bfactor plot
             fitted = [x * bfactor_data["slope"] + bfactor_data["intercept"] for x in bfactor_data["log_n_particles"]]
-            plot_bfactor(xs       = bfactor_data["log_n_particles"],
-                         ys       = bfactor_data["inv_resolution_squared"],
-                         b_factor = bfactor_data["b_factor"],
-                         fitted_line = fitted,
+            plot_bfactor(xs          = bfactor_data["log_n_particles"],
+                         ys          = bfactor_data["inv_resolution_squared"],
+                         b_factor    = bfactor_data["b_factor"],
+                         fitted_line = bfactor_data["fitted_line"],
                          savepath          = opts.outfilepath_list["rosenthal"],
                          savepath_gradient = opts.outfilepath_list["analysis_gradient"])
-            print(" BFACTOR | MESSAGE: Plot written to " + output_name)
+            print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # additional plots (testing)
             # 
