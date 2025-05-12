@@ -687,10 +687,12 @@ def main():
     # Run the bfactor pipeline
     try:
         ### 1. RELION PIPELINE ###
+        print(" BFACTOR | MESSAGE: Running Relion Pipeline... ", flush=True)
         bfactor_data = run_rln_pipeline(opts)
         
         ### 2. BFACTOR ###
         # fit line to data, compute bfactor, extrapolate data
+        print(" BFACTOR | MESSAGE: Computing B-Factor... ", flush=True)
         data_new = compute_bfactor(all_nr_particles = bfactor_data["all_nr_particles"],
                                    nr_particles     = bfactor_data["nr_particles"], 
                                    resolutions      = bfactor_data["resolutions"], 
@@ -703,6 +705,7 @@ def main():
         print("\n".join(output_txt))
 
         # BFactor Plots
+        print(" BFACTOR | MESSAGE: Generating plots... ", flush=True)
         if IMPORTS_OK:
             # main bfactor plot
             output_name = os.path.join(opts.output, opts.outfile)
