@@ -671,7 +671,8 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None
         line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
 
         idx = np.argmax(d2y) ##!!
-        ax1.axvspan(xs[max(0, idx-1)], xs[min(len(xs), idx+1)], color='gray', alpha=0.3)
+        print(idx, np.argmax(d2y))
+        # ax1.axvspan(xs[max(0, idx-1)], xs[min(len(xs), idx+1)], color='gray', alpha=0.3)
 
         plt.savefig(savepath_gradient, bbox_inches='tight')
 
@@ -869,9 +870,9 @@ def bfactor_main(args, unknown):
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # additional plot (breakpoint)
-            # calc_and_plot_breakpoint(xs=np.array(bfactor_data["log_n_particles"]), 
-            #                          ys=np.array(bfactor_data["inv_resolution_squared"]),
-            #                          savepath=opts.outfilepath_list["analysis_breakpoint"])
+            calc_and_plot_breakpoint(xs=np.array(bfactor_data["log_n_particles"]), 
+                                     ys=np.array(bfactor_data["inv_resolution_squared"]),
+                                     savepath=opts.outfilepath_list["analysis_breakpoint"])
             
         else:
             print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
