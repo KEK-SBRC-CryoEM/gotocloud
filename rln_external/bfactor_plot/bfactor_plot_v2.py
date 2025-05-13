@@ -833,7 +833,11 @@ def bfactor_main(args, unknown):
     try:
         ### 1. RELION PIPELINE ###
         print(" BFACTOR | MESSAGE: Please wait, running Relion Pipeline (may take a while)... ", flush=True)
-        bfactor_data = run_rln_pipeline(opts)
+        if args.debug:
+            print(" BFACTOR | MESSAGE: DEBUG mode ON; loading data...)
+            bfactor_data = parse_bfactor_output(filepath=opts.outfilepath_list["estimated"])
+        else:
+            bfactor_data = run_rln_pipeline(opts)
         print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------', flush=True)
         
         ### 2. BFACTOR ###
@@ -880,6 +884,69 @@ def bfactor_main(args, unknown):
         print(' BFACTOR | MESSAGE: exiting now... ')
     
 
+### DEBUG ###
+def parse_bfactor_output(filepath):
+    import numpy as np
+    import re
+    """
+    Parse a B-factor output file.
+
+    Returns:
+        data: dict with keys 'NrParticles', 'LnNrParticles', 'Resolution', 'InvResSq'
+        fit_params: dict with keys 'B' and 'C'
+    """
+    data = {
+        "NrParticles": [],
+        "LnNrParticles": [],
+        "Resolution": [],
+        "InvResSq": [],
+    }
+    B = None
+    C = None
+
+    with open(filepath, 'r') as f:
+        lines = f.readlines()
+
+    data_section = False
+    for line in lines:
+        line = line.strip()
+
+        if not line:
+            continue
+
+        # Start reading numerical table after header
+        if line.startswith("NrParticles"):
+            data_section = True
+            continue
+
+        if data_section:
+            if line.startswith("ESTIMATED B-FACTOR"):
+                data_section = False
+                continue
+            fields = line.split()
+            if len(fields) >= 5:
+                data["NrParticles"].append(int(fields[0]))
+                data["LnNrParticles"].append(float(fields[1]))
+                data["Resolution"].append(float(fields[2]))
+                data["InvResSq"].append(float(fields[3]))
+
+    # Now extract the B and C from the fitted line
+    for line in lines:
+        if "The fitted line is" in line:
+            # Example: Resolution = 1 / Sqrt(2 / 35.504 * Log_e(#Particles) + -0.215)
+            match = re.search(r'2\s*/\s*([\d\.]+)\s*\*\s*Log_e\(.*\)\s*\+\s*([-\d\.]+)', line)
+            if match:
+                B = float(match.group(1))
+                C = float(match.group(2))
+
+    # Convert lists to numpy arrays
+    for key in data:
+        data[key] = np.array(data[key])
+
+    fit_params = {"B": B, "C": C}
+
+    return data, fit_params
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
@@ -888,7 +955,8 @@ if __name__ == "__main__":
     parser.add_argument("-i3d", "--input_refine3d_job",    type=str, required=True, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
     parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
     parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
-    parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
+    parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")
+    parser.add_argument("-debug", action="store_true", help="Enable debugging")
 
     args, unknown = parser.parse_known_args()
     bfactor_main(args, unknown)
