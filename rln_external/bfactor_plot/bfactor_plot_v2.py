@@ -35,6 +35,7 @@ import sys
 import time
 import glob
 from math import log, sqrt
+import pickle
 
 import yaml
 import argparse
@@ -850,6 +851,8 @@ def bfactor_main(args, unknown):
                                    resolutions      = bfactor_data["resolutions"], 
                                    prediction_range = bfactor_data["prediction_range"])
         bfactor_data.update(data_new)
+        with open("data.pkl", "wb") as f:
+            pickle.dump(data, f)
 
         ### 3. OUTPUT ###
         # print and save to text
@@ -860,7 +863,6 @@ def bfactor_main(args, unknown):
         print(" BFACTOR | MESSAGE: Generating plots... ", flush=True)
         if IMPORTS_OK:
             # main bfactor plot
-            fitted = [x * bfactor_data["slope"] + bfactor_data["intercept"] for x in bfactor_data["log_n_particles"]]
             plot_bfactor(xs          = bfactor_data["log_n_particles"],
                          ys          = bfactor_data["inv_resolution_squared"],
                          b_factor    = bfactor_data["b_factor"],
