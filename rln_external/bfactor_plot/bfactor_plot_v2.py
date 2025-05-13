@@ -834,7 +834,7 @@ def bfactor_main(args, unknown):
         ### 1. RELION PIPELINE ###
         print(" BFACTOR | MESSAGE: Please wait, running Relion Pipeline (may take a while)... ", flush=True)
         if args.debug:
-            print(" BFACTOR | MESSAGE: DEBUG mode ON; loading data...)
+            print(" BFACTOR | MESSAGE: DEBUG mode ON; loading data...")
             bfactor_data = parse_bfactor_output(filepath=opts.outfilepath_list["estimated"])
         else:
             bfactor_data = run_rln_pipeline(opts)
