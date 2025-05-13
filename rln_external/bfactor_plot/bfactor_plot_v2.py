@@ -852,7 +852,7 @@ def bfactor_main(args, unknown):
                                    prediction_range = bfactor_data["prediction_range"])
         bfactor_data.update(data_new)
         with open("data.pkl", "wb") as f:
-            pickle.dump(data, f)
+            pickle.dump(bfactor_data, f)
 
         ### 3. OUTPUT ###
         # print and save to text
