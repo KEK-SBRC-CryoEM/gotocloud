@@ -774,7 +774,7 @@ def calc_and_plot_breakpoint(xs, ys, savepath):
     plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath=savepath)
 
 
-def main():
+def bfactor_main(args, unknown):
     global RUNNING_FILE
     global SETUP_CHECK_FILE
 
@@ -785,16 +785,16 @@ def main():
     print(' BFACTOR | MESSAGE: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
-    parser.add_argument("-j", "--j", "--threads",          type=str, default='1',   help="Number of threads (Input from RELION. Not used here).")
-    parser.add_argument("-p", "--mpi_parameters",          type=str, default=None,  help="A .yaml file specifying machine parameters")
-    parser.add_argument("-i3d", "--input_refine3d_job",    type=str, required=True, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
-    parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
-    parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
-    parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
+    # parser.add_argument("-j", "--j", "--threads",          type=str, default='1',   help="Number of threads (Input from RELION. Not used here).")
+    # parser.add_argument("-p", "--mpi_parameters",          type=str, default=None,  help="A .yaml file specifying machine parameters")
+    # parser.add_argument("-i3d", "--input_refine3d_job",    type=str, required=True, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
+    # parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
+    # parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
+    # parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
 
-    args, unknown = parser.parse_known_args()
+    # args, unknown = parser.parse_known_args()
     print(" BFACTOR | MESSAGE: Running B-Factor Plot.")
 
     opts = RelionItOptions(
@@ -876,10 +876,20 @@ def main():
         make_rln_output_node_file(outpath=opts.output, outfiles=list(opts.outfilepath_list.values()) if IMPORTS_OK else [opts.outfilepath_list["estimated"]]) # cant produce .pdf if numpy and matplot are missing...
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
     finally:
-        move_files(opts) # move all files to the output directory
+        # move_files(opts) # move all files to the output directory
         print(' BFACTOR | MESSAGE: exiting now... ')
     
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
+    parser.add_argument("-j", "--j", "--threads",          type=str, default='1',   help="Number of threads (Input from RELION. Not used here).")
+    parser.add_argument("-p", "--mpi_parameters",          type=str, default=None,  help="A .yaml file specifying machine parameters")
+    parser.add_argument("-i3d", "--input_refine3d_job",    type=str, required=True, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
+    parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
+    parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
+    parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
+
+    args, unknown = parser.parse_known_args()
+    bfactor_main(args, unknown)
         
