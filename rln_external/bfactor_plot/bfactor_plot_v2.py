@@ -630,7 +630,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
     }
     return result
 
-def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None):
+def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(xs, ys, '.')
@@ -665,17 +665,6 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath, savepath_gradient=None
     ax3.yaxis.set_major_formatter(FixedFormatter(np.sqrt(1 / yticks).round(ndigits)))
 
     plt.savefig(savepath, bbox_inches='tight')
-
-    if savepath_gradient:
-        dy = np.gradient(ys, xs)
-        d2y = np.gradient(dy, xs)
-        line2 = ax1.plot(xs, d2y, label='Gradient', color='purple', marker="x")
-
-        idx = np.argmax(d2y) ##!!
-        print(idx, np.argmax(d2y))
-        # ax1.axvspan(xs[max(0, idx-1)], xs[min(len(xs), idx+1)], color='gray', alpha=0.3)
-
-        plt.savefig(savepath_gradient, bbox_inches='tight')
 
     return fig, ax1
 
@@ -866,8 +855,7 @@ def bfactor_main(args, unknown):
                          ys          = bfactor_data["inv_resolution_squared"],
                          b_factor    = bfactor_data["b_factor"],
                          fitted_line = bfactor_data["fitted_line"],
-                         savepath          = opts.outfilepath_list["rosenthal"],
-                         savepath_gradient = opts.outfilepath_list["analysis_gradient"])
+                         savepath          = opts.outfilepath_list["rosenthal"])
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # additional plot (breakpoint)
