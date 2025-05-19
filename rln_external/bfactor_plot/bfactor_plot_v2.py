@@ -717,63 +717,71 @@ def save_to_text(
 
     return output_info
 
+### Breakpoint analysis ###
 def calc_mse(xs, ys):
+    mse = 0
     if len(xs)>1:
         slope, intercept = line_fit(xs, ys)
         y_pred = [x * slope + intercept for x in xs]
-
         mse = np.square(np.subtract(ys, y_pred)).mean()
-    else:
-        mse = 0
+        
     return mse
 
-def plot_breakpoint(x, y1, y2, savepath):
+def calc_breakpoint(x):
+    # greedy knee detection (find biggest error "jump" pairwise)
+    return np.argmax(np.abs(np.diff(x)))
+
+def plot_breakpoint(x, y, region, savepath):
     fig, ax1 = plt.subplots(figsize=(8, 5))
     
     # error line
-    line1 = ax1.plot(x, y1, label='MSE', color='blue', marker="o")
-    line2 = ax1.plot(x, y2[::-1], label='MSE', color='red', marker="o")   
+    line1 = ax1.plot(x, y, label='MSE', color='blue', marker="o")
     
-    ax1.set_xlabel("Number of datapoints on the leftmost line")
-    ax1.set_ylabel("MSE")
+    ax1.set_xlabel("Number of datapoints")
+    ax1.set_ylabel("Mean Squared Error")
     ax1.set_xticks(x)
     
-    ax2 = ax1.twiny()
-    ax2.xaxis.set_ticks_position("bottom")
-    ax2.xaxis.set_label_position("bottom")
-    ax2.spines["bottom"].set_position(("axes", -0.15))
-    
-    ax2.xaxis.set_major_locator(FixedLocator(ax1.get_xticks()))
-    ax2.set_xlim(ax1.get_xlim())
-    ax2.set_xticklabels((np.array(x)+1)[::-1])
-    
-    ax2.set_xlabel("Number of datapoints on the rightmost line")
-    
-    # simple knee detection (find biggest error "jump" pairwise)
-    idx_left  = np.argmax(np.abs(np.diff(y1)))
-    idx_right = np.argmax(np.abs(np.diff(y2[::-1])))
-    ax1.axvspan(idx_left, idx_left+1, color='gray', alpha=0.3, label='Breakpoint')
-    ax1.axvspan(idx_right, idx_right+1, color='gray', alpha=0.3, label='Breakpoint')
-    
-    ax1.legend(line1+line2, ["Rightmost line", "Leftmost line"], loc='upper right')
+    # mark region to remove
+    ax1.axvspan(region[0]-0.15, region[1]+0.15, color='gray', alpha=0.3, label="Datapoints to remove")
+    ax1.legend()
     fig.tight_layout()
+
     
-    fig.savefig(savepath, dpi=300)
+    if savepath:
+        fig.savefig(savepath, dpi=300)
     return
 
-def calc_and_plot_breakpoint(xs, ys, savepath):
+def breakpoint_analysis(xs, ys, savepath, outtext):
     data_size = len(xs)
 
-    # mse of the left side line fit
-    mse_leftside  = [calc_mse(xs=xs[i:], ys=ys[i:])
-                        for i in range(data_size)]
+    # mse of the right side line fit (higher number of particles)
+    mse_rightside  = [calc_mse(xs=xs[i:], ys=ys[i:]) for i in range(data_size)]
 
-    # mse of the right side line fit
-    mse_rightside = [calc_mse(xs=xs[:11-i], ys=ys[:11-i])
-                        for i in range(data_size)]
-
+    # find the index
+    idx_break = calc_breakpoint(mse_rightside)
+        
     # plot
-    plot_breakpoint(x=range(data_size), y1=mse_leftside, y2=mse_rightside, savepath=savepath)
+    plot_breakpoint(x=range(data_size), y=mse_rightside, region=[0,idx_break], savepath=savepath)
+    
+    # ouput 
+    output_info = ["\nBreakpoint Analysis"]
+    output_info += [f"The line fit using all datapoints has MSE: {mse_rightside[0]:.3e}"]
+    output_info += [f"The line fit using filtered datapoints has MSE: {mse_rightside[idx_break+1]:.3e}"]
+    output_info += [f"Suggested minimum ln(#particles): {xs[idx_break+1]:.3f}"]
+    output_info += ["Note: You may ignore the following suggestion if the original line fit already has a low MSE. Cross-check with the Rosenthal-Henderson plot."]
+
+    # append to main output text file
+    if outtext:
+        with open(outtext, mode='a') as file:
+            file.write("\n".join(output_info))
+            file.write("Removed datapoints,MSE")
+            file.write("\n".join([f"{x},{y:.3e}" for x, y in zip(range(len(err)), err)]))
+            file.write("")
+            file.write(f"Suggested datapoints: ({idx} removed)")
+            file.write("'ln(#particles)','1/Resolution$^2'")
+            file.write("\n".join([f"{x:.3e},{y:.3e}" for x, y in zip(xs[idx:], ys[idx:])]))
+
+    return output_info
 
 
 def bfactor_main(args, unknown):
@@ -787,18 +795,9 @@ def bfactor_main(args, unknown):
     print(' BFACTOR | MESSAGE: Usage example: python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("-o", "--output",                  type=str, default="External/bfactor/", help = "Output job directory path")
-    # parser.add_argument("-j", "--j", "--threads",          type=str, default='1',   help="Number of threads (Input from RELION. Not used here).")
-    # parser.add_argument("-p", "--mpi_parameters",          type=str, default=None,  help="A .yaml file specifying machine parameters")
-    # parser.add_argument("-i3d", "--input_refine3d_job",    type=str, required=True, help="Refine 3D job output directory is required! (e.g: PostProcess/job050/)")
-    # parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
-    # parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
-    # parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")  
-
-    # args, unknown = parser.parse_known_args()
     print(" BFACTOR | MESSAGE: Running B-Factor Plot.")
 
+    # Read user settings and preferences
     opts = RelionItOptions(
         from_terminal = args,
         from_yaml     = load_yaml_parameters(args.mpi_parameters) # if provided
@@ -810,7 +809,7 @@ def bfactor_main(args, unknown):
     # Make output directory and list of output paths
     opts.output = make_output_directory(output_path=args.output)
     opts.outfilepath_list = {"rosenthal":           os.path.join(opts.output, opts.prefix+"rosenthal-henderson-plot.pdf"),
-                             "analysis_gradient":   os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"),
+                            #  "analysis_gradient":   os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"),
                              "analysis_breakpoint": os.path.join(opts.output, opts.prefix+"analysis_breakpoint.pdf"),
                              "estimated":           os.path.join(opts.output, opts.prefix+"estimated_bfactor.txt"),
     }
@@ -851,7 +850,7 @@ def bfactor_main(args, unknown):
                                    resolutions      = bfactor_data["resolutions"], 
                                    prediction_range = bfactor_data["prediction_range"])
         bfactor_data.update(data_new)
-        with open("data.pkl", "wb") as f:
+        with open("bfactor_data.pkl", "wb") as f:
             pickle.dump(bfactor_data, f)
 
         ### 3. OUTPUT ###
@@ -872,9 +871,11 @@ def bfactor_main(args, unknown):
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # additional plot (breakpoint)
-            calc_and_plot_breakpoint(xs=np.array(bfactor_data["log_n_particles"]), 
+            output_txt = breakpoint_analysis(xs=np.array(bfactor_data["log_n_particles"]), 
                                      ys=np.array(bfactor_data["inv_resolution_squared"]),
-                                     savepath=opts.outfilepath_list["analysis_breakpoint"])
+                                     savepath=opts.outfilepath_list["analysis_breakpoint"],
+                                     outtext=outputpath=opts.outfilepath_list["estimated"])
+            print("\n".join(output_txt))
             
         else:
             print(" BFACTOR | WARNING: Failed to plot. One of these libraries may be missing: matplotlib and/or numpy.\n")
