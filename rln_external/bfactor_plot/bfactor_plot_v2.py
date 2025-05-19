@@ -763,9 +763,9 @@ def breakpoint_analysis(xs, ys, savepath, outtext):
     if outtext:
         with open(outtext, mode='a') as file:
             file.write("\n".join(output_info))
-            file.write("Removed datapoints,MSE")
+            file.write("\nRemoved datapoints,MSE")
             file.write("\n".join([f"{x},{y:.3e}" for x, y in zip(range(len(mse_rightside)), mse_rightside)]))
-            file.write("")
+            file.write("\n")
             file.write(f"Suggested datapoints: ({idx_break+1} removed)")
             file.write("'ln(#particles)','1/Resolution$^2'")
             file.write("\n".join([f"{x:.3e},{y:.3e}" for x, y in zip(xs[idx_break+1:], ys[idx_break+1:])]))
@@ -839,7 +839,7 @@ def bfactor_main(args, unknown):
                                    resolutions      = bfactor_data["resolutions"], 
                                    prediction_range = bfactor_data["prediction_range"])
         bfactor_data.update(data_new)
-        with open("bfactor_data.pkl", "wb") as f:
+        with open(os.path.join(args.output, "bfactor_data.pkl"), "wb") as f:
             pickle.dump(bfactor_data, f)
 
         ### 3. OUTPUT ###
@@ -871,9 +871,10 @@ def bfactor_main(args, unknown):
         # create RELION_OUTPUT_NODES star file
         make_rln_output_node_file(outpath=opts.output, outfiles=list(opts.outfilepath_list.values()) if IMPORTS_OK else [opts.outfilepath_list["estimated"]]) # cant produce .pdf if numpy and matplot are missing...
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
+        print(' BFACTOR | MESSAGE: Done! ')
     finally:
         # move_files(opts) # move all files to the output directory
-        print(' BFACTOR | MESSAGE: exiting now... ')
+        print(' BFACTOR | MESSAGE: Exiting now... ')
     
 
 ### DEBUG ###
