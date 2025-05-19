@@ -114,11 +114,13 @@ Where:
 
 ## About the Script
 
-This script is an improved version of the `bfactor_plot.py` from the RELION project ([GitHub Link](https://github.com/3dem/relion/blob/master/scripts/bfactor_plot.py)). The core functionality for computing the **B-factor** has **not** been changed or refactored. The improvements focus mainly on input handling and script compatibility.
+This script is an improved version of the `bfactor_plot.py` from the RELION project ([GitHub Link](https://github.com/3dem/relion/blob/master/scripts/bfactor_plot.py)). The core functionality for computing the **B-factor** has **not** been changed or refactored. The improvements focus mainly on input handling and script compatibility. 
+
+## Breakpoint Analysis
+(beta) We included an additional breakpoint analysis to suggest the minimum number of particles to be used in which the B-Factor line
 
 ### Changes from the original script:
 - Added support for **YAML files** instead of raw `.py` for parameter input (mpi parameters).
-
 - Replaced `sys.argv` with **argparse** for better argument handling.
 - Added functionality for setting the **output_node.star** file.
 - Improved handling of **matplotlib** and **numpy** imports.
@@ -126,4 +128,35 @@ This script is an improved version of the `bfactor_plot.py` from the RELION proj
 - Fixed the issue with outputting `\u00C5` for **Å** (angstrom symbol).
 - Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
 - Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, when the YAML file is not provided, the mpi parameters are the same as in `job.star`.
+- Added breakpoint analysis.
+
+
+Im a bit stuck on the bfactor analysis, and I may need some time to think about it
+
+The code is working and tries to minimize the fitting error on the right-hand side of the curve.
+However, the sample data have two significant digits (inverse resolution squared ranges from ~0.00 to ~0.10).
+The MSE on the data versus line fit has error on the 5th decimal place which have no practical impact on the resolution 
+Even though we visually see that some datapoints are not perfectly fit on the line as in the figure below
+
+I am going to focus more on CTF while I think about this issue
+It seems at this point that the simple solution of filtering the datapoints based on the user input resolution is enough
+
+
+Your message is clear in intent but can benefit from smoother flow and more precise language. Here's an improved version for clarity and tone:
+
+---
+
+
+However, when looking at the sample data, I noticed it has only two significant digits (inverse resolution squared ranges from ~0.00 to ~0.10). 
+
+As a result, the mean squared error between the data and the fitted line is on the order of the fifth decimal place, which has no practical impact on the resolution.
+
+Visually, we can still see that a few points do not lie perfectly on the line (as in the figure below) but this difference is negligible in practice.
+
+For now, Im going to shift my focus to the CTF analysis while I continue to think about the bfactor analysis. 
+At this point, it seems that the simple solution of filtering the datapoints based on a user defined resolution threshold may work best.
+
+---
+
+Let me know if you'd like to tailor this for an email, paper, or documentation.
 
