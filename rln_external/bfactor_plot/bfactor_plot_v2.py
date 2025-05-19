@@ -874,7 +874,7 @@ def bfactor_main(args, unknown):
             output_txt = breakpoint_analysis(xs=np.array(bfactor_data["log_n_particles"]), 
                                      ys=np.array(bfactor_data["inv_resolution_squared"]),
                                      savepath=opts.outfilepath_list["analysis_breakpoint"],
-                                     outtext=outputpath=opts.outfilepath_list["estimated"])
+                                     outtext=opts.outfilepath_list["estimated"])
             print("\n".join(output_txt))
             
         else:
