@@ -764,11 +764,11 @@ def breakpoint_analysis(xs, ys, savepath, outtext):
         with open(outtext, mode='a') as file:
             file.write("\n".join(output_info))
             file.write("Removed datapoints,MSE")
-            file.write("\n".join([f"{x},{y:.3e}" for x, y in zip(range(len(err)), err)]))
+            file.write("\n".join([f"{x},{y:.3e}" for x, y in zip(range(len(mse_rightside)), mse_rightside)]))
             file.write("")
-            file.write(f"Suggested datapoints: ({idx} removed)")
+            file.write(f"Suggested datapoints: ({idx_break+1} removed)")
             file.write("'ln(#particles)','1/Resolution$^2'")
-            file.write("\n".join([f"{x:.3e},{y:.3e}" for x, y in zip(xs[idx:], ys[idx:])]))
+            file.write("\n".join([f"{x:.3e},{y:.3e}" for x, y in zip(xs[idx_break+1:], ys[idx_break+1:])]))
 
     return output_info
 
