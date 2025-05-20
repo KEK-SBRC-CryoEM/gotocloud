@@ -764,7 +764,7 @@ def find_max_change(x):
     return x2, np.min([len(x)-1, idx])
     
 def find_max_relative_change(x):
-    x2 = np.diff(x) / x[:-1]
+    x2 = np.diff(x) / (x[:-1]+np.finfo(float).eps) # prevent div by 0
     idx = np.argmax(x2) + 1 
 
     return x2, np.min([len(x)-1, idx])
