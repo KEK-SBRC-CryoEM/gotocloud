@@ -927,11 +927,6 @@ def bfactor_main(args, unknown):
 
             # additional plot (breakpoint)
             output_txt = breakpoint_analysis(bfactor_data, savepath_list=opts.outfilepath_list)
-            
-            breakpoint_analysis(xs=np.array(bfactor_data["log_n_particles"]), 
-                                     ys=np.array(bfactor_data["inv_resolution_squared"]),
-                                     savepath=opts.outfilepath_list["analysis_breakpoint"],
-                                     outtext=opts.outfilepath_list["estimated"])
             print("\n".join(output_txt))
             
         else:
