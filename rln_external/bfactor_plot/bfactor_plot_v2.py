@@ -607,7 +607,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
     slope, intercept = line_fit(log_n_particles, inv_resolution_squared)
     fitted_line = [x * slope + intercept for x in log_n_particles]
 
-    b_factor = 2.0 / slope
+    b_factor = 2.0 / (slope+1e-10)
 
     # extrapolate based on the fitted line
     pred_nr_particles = [int(all_nr_particles * x) 
