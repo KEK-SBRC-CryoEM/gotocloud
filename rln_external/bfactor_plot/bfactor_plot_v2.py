@@ -797,14 +797,14 @@ def breakpoint_analysis(bfactor_data, savepath_list):
                     y=mse,
                     poi=breakpoints,
                     plot_all=True,
-                    savepath=savepath["breakpoint_plot"])
+                    savepath=savepath_list["breakpoint_plot"])
 
     # new b-factor plots
     plot_bfactor(xs      = bfactor_data["log_n_particles"],
              ys          = bfactor_data["inv_resolution_squared"],
              b_factor    = bfactor_data["b_factor"],
              fitted_line = bfactor_data["fitted_line"],
-             savepath    = savepath["breakpoint_rh_none"],
+             savepath    = savepath_list["breakpoint_rh_none"],
              set_yrange = True)
 
     for name, ((curve, idx, fname), _) in breakpoints.items():
@@ -817,7 +817,7 @@ def breakpoint_analysis(bfactor_data, savepath_list):
                      ys          = new_data["inv_resolution_squared"],
                      b_factor    = new_data["b_factor"],
                      fitted_line = new_data["fitted_line"],
-                     savepath    = savepath[fname],
+                     savepath    = savepath_list[fname],
                      set_yrange=True)
 
     # print and text output
@@ -828,7 +828,7 @@ def breakpoint_analysis(bfactor_data, savepath_list):
     output_info += [f"{xs[idx]:.3e}\t {ys[idx]:.3e}\t {mse[idx]:.3e}\t {name}" for name, ((curve, idx), mark) in breakpoints.items()]
     output_info += ["--------------------"]
 
-    with open(savepath["estimated"], mode='a') as file:
+    with open(savepath_list["estimated"], mode='a') as file:
         file.write("\n".join(output_info))
 
     return output_info
