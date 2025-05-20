@@ -632,7 +632,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
     }
     return result
 
-def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
+def plot_bfactor(xs, ys, b_factor, fitted_line, set_yrange=False, savepath=None):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.plot(xs, ys, '.')
@@ -640,6 +640,11 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
     ax1.set_xlabel("ln(#particles)")
     ax1.set_ylabel("1/Resolution$^2$ in 1/$\u00C5^2$") #@2025.03.10 locale friendly
     ax1.set_title("Rosenthal & Henderson plot: B = 2.0 / slope = {:.1f}".format(b_factor))
+
+    # symmetrical y-axis
+    if set_yrange:
+        ylim = np.max(np.abs(ys))
+        ax1.set_ylim(-(1.2*ylim), 1.2*ylim) # 20% padding
 
     ax2 = ax1.twiny()
     ax2.xaxis.set_ticks_position("bottom")
@@ -666,7 +671,8 @@ def plot_bfactor(xs, ys, b_factor, fitted_line, savepath):
     ax3.yaxis.set_major_locator(FixedLocator(ax1.get_yticks()))
     ax3.yaxis.set_major_formatter(FixedFormatter(np.sqrt(1 / yticks).round(ndigits)))
 
-    plt.savefig(savepath, bbox_inches='tight')
+    if savepath:
+        plt.savefig(savepath, bbox_inches='tight')
 
     return fig, ax1
 
