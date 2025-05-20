@@ -831,7 +831,7 @@ def breakpoint_analysis(bfactor_data, savepath_list):
     output_info += ["Breakpoint Analysis"]
     output_info += ["Min ln(#particles)\t Resolution\t MSE\t Method"]
     output_info += [f"{xs[0]:.3e}\t {ys[0]:.3e}\t {mse[0]:.3e}\t None"]
-    output_info += [f"{xs[idx]:.3e}\t {ys[idx]:.3e}\t {mse[idx]:.3e}\t {name}" for name, ((curve, idx), mark) in breakpoints.items()]
+    output_info += [f"{xs[idx]:.3e}\t {ys[idx]:.3e}\t {mse[idx]:.3e}\t {name}" for name, ((curve, idx), _,_) in breakpoints.items()]
     output_info += ["--------------------"]
 
     with open(savepath_list["estimated"], mode='a') as file:
