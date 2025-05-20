@@ -728,7 +728,7 @@ def plot_breakpoint(x, y, poi, plot_all=False, savepath=None):
     ax1.set_ylabel("Metrics")
     ax1.set_xticks(x)
 
-    for i, (name, ((curve, idx), mark)) in enumerate(poi.items()):
+    for i, (name, ((curve, idx, _), mark)) in enumerate(poi.items()):
         ax1.plot(x[idx], y[idx], marker=mark, color='red', 
              markersize=12+i*1.5, markerfacecolor='none', label=name)
 
