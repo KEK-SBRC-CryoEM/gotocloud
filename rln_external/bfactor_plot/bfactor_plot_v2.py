@@ -728,7 +728,7 @@ def plot_breakpoint(x, y, poi, plot_all=False, savepath=None):
     ax1.set_ylabel("Metrics")
     ax1.set_xticks(x)
 
-    for i, (name, ((curve, idx, _), mark)) in enumerate(poi.items()):
+    for i, (name, ((curve, idx), _, mark)) in enumerate(poi.items()):
         ax1.plot(x[idx], y[idx], marker=mark, color='red', 
              markersize=12+i*1.5, markerfacecolor='none', label=name)
 
@@ -807,7 +807,7 @@ def breakpoint_analysis(bfactor_data, savepath_list):
              savepath    = savepath_list["breakpoint_rh_none"],
              set_yrange = True)
 
-    for name, ((curve, idx, fname), _) in breakpoints.items():
+    for name, ((curve, idx), fname, _) in breakpoints.items():
         new_data = compute_bfactor(all_nr_particles = bfactor_data["all_nr_particles"],
                                    nr_particles     = bfactor_data["nr_particles"][idx:],
                                    resolutions      = bfactor_data["resolutions"][idx:],
