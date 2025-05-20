@@ -802,7 +802,7 @@ def breakpoint_analysis(bfactor_data, savepath_list):
     plot_breakpoint(x=range(data_size), 
                     y=mse,
                     poi=breakpoints,
-                    plot_all=True,
+                    plot_all=False,
                     savepath=savepath_list["breakpoint_plot"])
 
     # new b-factor plots
