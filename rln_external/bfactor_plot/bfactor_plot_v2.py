@@ -144,15 +144,15 @@ def make_output_directory(output_path):
     # return path
     return output_path
 
-def move_files(opts):
+def move_files(to_path):
     if os.path.isfile(RUNNING_FILE):
         os.remove(RUNNING_FILE)
 
     #@2025.03.31: move SUBMITTED_JOB and .log to the output directory
     if os.path.isfile(SETUP_CHECK_FILE):
-        os.rename(SETUP_CHECK_FILE, os.path.join(opts.output, SETUP_CHECK_FILE))
+        os.rename(SETUP_CHECK_FILE, os.path.join(to_path, SETUP_CHECK_FILE))
     for file in glob.glob("pipeline_batch*.log"):
-        os.rename(file, os.path.join(opts.output, file))
+        os.rename(file, os.path.join(to_path, file))
 
 ### Input handling ###
 def load_yaml_parameters(filepath):
@@ -617,6 +617,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
                              for x in pred_nr_particles]
 
     result = {
+        "all_nr_particles": all_nr_particles,
         "nr_particles": nr_particles,
         "resolutions": resolutions, 
         "log_n_particles": log_n_particles,
@@ -627,6 +628,7 @@ def compute_bfactor(all_nr_particles, nr_particles, resolutions, prediction_rang
         "slope": slope,
         "intercept": intercept,
         "fitted_line": fitted_line,
+        "prediction_range": prediction_range,
     }
     return result
 
@@ -713,25 +715,27 @@ def calc_mse(xs, ys):
         slope, intercept = line_fit(xs, ys)
         y_pred = [x * slope + intercept for x in xs]
         mse = np.square(np.subtract(ys, y_pred)).mean()
-        
+    
     return mse
 
-def calc_breakpoint(x):
-    # greedy knee detection (find biggest error "jump" pairwise)
-    return np.argmax(np.abs(np.diff(x)))
-
-def plot_breakpoint(x, y, region, savepath):
+def plot_breakpoint(x, y, poi, plot_all=False, savepath=None):
     fig, ax1 = plt.subplots(figsize=(8, 5))
     
     # error line
     line1 = ax1.plot(x, y, label='MSE', color='blue', marker="o")
     
-    ax1.set_xlabel("Number of datapoints")
-    ax1.set_ylabel("Mean Squared Error")
+    ax1.set_xlabel("Number of removed datapoints")
+    ax1.set_ylabel("Metrics")
     ax1.set_xticks(x)
+
+    for i, (name, ((curve, idx), mark)) in enumerate(poi.items()):
+        ax1.plot(x[idx], y[idx], marker=mark, color='red', 
+             markersize=12+i*1.5, markerfacecolor='none', label=name)
+
+        if plot_all:
+            start = len(x) - len(curve)
+            ax1.plot(x[start:], curve, label=name, color='green', marker=mark)
     
-    # mark region to remove
-    ax1.axvspan(region[0]-0.15, region[1]+0.15, color='gray', alpha=0.3, label="Datapoints to remove")
     ax1.legend()
     fig.tight_layout()
 
@@ -740,38 +744,94 @@ def plot_breakpoint(x, y, region, savepath):
         fig.savefig(savepath, dpi=300)
     return
 
-def breakpoint_analysis(xs, ys, savepath, outtext):
+def find_inflection(x, y):
+    dy  = np.gradient(y, x)
+    d2y = np.gradient(dy, x)
+    
+    idx = np.argmax(np.abs(d2y)) + 1
+
+    return  d2y, np.min([len(x)-1, idx])
+
+def find_max_change(x):
+    x2 = np.abs(np.diff(x))
+    idx = np.argmax(x2) + 1
+    return x2, np.min([len(x)-1, idx])
+    
+def find_max_relative_change(x):
+    x2 = np.diff(x) / x[:-1]
+    idx = np.argmax(x2) + 1 
+
+    return x2, np.min([len(x)-1, idx])
+
+def breakpoint_analysis(bfactor_data, savepath_list):
+    '''
+    This analysis has the assumption that we can break the data into two segments 
+        in a way that remaining datapoints at the rightside have a better linear fit
+        compared to the whole data
+
+        This analysis does:
+        1. Compute the MSE of the remaining rightside line after removing N points from the left side
+        2. Decide the breakpoint by using one of these methods:
+            2.1. Inflection: compute the second derivative of the MSE and find the highest peak/valley 
+            2.2. Max Change on the MSE curve
+            2.3. Max Relative Change on the MSE curve
+            2.3. Max Relative Change on gradient(MSE) curve
+        3. Output this information on text files and plots. (todo: describe)
+        
+    '''
+    xs = np.array(bfactor_data["log_n_particles"])
+    ys = np.array(bfactor_data["inv_resolution_squared"])
     data_size = len(xs)
 
-    # mse of the right side line fit (higher number of particles)
-    mse_rightside  = [calc_mse(xs=xs[i:], ys=ys[i:]) for i in range(data_size)]
+    # mse of the right side line fit
+    mse  = [calc_mse(xs=xs[i:], ys=ys[i:]) for i in range(data_size)]
 
-    # find the index
-    idx_break = calc_breakpoint(mse_rightside)
-        
-    # plot
-    plot_breakpoint(x=range(data_size), y=mse_rightside, region=[0,idx_break], savepath=savepath)
+    # find breakpoint using different methods
+    breakpoints = {"Inflection":       (find_inflection(range(len(mse)), mse), "breakpoint_rh_inflection", "D"),
+                   "Max Error Change": (find_max_change(mse),                  "breakpoint_rh_maxdiff", "X"),
+                   "Max Relative Error Change":     (find_max_relative_change(mse),                               "breakpoint_rh_maxreldiff", "^"),
+                   "Max Relative Gradient Change":  (find_max_relative_change(np.gradient(mse, range(len(mse)))), "breakpoint_rh_maxreldiff2", "*"),
+    }
+    # breakpoint plot
+    plot_breakpoint(x=range(data_size), 
+                    y=mse,
+                    poi=breakpoints,
+                    plot_all=True,
+                    savepath=savepath["breakpoint_plot"])
+
+    # new b-factor plots
+    plot_bfactor(xs      = bfactor_data["log_n_particles"],
+             ys          = bfactor_data["inv_resolution_squared"],
+             b_factor    = bfactor_data["b_factor"],
+             fitted_line = bfactor_data["fitted_line"],
+             savepath    = savepath["breakpoint_rh_none"],
+             set_yrange = True)
+
+    for name, ((curve, idx, fname), _) in breakpoints.items():
+        new_data = compute_bfactor(all_nr_particles = bfactor_data["all_nr_particles"],
+                                   nr_particles     = bfactor_data["nr_particles"][idx:],
+                                   resolutions      = bfactor_data["resolutions"][idx:],
+                                   prediction_range = bfactor_data["prediction_range"])
     
-    # ouput 
-    output_info = ["\nBreakpoint Analysis"]
-    output_info += [f"The line fit using all datapoints has MSE: {mse_rightside[0]:.3e}"]
-    output_info += [f"The line fit using filtered datapoints has MSE: {mse_rightside[idx_break+1]:.3e}"]
-    output_info += [f"Suggested minimum ln(#particles): {xs[idx_break+1]:.3f}"]
-    output_info += ["Note: You may ignore the following suggestion if the original line fit already has a low MSE. Cross-check with the Rosenthal-Henderson plot."]
+        plot_bfactor(xs          = new_data["log_n_particles"],
+                     ys          = new_data["inv_resolution_squared"],
+                     b_factor    = new_data["b_factor"],
+                     fitted_line = new_data["fitted_line"],
+                     savepath    = savepath[fname],
+                     set_yrange=True)
 
-    # append to main output text file
-    if outtext:
-        with open(outtext, mode='a') as file:
-            file.write("\n".join(output_info))
-            file.write("\nRemoved datapoints,MSE")
-            file.write("\n".join([f"{x},{y:.3e}" for x, y in zip(range(len(mse_rightside)), mse_rightside)]))
-            file.write("\n")
-            file.write(f"Suggested datapoints: ({idx_break+1} removed)")
-            file.write("'ln(#particles)','1/Resolution$^2'")
-            file.write("\n".join([f"{x:.3e},{y:.3e}" for x, y in zip(xs[idx_break+1:], ys[idx_break+1:])]))
+    # print and text output
+    output_info =  ["\n--------------------"]
+    output_info += ["Breakpoint Analysis"]
+    output_info += ["Min ln(#particles)\t Resolution\t MSE\t Method"]
+    output_info += [f"{xs[0]:.3e}\t {ys[0]:.3e}\t {mse[0]:.3e}\t None"]
+    output_info += [f"{xs[idx]:.3e}\t {ys[idx]:.3e}\t {mse[idx]:.3e}\t {name}" for name, ((curve, idx), mark) in breakpoints.items()]
+    output_info += ["--------------------"]
+
+    with open(savepath["estimated"], mode='a') as file:
+        file.write("\n".join(output_info))
 
     return output_info
-
 
 def bfactor_main(args, unknown):
     global RUNNING_FILE
@@ -797,10 +857,14 @@ def bfactor_main(args, unknown):
 
     # Make output directory and list of output paths
     opts.output = make_output_directory(output_path=args.output)
-    opts.outfilepath_list = {"rosenthal":           os.path.join(opts.output, opts.prefix+"rosenthal-henderson-plot.pdf"),
-                            #  "analysis_gradient":   os.path.join(opts.output, opts.prefix+"analysis_rhplot_gradient.pdf"),
-                             "analysis_breakpoint": os.path.join(opts.output, opts.prefix+"analysis_breakpoint.pdf"),
-                             "estimated":           os.path.join(opts.output, opts.prefix+"estimated_bfactor.txt"),
+    opts.outfilepath_list = {"rosenthal":                 os.path.join(opts.output, opts.prefix+"rosenthal-henderson-plot.pdf"),
+                             "estimated":                 os.path.join(opts.output, opts.prefix+"estimated_bfactor.txt"),
+                             "breakpoint_plot":           os.path.join(opts.output, opts.prefix+"breakpoint_plot.pdf"),
+                             "breakpoint_rh_inflection":  os.path.join(opts.output, opts.prefix+"breakpoint_rh_inflection.pdf"),
+                             "breakpoint_rh_maxdiff":     os.path.join(opts.output, opts.prefix+"breakpoint_rh_maxdiff.pdf"),
+                             "breakpoint_rh_maxreldiff":  os.path.join(opts.output, opts.prefix+"breakpoint_rh_maxreldiff.pdf"),
+                             "breakpoint_rh_maxreldiff2": os.path.join(opts.output, opts.prefix+"breakpoint_rh_maxreldiff2.pdf"),
+                             "breakpoint_rh_none":        os.path.join(opts.output, opts.prefix+"breakpoint_rh_none.pdf"),
     }
 
     print(" BFACTOR | MESSAGE: Using Refine3D data from: ",      opts.input_refine3d_job)
@@ -823,27 +887,24 @@ def bfactor_main(args, unknown):
     try:
         ### 1. RELION PIPELINE ###
         print(" BFACTOR | MESSAGE: Please wait, running Relion Pipeline (may take a while)... ", flush=True)
-        if args.debug:
-            print(" BFACTOR | MESSAGE: DEBUG mode ON; loading data...")
-            bfactor_data = parse_bfactor_output(filepath=opts.outfilepath_list["estimated"])
-        else:
-            bfactor_data = run_rln_pipeline(opts)
+        bfactor_data = run_rln_pipeline(opts)
         print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------', flush=True)
         
         ### 2. BFACTOR ###
         # fit line to data, compute bfactor, extrapolate data
         print(" BFACTOR | MESSAGE: Computing B-Factor... ", flush=True)
-        bfactor_data["prediction_range"] = [1.5, 2, 4, 8]
         data_new = compute_bfactor(all_nr_particles = bfactor_data["all_nr_particles"],
                                    nr_particles     = bfactor_data["nr_particles"], 
                                    resolutions      = bfactor_data["resolutions"], 
-                                   prediction_range = bfactor_data["prediction_range"])
+                                   prediction_range = [1.5, 2, 4, 8])
         bfactor_data.update(data_new)
+
+        ### 3. OUTPUT ###
+        # saves pickled bfactor data (for dev use)
         with open(os.path.join(args.output, "bfactor_data.pkl"), "wb") as f:
             pickle.dump(bfactor_data, f)
 
-        ### 3. OUTPUT ###
-        # print and save to text
+        # print and save to text (user friendly)
         output_txt = save_to_text(**bfactor_data, outputpath=opts.outfilepath_list["estimated"])
         print("\n".join(output_txt))
 
@@ -855,11 +916,13 @@ def bfactor_main(args, unknown):
                          ys          = bfactor_data["inv_resolution_squared"],
                          b_factor    = bfactor_data["b_factor"],
                          fitted_line = bfactor_data["fitted_line"],
-                         savepath          = opts.outfilepath_list["rosenthal"])
+                         savepath    = opts.outfilepath_list["rosenthal"])
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # additional plot (breakpoint)
-            output_txt = breakpoint_analysis(xs=np.array(bfactor_data["log_n_particles"]), 
+            output_txt = breakpoint_analysis(bfactor_data, savepath_list=opts.outfilepath_list)
+            
+            breakpoint_analysis(xs=np.array(bfactor_data["log_n_particles"]), 
                                      ys=np.array(bfactor_data["inv_resolution_squared"]),
                                      savepath=opts.outfilepath_list["analysis_breakpoint"],
                                      outtext=opts.outfilepath_list["estimated"])
@@ -873,7 +936,7 @@ def bfactor_main(args, unknown):
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
         print(' BFACTOR | MESSAGE: Done! ')
     finally:
-        # move_files(opts) # move all files to the output directory
+        # move_files(to_path=opts.output) # move all files to the output directory
         print(' BFACTOR | MESSAGE: Exiting now... ')
     
 
@@ -949,7 +1012,7 @@ if __name__ == "__main__":
     parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
     parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
     parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")
-    parser.add_argument("-debug", action="store_true", help="Enable debugging")
+    # parser.add_argument("-debug", action="store_true", help="Enable debugging")
 
     args, unknown = parser.parse_known_args()
     bfactor_main(args, unknown)
