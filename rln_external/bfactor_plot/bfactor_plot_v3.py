@@ -710,7 +710,8 @@ def save_bfactor_data(bfactor_dict, pd_keys, yaml_keys, pd_output_path, yaml_out
 
     # YAML
     bfactor_yaml = {k:v for k, v in bfactor_dict.items() if k in yaml_keys}
-    bfactor_yaml["csv_path"] = pd_output_path
+    bfactor_yaml["csv_path"] = pd_output_path.split("/")[-1] # only the file name (removes the path)
+
     with open(yaml_output_path, 'w') as file:
         yaml.dump(bfactor_yaml, file, default_flow_style=False)
 
