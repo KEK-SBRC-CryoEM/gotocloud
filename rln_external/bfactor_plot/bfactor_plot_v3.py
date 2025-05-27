@@ -12,7 +12,7 @@ the name of a file containing options if needed. See the relion_it_options.py
 file for an example.
 
 Usage example: 
-    python3 ./bfactor_plot_kek.py -o path_output -p path_parameter.yaml -i3d Refine3D/job049/ -ipp PostProcess/job050/ --minimum_nr_particles 225 --maximum_nr_particles 7200
+    python3 ./bfactor_plot.py -o path/output -p path/parameter.yaml -i3d path/Refine3D/jobXXX/ -ipp path/PostProcess/jobXXX/ --minimum_nr_particles 225 --maximum_nr_particles 7200
 
 Modified by: (2025) Jair Pereira and Toshio Moriya
 - Added support for **YAML files** instead of raw `.py` for parameter input.
@@ -705,11 +705,11 @@ def bfactor_to_text(
 
 def save_bfactor_data(bfactor_dict, pd_keys, yaml_keys, pd_output_path, yaml_output_path):
     # PANDAS
-    bfactor_df = pd.DataFrame({k:v for k, v in bfactor_data.items() if k in pd_keys})
+    bfactor_df = pd.DataFrame({k:v for k, v in bfactor_dict.items() if k in pd_keys})
     bfactor_df.to_csv(pd_output_path, index=False)
 
     # YAML
-    bfactor_yaml = {k:v for k, v in bfactor_data.items() if k in yaml_keys}
+    bfactor_yaml = {k:v for k, v in bfactor_dict.items() if k in yaml_keys}
     bfactor_yaml["csv_path"] = pd_output_path
     with open(yaml_output_path, 'w') as file:
         yaml.dump(bfactor_yaml, file, default_flow_style=False)
@@ -722,7 +722,7 @@ def bfactor_main(args, unknown):
     print(' BFACTOR | MESSAGE: Script for automated Bfactor-plot generation in RELION (>= 3.1)')
     print(' BFACTOR | MESSAGE: Authors: Sjors H.W. Scheres & Takanori Nakane')
     print(' BFACTOR | MESSAGE: Modified by: (2025.03) Jair Pereira and Toshio Moriya')
-    print(' BFACTOR | MESSAGE: Usage example: python3 ./bfactor_plot_kek.py -o path/output -p path/parameter.yaml -i3d path/Refine3D/jobXXX/ -ipp path/PostProcess/jobXXX/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
+    print(' BFACTOR | MESSAGE: Usage example: python3 ./bfactor_plot.py -o path/output -p path/parameter.yaml -i3d path/Refine3D/jobXXX/ -ipp path/PostProcess/jobXXX/ --minimum_nr_particles 225 --maximum_nr_particles 7200')
     print(' BFACTOR | MESSAGE: -------------------------------------------------------------------------------------------------------------------')
     print(" BFACTOR | MESSAGE: Running B-Factor Plot.")
 
