@@ -24,7 +24,7 @@ Modified by: (2025) Jair Pereira and Toshio Moriya
 - Resolved **matplotlib UserWarning** regarding setting tick labels before setting ticks on `ax2` and `ax3`.
 - Improved default parameter loading from **Refine3D** and **PostProcess** `job.star` files, with parameter priority order: `terminal > yaml > job.star`.
 - Separated the Relion Pipeline from the BFactor computation and plotting
-- Added two additional plots for analysis: gradient and breakpoint plots
+- Added analysis to find the enough minimum number of particle
 """
 
 from __future__ import print_function
@@ -1013,7 +1013,6 @@ if __name__ == "__main__":
     parser.add_argument("-ipp", "--input_postprocess_job", type=str, required=True, help="Postprocess job output directory is required! (e.g: Refine3D/job049/)")
     parser.add_argument("-minp", "--minimum_nr_particles", type=int, default=5000,   help="Minimun Number of Particles (int)")
     parser.add_argument("-maxp", "--maximum_nr_particles", type=int, default=400000, help="Maximum Number of Particles (int)")
-    # parser.add_argument("-debug", action="store_true", help="Enable debugging")
 
     args, unknown = parser.parse_known_args()
     bfactor_main(args, unknown)
