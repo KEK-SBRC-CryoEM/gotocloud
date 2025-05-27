@@ -778,8 +778,8 @@ def bfactor_main(args, unknown):
             save_bfactor_data(bfactor_dict=bfactor_data, 
                               pd_keys=["nr_particles", "resolutions", "log_n_particles", "inv_resolution_squared"],
                               yaml_keys=["all_nr_particles", "b_factor", "slope", "intercept", "fitted_line", "prediction_range"],
-                              pd_output_path="./df.csv",
-                              yaml_output_path="./yaml.yaml"
+                              pd_output_path=opts.outfilepath_list["data_csv"],
+                              yaml_output_path=opts.outfilepath_list["data_yaml"]
             )
 
             # print and save a more user friendly version (same output as the original script)
@@ -787,7 +787,7 @@ def bfactor_main(args, unknown):
             print("\n".join(output_txt))
             if opts.outfilepath_list["estimated"]:
                 with open(opts.outfilepath_list["estimated"], mode='w') as file:
-                    file.write("\n".join(output_info))
+                    file.write("\n".join(output_txt))
 
             # prepare plots
             print(" BFACTOR | MESSAGE: Generating plots... ", flush=True)
