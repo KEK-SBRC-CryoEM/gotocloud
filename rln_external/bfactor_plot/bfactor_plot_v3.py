@@ -799,7 +799,7 @@ def bfactor_main(args, unknown):
             print(" BFACTOR | MESSAGE: Plot written to " + opts.outfilepath_list["rosenthal"])
 
             # create RELION_OUTPUT_NODES star file
-            make_rln_output_node_file(outpath=opts.output, outfiles=list(opts.outfilepath_list.values()) if IMPORTS_OK else [opts.outfilepath_list["estimated"]]) # cant produce .pdf if numpy and matplot are missing...
+            make_rln_output_node_file(outpath=opts.output, outfiles=list(opts.outfilepath_list.values()))
             open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
             print(' BFACTOR | MESSAGE: Done! ')
         finally:
