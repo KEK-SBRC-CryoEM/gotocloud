@@ -18,13 +18,13 @@ refine_scratch_disk: "/scratch/senda-em/"
 # Number of pooled particles?
 refine_nr_pool: 30
 # Use GPU-acceleration?
-refine_do_gpu: true
+refine_do_gpu: no
 # Which GPU to use (different from GPU used for pre-processing?)
 refine_gpu: ""
 # How many MPI processes to use
-refine_mpi: 5
+refine_mpi: 3
 # How many threads to use
-refine_threads: 8
+refine_threads: 5
 # Skip padding?
 refine_skip_padding: true
 # Submit jobs to the cluster?
