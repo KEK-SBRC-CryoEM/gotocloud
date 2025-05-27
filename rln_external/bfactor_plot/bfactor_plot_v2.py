@@ -937,7 +937,7 @@ def bfactor_main(args, unknown):
         open(os.path.join(args.output, "RELION_JOB_EXIT_SUCCESS"), "w")
         print(' BFACTOR | MESSAGE: Done! ')
     finally:
-        # move_files(to_path=opts.output) # move all files to the output directory
+        move_files(to_path=opts.output) # move all files to the output directory
         print(' BFACTOR | MESSAGE: Exiting now... ')
     
 
