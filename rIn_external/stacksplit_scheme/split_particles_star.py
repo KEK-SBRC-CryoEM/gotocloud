@@ -233,8 +233,9 @@ def split_particles_star(current_path, job_no, split_num, particles_num):
 def main():
 
     current_path = os.getcwd()
-    if current_path[len(current_path)-1] != '/':
-        current_path += '/'
+    current_path = current_path.replace('stacksplit_scheme', '')
+    current_path = comm.fix_path_end(current_path)
+    
     job_no = 100
     split_num = 4
     particles_num = 0

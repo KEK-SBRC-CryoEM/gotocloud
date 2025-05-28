@@ -80,8 +80,8 @@ def make_symbolic_folder(current_path, sub_folder_path):
 def main():
 
     current_path = os.getcwd()
-    if current_path[len(current_path)-1] != '/':
-        current_path += '/'
+    current_path = current_path.replace('stacksplit_scheme', '')
+    current_path = comm.fix_path_end(current_path)
 
     sub_folder_path = os.path.join(current_path, '100_particles_split_1/')
 
