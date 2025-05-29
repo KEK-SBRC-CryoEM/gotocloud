@@ -191,21 +191,21 @@ def split_particles_star(current_path, job_no, split_num, particles_num):
     index = 0    
     for file_list in file_lists:
         index += 1
-        marge_data = []
+        merge_data = []
         for file in file_list:
             extracted = extract_particles_by_micrograph(particles_data, file)
-            marge_data.append(extracted)
+            merge_data.append(extracted)
 
-        marged = {}
+        merged = {}
 
         ## pandas              
-        marged = pd.concat(marge_data, ignore_index=True)
+        merged = pd.concat(merge_data, ignore_index=True)
 
-    #    print(marged)
+    #    print(merged)
 
         ## create output data
         split_star = base_dict.copy()
-        split_star['particles'] = marged
+        split_star['particles'] = merged
 
     #    print(split_star)
         

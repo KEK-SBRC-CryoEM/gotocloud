@@ -26,7 +26,7 @@ def run_sub_schemes(sub_folder_path_list):
         for scheme in scheme_list:
             scheme_path = f'Schemes/{scheme}/'
             
-            command = f'relion_schemer --scheme {scheme} --run --pipeline_control {scheme_path} > {log_file} 2>&1 &'
+            command = f'relion_schemer --scheme {scheme} --run --pipeline_control {scheme_path} >> {log_file} 2>&1 &'
             
             print(f'Command: {command}')                       
             os.system(command)
