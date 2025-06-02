@@ -1,0 +1,14 @@
+all_nr_particles: 7205
+b_factor: 35.5043053210705
+csv_path: External/job093/BFACTOR_PLOT_particles_resolution.csv
+fitted_line:
+- 0.08994998596049619
+- 0.12899579592980726
+- 0.16804160589911837
+intercept: -0.2151454295735416
+prediction_range:
+- 1.5
+- 2
+- 4
+- 8
+slope: 0.05633119641021798

@@ -2,14 +2,16 @@
 # This script uses the output from the b-factor plot to
 #    compute the minimum number of particles to divide the stack
 
-from bfactor_plot_v3 import line_fit, plot_bfactor, gtf_get_timestamp, compute_bfactor
+from bfactor_plot import line_fit, plot_bfactor, gtf_get_timestamp, compute_bfactor
 
 import os
 import time
 import yaml
-import logging
 import argparse
 from pathlib import Path
+
+import logging
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import pandas as pd
@@ -44,7 +46,7 @@ def plot_breakpoint(x, y, poi, plot_all=False, savepath=None):
 
     for i, (name, ((curve, idx), _, mark)) in enumerate(poi.items()):
         ax1.plot(x[idx], y[idx], marker=mark, color='red', 
-             markersize=12+i*1.5, markerfacecolor='none', label=name)
+            markersize=12+i*1.5, markerfacecolor='none', label=name)
 
         if plot_all:
             start = len(x) - len(curve)
@@ -140,6 +142,7 @@ def breakpoint_analysis(bfactor_data, method="Inflection on data", output_path=N
             "breakpoint_rh_maxerror":  os.path.join(output_path, "breakpoint_rh_maxerror.pdf"),
             "breakpoint_rh_relerror":  os.path.join(output_path, "breakpoint_rh_relerror.pdf"),
             "breakpoint_rh_relgrad":  os.path.join(output_path, "breakpoint_rh_relgrad.pdf"),
+            "breakpoint_rh_remove_":  os.path.join(output_path, "breakpoint_rh_remove_{}.pdf"), # bfactor removing n points
         }
 
     # shortcuts
@@ -152,7 +155,7 @@ def breakpoint_analysis(bfactor_data, method="Inflection on data", output_path=N
     mse, sigma  = zip(*[calc_mse(xs=xs[i:], ys=ys[i:]) for i in range(data_size-min_datapoints)])
 
     # find breakpoint using different methods
-    breakpoints = {"Inflection on data":    (find_inflection(range(len(xs)), xs),       "breakpoint_rh_inflection1", "o"),
+    breakpoints = {"Inflection on data":    (find_inflection(range(len(xs[:-min_datapoints])), xs[:-min_datapoints]),       "breakpoint_rh_inflection1", "o"),
                    "Inflection on sigma2":  (find_inflection(range(len(sigma)), sigma), "breakpoint_rh_inflection2", "s"),
 
                    "Max Error Change":      (find_max_change(mse),                      "breakpoint_rh_maxerror", "^"),
@@ -169,24 +172,17 @@ def breakpoint_analysis(bfactor_data, method="Inflection on data", output_path=N
                     savepath=savepath_list["breakpoint_plot"] if savepath_list else None)
 
     # new b-factor plots
-    plot_bfactor(xs      = bfactor_data["log_n_particles"],
-             ys          = bfactor_data["inv_resolution_squared"],
-             b_factor    = bfactor_data["b_factor"],
-             fitted_line = bfactor_data["fitted_line"],
-             savepath    = savepath_list["breakpoint_rh_none"] if savepath_list else None,
-             set_yrange = True)
-
-    for name, ((curve, idx), fname, _) in breakpoints.items():
+    for i in range(len(bfactor_data["nr_particles"])-min_datapoints):
         new_data = compute_bfactor(all_nr_particles = bfactor_data["all_nr_particles"],
-                                   nr_particles     = bfactor_data["nr_particles"][idx:],
-                                   resolutions      = bfactor_data["resolutions"][idx:],
+                                   nr_particles     = bfactor_data["nr_particles"][i:],
+                                   resolutions      = bfactor_data["resolutions"][i:],
                                    prediction_range = bfactor_data["prediction_range"])
     
         plot_bfactor(xs          = new_data["log_n_particles"],
                      ys          = new_data["inv_resolution_squared"],
                      b_factor    = new_data["b_factor"],
                      fitted_line = new_data["fitted_line"],
-                     savepath    = savepath_list[fname] if savepath_list else None,
+                     savepath    = savepath_list["breakpoint_rh_remove_"].format(i),
                      set_yrange=True)
 
     # print and save output
@@ -218,46 +214,47 @@ def get_input_files(input_dir, files_of_interest):
     # check if any file is missing
     missing_files = [p for p, fp in file_map.items() if fp is None]
     if missing_files:
-        print(f"BFACTOR BREAKPOINT | ERROR: The following files were not found in the input directory '{input_dir}': ")
+        logger.error(f"The following files were not found in the input directory '{input_dir}': ")
         for fp in missing_files:
-            print(f"BFACTOR BREAKPOINT | ERROR: - {fp}")
+            logger.error(f"- {fp}")
 
         raise FileNotFoundError(f"Missing files for: {', '.join(missing_files)}")
     
     return file_map
 
-def run_breakpoint_analysis(input_directory, verbose=False):
-    logging.basicConfig(level=logging.INFO if verbose else logging.WARNING, 
-                        format="BFACTOR BREAKPOINT | %(levelname)s: %(message)s"
-    )
-
-    logging.info("--------------------------------------------------------------------------------------------------------")
-    logging.info("Running BFACTOR Breakpoint analysis.")
+def run_breakpoint_analysis(input_directory, method="Inflection on data"):
+    logger.info("--------------------------------------------------------------------------------------------------------")
+    logger.info("Running BFACTOR Breakpoint analysis.")
 
     # check if the input files exist (raise exception if any file is not found)
-    logging.info(f"Reading data from: {input_directory}")
+    logger.info(f"Reading data from: {input_directory}")
     input_files = get_input_files(input_dir         = input_directory, 
                                   files_of_interest = ["*bfactor_data.yaml", "*particles_resolution.csv"])
 
     # make output directory
     output_path = os.path.join(input_directory, "breakpoint_analysis", gtf_get_timestamp(True))
     Path(output_path).mkdir(parents=True, exist_ok=True)
-    logging.info(f"Making output directory: {output_path}")
+    logger.info(f"Making output directory: {output_path}")
 
-    logging.info("Please wait...")
+    logger.info("Please wait...")
 
     # load data
     bfactor_data = load_bfactor_data(path_yaml = input_files["*bfactor_data.yaml"],
                                     path_csv  = input_files["*particles_resolution.csv"]
     )
 
-    # data processing 
-    result = breakpoint_analysis(bfactor_data, method="Inflection on data", output_path=output_path)
-    logging.info(f"Recommended minimum number of particles: {result}")
+    # data processing
+    result = -1
+    data_size = len(bfactor_data["log_n_particles"])
+    if data_size > 3:
+        result = breakpoint_analysis(bfactor_data, method=method, output_path=output_path)
+        logger.info(f"Recommended minimum number of particles: {result}")
     
-    logging.info("Done!")
+        logger.info("Done!")        
+    else:
+        logger.warning(f"Not enough datapoints! Required minimum of 4; n={data_size} was given.")
 
-    logging.info("--------------------------------------------------------------------------------------------------------")
+    logger.info("--------------------------------------------------------------------------------------------------------")
 
     return result
 
@@ -269,5 +266,9 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action='store_true', help='Enable verbose output')
     args, unknown = parser.parse_known_args()
 
-    result = run_breakpoint_analysis(input_directory=args.input_directory, verbose=args.verbose)
+    logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING, 
+                        format="BFACTOR BREAKPOINT | %(levelname)s: %(message)s"
+    )
+
+    result = run_breakpoint_analysis(input_directory=args.input_directory, method="Inflection on data")
     print(result)
