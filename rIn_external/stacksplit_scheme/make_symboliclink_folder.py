@@ -9,7 +9,6 @@ def list_files_folders_recursively(path, files_list, folders_list):
         files = os.listdir(path)
         for file in files:
             new_path = os.path.join(path, file)
-#            list_files_folders_recursively(path + "\\" + file, files_list, folders_list)
             list_files_folders_recursively(new_path, files_list, folders_list)
     else:
         ## If it's a file, add it.
@@ -17,17 +16,17 @@ def list_files_folders_recursively(path, files_list, folders_list):
 
 
 
-def make_symboliclink_folders(current_path, sub_folder_path, folder_list):
+def make_symboliclink_folders(source_path, destination_path, folder_list):
 
     for folder_item in folder_list:
 
-        target_path = os.path.join(current_path, folder_item)
+        target_path = os.path.join(source_path, folder_item)
 
         if os.path.exists(target_path):
 
             file_list = []
             folder_list = []
-            target_path = os.path.join(current_path, folder_item)
+            target_path = os.path.join(source_path, folder_item)
 #            print(f'TargetPath: {target_path}')
 
             list_files_folders_recursively(target_path, file_list, folder_list)
@@ -39,30 +38,14 @@ def make_symboliclink_folders(current_path, sub_folder_path, folder_list):
 
             ## make folder
             for one in folder_list:
-                target_path = one.replace(current_path, sub_folder_path)
+                target_path = one.replace(source_path, destination_path)
                 result = comm.make_folder(target_path)
                 #print(result)
 
             ## create symboliclink
-            for one in file_list:
-                destination = one.replace(current_path, sub_folder_path)
-                
-                if os.path.exists(destination):
-                    if os.path.islink(destination):
-                        ## symboliclink is exists.
-                        ## -> Change if values are different
-                        old_link = os.readlink(destination)
-                        if one != old_link:
-                            os.unlink(destination)
-                            os.symlink(one, destination)
-                            print(f'symbolink {destination}: {old_link} --> {one}')
-                    else:
-                        ## file is exists.
-                        raise ValueError(f"'{destination}' file is exists.")
-                else:        
-                    #print(f'Sorce: {one}')
-                    #print(f'Destination: {destination}')
-                    os.symlink(one, destination)
+            comm.make_symboliclink_files(source_path, destination_path, file_list)
+            
+
 
 def make_symbolic_folder(current_path, sub_folder_path):
     folder_list = [
@@ -83,7 +66,7 @@ def main():
     current_path = current_path.replace('stacksplit_scheme', '')
     current_path = comm.fix_path_end(current_path)
 
-    sub_folder_path = os.path.join(current_path, '100_particles_split_1/')
+    sub_folder_path = os.path.join(current_path, '100_particles_split_4/')
 
     make_symbolic_folder(current_path, sub_folder_path)
 

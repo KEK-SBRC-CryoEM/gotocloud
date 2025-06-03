@@ -248,8 +248,8 @@ def main():
     current_path = current_path.replace('stacksplit_scheme', '')
     current_path = comm.fix_path_end(current_path)
     
-    sub_folder_path = os.path.join(current_path, '100_particles_split_1/')
-    split_file = os.path.join(sub_folder_path, '100_particles_split_1.star')
+    sub_folder_path = os.path.join(current_path, '100_particles_split_4/')
+    split_file = os.path.join(sub_folder_path, '100_particles_split_4.star')
 
     edit_scheme_star(current_path, sub_folder_path, split_file)
 

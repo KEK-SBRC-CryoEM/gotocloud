@@ -32,6 +32,15 @@ def extract_job_name_from_line(line, node_name):
         return match.group(1)
     return None
 
+def extract_job_name_from_lines(lines, node_name):
+    # Search from the last line
+    for line in lines:
+        job_name = extract_job_name_from_line(line, node_name)
+        if job_name is not None:
+            return job_name
+    
+    return None  # If not found, return with None.    
+
 def extract_job_name_from_file(file_name, node_name):
     #pattern = re.compile(rf"Creating new Job:\s+(\S+)\s+from Node:\s+{re.escape(node_name)}")
     
@@ -41,17 +50,6 @@ def extract_job_name_from_file(file_name, node_name):
     # Search from the last line
     return extract_job_name_from_lines_reversed(lines, node_name)
     
-    #for line in reversed(lines):
-    #    job_name = extract_job_name_from_line(line, node_name)
-    #    if job_name is not None:
-    #        return job_name
-        
-        
-    #    #match = pattern.search(line)
-    #    #if match:
-    #    #    return match.group(1)
-    
-    #return None  # If not found, return with None.
 
 def extract_job_name_from_lines_reversed(lines, node_name):
     # Search from the last line
@@ -59,27 +57,30 @@ def extract_job_name_from_lines_reversed(lines, node_name):
         job_name = extract_job_name_from_line(line, node_name)
         if job_name is not None:
             return job_name
-        
-        
-        #match = pattern.search(line)
-        #if match:
-        #    return match.group(1)
     
     return None  # If not found, return with None.
     
-def extract_job_name_from_lines(lines, node_name):
-    # Search from the last line
-    for line in lines:
-        job_name = extract_job_name_from_line(line, node_name)
-        if job_name is not None:
-            return job_name
-        
-        
-        #match = pattern.search(line)
-        #if match:
-        #    return match.group(1)
-    
-    return None  # If not found, return with None.    
+
+def make_symboliclink_files(source_path, destination_path, file_list):
+    for file in file_list:
+        destination = file.replace(source_path, destination_path)
+                
+        if os.path.exists(destination):
+            if os.path.islink(destination):
+                ## symboliclink is exists.
+                ## -> Change if values are different
+                old_link = os.readlink(destination)
+                if file != old_link:
+                    os.unlink(destination)
+                    os.symlink(file, destination)
+                    print(f'symbolink {destination}: {old_link} --> {file}')
+            else:
+                ## file is exists.
+                raise ValueError(f"'{destination}' file is exists.")
+        else:        
+            #print(f'Sorce: {file}')
+            #print(f'Destination: {destination}')
+            os.symlink(file, destination)
 
 def fix_path_end(path):
     fix_path = path
