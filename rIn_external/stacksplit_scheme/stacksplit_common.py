@@ -1,29 +1,28 @@
+#!/usr/bin/env python
+
 import os
-import time
 import re
+import yaml
+import starfile
+import folderfile_common as ff_comm
 
-def make_folder(path):
-    return_path = ''
-    max_wait = 5  # s
-    
-    if os.path.exists(path):
-        return_path = os.path.abspath(path)
-    else:
-        os.makedirs(path)
+PIPELINE_STAR = 'default_pipeline.star'
 
-        # Wait until the folder is created (retry up to 5 seconds)
-        waited = 0
-        while not os.path.exists(path) and waited < max_wait:
-            time.sleep(0.1)
-            waited += 0.1
 
-        # Check if the folder exists
-        if os.path.exists(path):
-            return_path = os.path.abspath(path)
-        else:
-            print(f"Failed to create subfolder'{sub_folder_path}'.")
+def load_yaml_file(file_path):
+    yaml_dict = {}
+    with open(file_path, 'r') as yaml_file:
+        yaml_dict = yaml.safe_load(yaml_file)
+    return yaml_dict
 
-    return return_path
+
+def write_yaml_file(yaml_dict, file_path):
+    print('--> write_yaml_file')
+    print(f'YamlDict: {yaml_dict}')
+    print(f'FilePath: {file_path}')
+    with open(file_path, 'w') as output_file:
+        yaml.dump(yaml_dict, output_file, default_flow_style=False)
+
 
 def extract_job_name_from_line(line, node_name):
     pattern = re.compile(rf"Creating new Job:\s+(\S+)\s+from Node:\s+{re.escape(node_name)}")
@@ -32,24 +31,26 @@ def extract_job_name_from_line(line, node_name):
         return match.group(1)
     return None
 
+
 def extract_job_name_from_lines(lines, node_name):
     # Search from the last line
     for line in lines:
         job_name = extract_job_name_from_line(line, node_name)
         if job_name is not None:
             return job_name
-    
-    return None  # If not found, return with None.    
+
+    return None  # If not found, return with None.
+
 
 def extract_job_name_from_file(file_name, node_name):
-    #pattern = re.compile(rf"Creating new Job:\s+(\S+)\s+from Node:\s+{re.escape(node_name)}")
-    
+    # pattern = re.compile(rf"Creating new Job:\s+(\S+)\s+from Node:\s+{re.escape(node_name)}")
+
     with open(file_name, 'r') as file:
         lines = file.readlines()
 
     # Search from the last line
     return extract_job_name_from_lines_reversed(lines, node_name)
-    
+
 
 def extract_job_name_from_lines_reversed(lines, node_name):
     # Search from the last line
@@ -57,33 +58,43 @@ def extract_job_name_from_lines_reversed(lines, node_name):
         job_name = extract_job_name_from_line(line, node_name)
         if job_name is not None:
             return job_name
-    
-    return None  # If not found, return with None.
-    
 
-def make_symboliclink_files(source_path, destination_path, file_list):
-    for file in file_list:
-        destination = file.replace(source_path, destination_path)
-                
-        if os.path.exists(destination):
-            if os.path.islink(destination):
-                ## symboliclink is exists.
-                ## -> Change if values are different
-                old_link = os.readlink(destination)
-                if file != old_link:
-                    os.unlink(destination)
-                    os.symlink(file, destination)
-                    print(f'symbolink {destination}: {old_link} --> {file}')
-            else:
-                ## file is exists.
-                raise ValueError(f"'{destination}' file is exists.")
-        else:        
-            #print(f'Sorce: {file}')
-            #print(f'Destination: {destination}')
-            os.symlink(file, destination)
+    return None  # If not found, return with None.
+
+
+def get_own_jobname(current_path):
+    print(f'-->get_own_jobname')
+    jobname = None
+    pipeline_path = os.path.join(current_path, PIPELINE_STAR)
+    print(pipeline_path)
+    pipeline_data = starfile.read(pipeline_path)
+    pipeline_processes = pipeline_data['pipeline_processes']
+    jobname = pipeline_processes['rlnPipeLineProcessName'][len(pipeline_processes) - 1]
+    # print(jobname)
+    return jobname
+
+
+def get_own_job(current_path):
+    print('--> get_own_job')
+    jobname = get_own_jobname(current_path)
+    job_path = os.path.join(current_path, jobname)
+    print(f'JobPath: {job_path}')
+
+    if os.path.exists(job_path):
+
+        if os.path.exists(os.path.join(job_path, 'RELION_JOB_EXIT_SUCCESS')):
+            print(f"'{job_path}' is already done.")
+            # raise ValueError("'{job_path}' is already done.")
+            jobname = None
+    else:
+        ff_comm.make_folder(job_path)
+
+    print(f'Return: {jobname}')
+    return jobname
+
 
 def fix_path_end(path):
     fix_path = path
-    if fix_path[len(fix_path)-1] != '/':
+    if fix_path[len(fix_path) - 1] != '/':
         fix_path += '/'
     return fix_path
