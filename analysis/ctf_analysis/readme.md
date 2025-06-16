@@ -42,6 +42,11 @@ For internal users, these dependencies are included in the `schemes-editing` mod
 module load schemes-editing
 ```
 
+### 1.4. Change working directory
+```bash
+ cd gotocloud/analysis/ctf_analysis
+ ```
+
 # 2. CTF
 
 This script provides functions to:
@@ -55,7 +60,7 @@ When executed as a script (`python ctf.py`), it estimates the spatial frequency 
 ## Usage
 
 ```bash
-python ctf.py -b 480 -p 1.2 -v 300 -d 1.5 -c 2.7
+python ctf.py -b 480 -p 1.2 -v 300 -d 1.5 -c 2.7 -q
 ```
 
 ## Required Arguments
@@ -119,14 +124,14 @@ This mode outputs a tuple:
 - `-limres`, `--limit_resolution`  
   Limits the CTF estimation up to this resolution value (default: 15 Å).
 - `-save`, `--save_plots`  
-  If set, the script saves the generated 1D and 2D CTF (Thon Rings) plots as image files.
+  If set, the script saves the generated 1D and 2D CTF (Thon Rings) plots as image files and save them in `./boxsize_opt/<timestamp>`.
 
 ### 3.2 PLOT Mode
 This mode analyzes multiple microscope setups using a parameter file (`.yaml`). Useful for batch analysis across many parameter combinations and studying material.
 
 #### Usage
 ```bash
-boxsize_analysis.py -q plot -p config/boxsize.yaml 
+python boxsize_analysis.py -q plot -p config/boxsize.yaml 
 ```
 
 - `-p`, `--param_file`: Path to the YAML parameter file.  
@@ -137,13 +142,9 @@ However, for **`pixel_size`** and **`defocus`**, you can also provide **lists of
 
 Advanced users may include additional configuration options. Please refer to the sample file for details.
 
-This mode outputs:
-- several ctflimit_pixel{value}.pdf: which plots the resolution vs best boxsize for several defocus settings. This plot shows how these curves approach the nyquist limit as the boxsize increases. Output will have one of this plot for each pixel value setting
-- defocus_vs_boxsize.pdf: shows the best boxsize for different defocus values; each curve corresponds to a pixel size setting. In this case, we see how the boxsize changes as the defocus changes 
-
 #### Output Files
 
-This mode produces the following plots:
+This mode produces the following plots and save them in `./boxsize_plot/<timestamp>`:
 
 - **`ctflimit_pixel{value}.pdf`**:  
   A plot of **resolution vs. optimal box size** for various defocus settings.  

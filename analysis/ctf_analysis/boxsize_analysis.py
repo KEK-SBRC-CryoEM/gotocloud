@@ -523,8 +523,7 @@ if __name__ == "__main__":
                                      limit_resolution = args.limit_resolution)
         print(result)
         if args.save_plots:
-            output_path = os.path.join("boxsize_analysis", gtf_get_timestamp(True))
-            # output_path = "./boxsize_analysis"
+            output_path = os.path.join("boxsize_opt", gtf_get_timestamp(True))
             Path(output_path).mkdir(parents=True, exist_ok=True)
             run_ctf_vs_boxsize(
                 voltage        = args.voltage,
