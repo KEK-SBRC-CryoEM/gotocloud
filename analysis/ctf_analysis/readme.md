@@ -5,8 +5,8 @@ This folder includes scripts for theoretical contrast transfer function (CTF) an
 - **[`ctf.py`](./ctf.py)**: contains core CTF functions, including calculation of the CTF aliasing limit and the 1D/2D phase shift CTF.
 
 - **[`boxsize_analysis.py`](./boxsize_analysis.py)**: Provides two analysis modes:  
-  1. **opt**: Calculates the optimal box size for a given set of microscope parameters.  
-  2. **plot**: Generates plots to visualize the optimal boxsize across a range of parameter values.
+  a. **opt**: Calculates the optimal box size for a given set of microscope parameters.  
+  b. **plot**: Generates plots to visualize the optimal boxsize across a range of parameter values.
 
 
 # Table of Contents
