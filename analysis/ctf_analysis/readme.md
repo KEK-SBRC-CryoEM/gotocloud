@@ -55,7 +55,7 @@ This script provides functions to:
 - Calculate the **CTF period** (local spacing between zero crossings).
 - Generate **1D and 2D phase shift CTF** curves.
 
-When executed as a script (`python ctf.py`), it estimates the spatial frequency (resolution) at which aliasing occurs in the Contrast Transfer Function (CTF), based on electron microscope parameters.
+When executed as a script (`python ctf.py`), it estimates the spatial frequency (resolution) at which aliasing occurs in the CTF, based on electron microscope parameters.
 
 ## Usage
 
