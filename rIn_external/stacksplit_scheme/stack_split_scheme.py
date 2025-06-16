@@ -15,9 +15,12 @@ import run_sub_schemes as sub_run
 
 
 LOG_FILE = 'stacksplit.log'
+SCHEME_COPY_SOURCE = 'Schemes_Edited/Schemes/'
 MERGE_SETTING_FILE = 'merge_setting.yml'
-MERGE_NODE = '090050_Refine3D_local'
+MERGE_SCHEME_NODE = '090050_Refine3D_local'
 MERGE_FILE = 'run_data.star'
+STACK_SPLIT_SCHEME_YML = 'stack_split_scheme.yml'
+SCHEME_NODE_030060 = '030060_Select_rm_bars_xy'
 
 
 
@@ -29,9 +32,9 @@ def validate_args(args):
     return_flg = True
     
     #print('--> validate_args')
-    if (args.splits_num is None and args.particles_num is None):
+    if args.yml_file is None:
         ## 
-        errors.append('You must be set, --splits_num or --particles_num.')
+        errors.append('You must be set --yml_file.')
         
     #print(f'Error: {len(errors)}')
     if errors:
@@ -69,25 +72,35 @@ def main():
     current_path = current_path.replace('stacksplit_scheme', '')
     current_path = ss_comm.fix_path_end(current_path)
 
-    print(f'[DEBUG]CurrentPath: {current_path}')
+    print(f'[DEBUG] CurrentPath: {current_path}')
+    
+    star_file = None
+    splits_num = None
+    particles_num = None
+    schemes = []
+    scheme_source = None
+    merge_scheme_node = None
+    merge_file = None
+    
     
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('-f', '--star_file', type=str, help='Star file to be split')
+    parser.add_argument('-yml', '--yml_file', type=str, default=STACK_SPLIT_SCHEME_YML, help='Configuration YML file.')
+    parser.add_argument('-sf', '--star_file', type=str, help='Star file to be split')
     parser.add_argument('-spnum', '--splits_num', type=int, help='Number of file splits')
     parser.add_argument('-ptnum', '--particles_num', type=int, help='Approximate number of particles per file')
-    parser.add_argument('-sc', '--schemes', type=str, default='060_CSS_Clean_Stack_3D 070_CSS_Init_Refine3D 080_CSS_PPRefine_Cycle 090_CSS_Res_Fish_3D',  help='Set the parallel processing schemes separated by spaces.')
-    #parser.add_argument('-sc', '--schemes', type=str, default='060_CSS_Clean_Stack_3D  070_CSS_Init_Refine3D',  help='')
-    parser.add_argument('-cp', '--scheme_copy_source', type=str, default='Schemes_Edited/Schemes/', help='CS scheme copy source path')
+    parser.add_argument('-cp', '--scheme_copy_source', type=str, default=SCHEME_COPY_SOURCE, help='CS scheme copy source path')
+    
 
     args, unknown = parser.parse_known_args()
     print("RELION_IT: Stack Split Scheme running...")
 
+    print(f'[DEBUG] Entry YmlFile: {args.yml_file}')
     print(f'[DEBUG] Entry StarFile: {args.star_file}')
-    print(f'[DEBUG] Entry SplitsNum: {str(args.splits_num)}')
+    print(f'[DEBUG] Entry SplitsNum: {args.splits_num}')
     print(f'[DEBUG] Entry ParticlesNum: {args.particles_num}')
-    print(f'[DEBUG] Entry Schemes: {args.schemes}')
     print(f'[DEBUG] Entry SchemeCopySource: {args.scheme_copy_source}')
+    
 
     own_job_name = None
     own_job_path = None
@@ -107,47 +120,67 @@ def main():
         
         print(f'[DEBUG] JobName: {own_job_name}')
         print(f'[DEBUG] JobNo: {own_job_no}')
-        flg = validate_args(args)
-        if not flg:
-            raise ValueError('va')
-            
-        if args.star_file is None:
+        
+
+        if args.yml_file is not None:
+            if os.path.exists(args.yml_file):
+                yml_setting = ss_comm.load_yaml_file(args.yml_file)
+                setting_data = yml_setting['setting']
+                #print(f'Setting: {setting_data}')
+                star_file = setting_data['star_file']
+                splits_num = setting_data['splits_num']
+                particles_num = setting_data['particles_num']
+                schemes = setting_data['schemes']
+                scheme_source = setting_data['scheme_copy_source']
+                merge_scheme_node = setting_data['merge_scheme_node']
+                merge_file = setting_data['merge_file']
+            else:
+                raise Exception(f"'{args.yml_file}' is not exists.")
+
+        if star_file is None:
             current_schemes_030_path = os.path.join(current_path, 'Schemes/030_GTF_Create_Stack/')
             run_out_030 = os.path.join(current_schemes_030_path, 'run.out')
-            target_node_name = '030060_Select_rm_bars_xy'
+            target_node_name = SCHEME_NODE_030060
             target_job_name = ss_comm.extract_job_name_from_file(run_out_030, target_node_name)
     
             star_file = os.path.join(current_path, target_job_name)
             star_file = os.path.join(star_file, 'particles.star')
-            args.star_file = star_file
-        if args.scheme_copy_source is None:
-            args.scheme_copy_source = 'Schemes_Edited/Schemes/'
-        if args.schemes is None:
-            args.schems = '060_CSS_Clean_Stack_3D 070_CSS_Init_Refine3D 080_CSS_PPRefine_Cycle 090_CSS_Res_Fish_3D'
-            #args.schems = '060_CSS_Clean_Stack_3D 070_CSS_Init_Refine3D' 
-            
-        print(f'[DEBUG] Setting StarFile: {args.star_file}')
-        print(f'[DEBUG] Setting SplitsNum: {str(args.splits_num)}')
-        print(f'[DEBUG] Setting ParticlesNum: {args.particles_num}')
-        print(f'[DEBUG] Setting Schemes: {args.schemes}')
-        print(f'[DEBUG] Setting SchemeCopySource: {args.scheme_copy_source}')
-           
-       
-        ## split star file
-        sub_folder_list = sp_split.split_particles_star(current_path, args.star_file, own_job_no, args.splits_num, args.particles_num)
-        ## scheme copy folder
-        copy_folder_list = args.schemes.split()
+        if scheme_source is None:
+            scheme_source = SCHEME_COPY_SOURCE
+        if len(schemes) == 0:
+            schemes = ['060_CSS_Clean_Stack_3D', '070_CSS_Init_Refine3D', '080_CSS_PPRefine_Cycle', '090_CSS_Res_Fish_3D']
+        if merge_scheme_node is None:
+            merge_scheme_node = MERGE_SCHEME_NODE
+        if merge_file is None:
+            merge_file = MERGE_FILE
 
-        ### debug
-        #sub_folder_list = [
-        #    sub_folder_list[0]
-        #]
-        #copy_folder_list = [
-        #    copy_folder_list[0]
-        #]
+        flg = validate_args(args)
+        if not flg:
+            raise Exception
+        if splits_num is None and particles_num is None:
+            raise Exception(f'You must be set, splits_num or particles_num.')
+
+            
+        print(f'[DEBUG] Setting StarFile: {star_file}')
+        print(f'[DEBUG] Setting SplitsNum: {splits_num}')
+        print(f'[DEBUG] Setting ParticlesNum: {particles_num}')
+        print(f'[DEBUG] Setting Schemes: {schemes}')
+        print(f'[DEBUG] Setting SchemeCopySource: {scheme_source}')
+        print(f'[DEBUG] Setting MergeSchemeNode: {merge_scheme_node}')
+        print(f'[DEBUG] Setting MergeFile: {merge_file}')
+           
+
+        # Debug
+        #sys.exit(0)
+
+
+
+
+        ## split star file
+        sub_folder_list = sp_split.split_particles_star(current_path, star_file, own_job_no, splits_num, particles_num)
         
         print(f'[DEBUG] SubFolderList: {sub_folder_list}')
-        print(f'[DEBUG] Schemes: {copy_folder_list}')
+        print(f'[DEBUG] Schemes: {schemes}')
         
         sub_folder_abs_list = []
         
@@ -155,7 +188,7 @@ def main():
             sub_folder_path = os.path.join(current_path, sub_folder)
             sub_folder_abs_list.append(sub_folder_path)
             print(f'[DEBUG] SubFolderPath: {sub_folder_path}')
-            ms_folder.make_sub_folder(current_path, sub_folder_path, args.scheme_copy_source, copy_folder_list)
+            ms_folder.make_sub_folder(current_path, sub_folder_path, scheme_source, schemes)
             sym_folder.make_symbolic_folder(current_path, sub_folder_path)
             ## split star file
             split_star_file = os.path.join(sub_folder_path, sub_folder.replace('/', '') + '.star')
@@ -164,15 +197,15 @@ def main():
         print('Scheme is ready to be activated.')
         
         ## Execute schemes
-        sub_run.run_sub_schemes(sub_folder_abs_list, copy_folder_list, LOG_FILE)
+        sub_run.run_sub_schemes(sub_folder_abs_list, schemes, LOG_FILE)
         
         ## Write result config to YAML file
-        write_result_setting_file(current_path, own_job_name, sub_folder_list, LOG_FILE, MERGE_NODE, MERGE_FILE)
+        write_result_setting_file(current_path, own_job_name, sub_folder_list, LOG_FILE, merge_scheme_node, merge_file)
         
         
         open(os.path.join(own_job_path, 'RELION_JOB_EXIT_SUCCESS'), 'w').close()      
     except Exception as e:
-        print(f'except: {e.message}')
+        print(f'Exception: {e}')
         if own_job_path: 
             open(os.path.join(own_job_path, 'RELION_JOB_EXIT_FAILURE'), 'w').close()
             sys.exit(0)

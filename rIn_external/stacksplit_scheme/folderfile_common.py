@@ -25,7 +25,7 @@ def make_folder(path):
         if os.path.exists(path):
             return_path = os.path.abspath(path)
         else:
-            print(f"Failed to create subfolder'{sub_folder_path}'.")
+            print(f"Failed to create subfolder'{path}'.")
 
     return return_path
 
@@ -56,9 +56,10 @@ def make_symboliclink_files(source_path, destination_path, file_list):
                     print(f'symbolink {destination}: {old_link} --> {file}')
             else:
                 ## file is exists.
-                raise ValueError(f"'{destination}' file is exists.")
+                raise Exception(f"'{destination}' file is exists.")
         else:        
             #print(f'Sorce: {file}')
             #print(f'Destination: {destination}')
             os.symlink(file, destination)
+
 
