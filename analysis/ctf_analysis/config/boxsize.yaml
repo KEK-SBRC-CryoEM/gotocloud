@@ -1,0 +1,26 @@
+### user settings ###
+defocus   : [-0.3, -0.5, -0.8, -1.2, -1.6, -2.0, -2.4, -2.8, -3.2]  # [µm]
+pixel_size: [0.50, 0.66, 0.80, 0.84, 1.00, 1.08, 1.125, 1.40, 1.80] # [Å/pixel]
+cs:      2.7 # spherical aberration constant of the microscope [mm]
+voltage: 300 # accelerating voltage [kV]
+
+box_lower_bound: 450 # 450  # set to -1 for the lowest value from boxsizes
+box_upper_bound: -1 # set to -1 for the highest value from boxsizes
+
+output_folder: "./boxsize_plot"
+
+limiting_resolution: 15 # [Å] minimum resolution of interest
+
+### advanced settings ###
+nyquist_tol: 0 # tolerance when comparing ctf limit and nyquist
+compute_all_boxsizes: False # when true computes every boxsize between lower and upper bounds
+
+# run-time optimal list of boxsizes, used when compute_all_boxsizes=False
+boxsizes: 
+  [24, 32, 36, 40, 44, 48, 52, 56, 60, 64,
+   72, 84, 96, 100, 104, 112, 120, 128, 132, 140,
+   168, 180, 192, 196, 208, 216, 220, 224, 240, 256,
+   260, 288, 300, 320, 352, 360, 384, 416, 440, 448,
+   480, 512, 540, 560, 576, 588, 600, 630, 640, 648,
+   672, 686, 700, 720, 750, 756, 768, 784, 800, 810,
+   840, 864, 882, 896, 900, 960, 972, 980, 1000, 1008, 1024]
