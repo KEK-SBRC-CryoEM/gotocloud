@@ -8,7 +8,7 @@ import folderfile_common as ff_comm
 
 
 
-def make_symboliclink_folders(source_path, destination_path, folder_list):
+def make_link_folders(source_path, destination_path, folder_list):
 
     for folder_item in folder_list:
 
@@ -34,12 +34,12 @@ def make_symboliclink_folders(source_path, destination_path, folder_list):
                 result = ff_comm.make_folder(target_path)
                 #print(result)
 
-            ## create symboliclink
-            ff_comm.make_symboliclink_files(source_path, destination_path, file_list)
+            ## create link
+            ff_comm.make_link_files(source_path, destination_path, file_list, True)
             
 
 
-def make_symbolic_folder(current_path, sub_folder_path):
+def make_link_folder(current_path, sub_folder_path):
     folder_list = [
         'Movies',
         'Micrographs',
@@ -49,7 +49,7 @@ def make_symbolic_folder(current_path, sub_folder_path):
         'Extract'
     ]
 
-    make_symboliclink_folders(current_path, sub_folder_path, folder_list)
+    make_link_folders(current_path, sub_folder_path, folder_list)
 
 
 def main():
@@ -67,7 +67,7 @@ def main():
     
     for sub_folder in sub_folder_list:
         sub_folder_path = os.path.join(current_path, sub_folder)
-        make_symbolic_folder(current_path, sub_folder_path)
+        make_link_folder(current_path, sub_folder_path)
 
     
     

@@ -41,25 +41,30 @@ def list_files_folders_recursively(path, files_list, folders_list):
         ## If it's a file, add it.
         files_list.append(path)
 
-def make_symboliclink_files(source_path, destination_path, file_list):
+def make_link_files(source_path, destination_path, file_list, symboliclink):
     for file in file_list:
         destination = file.replace(source_path, destination_path)
                 
         if os.path.exists(destination):
             if os.path.islink(destination):
-                ## symboliclink is exists.
+                ## link is exists.
                 ## -> Change if values are different
                 old_link = os.readlink(destination)
                 if file != old_link:
                     os.unlink(destination)
                     os.symlink(file, destination)
-                    print(f'symbolink {destination}: {old_link} --> {file}')
+                    print(f'link {destination}: {old_link} --> {file}')
             else:
                 ## file is exists.
                 raise Exception(f"'{destination}' file is exists.")
         else:        
             #print(f'Sorce: {file}')
             #print(f'Destination: {destination}')
-            os.symlink(file, destination)
+            if symboliclink:
+                ## symboliclink
+                os.symlink(file, destination)
+            else:
+                ## hardlink
+                os.link(file, destination)
 
 

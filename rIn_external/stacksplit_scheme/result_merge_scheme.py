@@ -5,7 +5,7 @@ import sys
 import argparse
 import stacksplit_common as ss_comm
 import merge_run_data_star as mrd_star
-import make_result_symboliclink_folder as mrs_folder
+import make_result_link_folder as mrl_folder
 
 LOG_FILE = 'stacksplit.log'
 
@@ -31,10 +31,10 @@ def main():
     try:
         parser = argparse.ArgumentParser()
    
-        parser.add_argument('-f', '--setting_file', type=str, default='', help='')
+        parser.add_argument('-yml', '--yml_file', type=str, default='', help='')
 
         args, unknown = parser.parse_known_args()
-        print("RELION_IT: Result Merge Scheme running...")
+        print("RELION_IT: Result Merge Scheme running...", flush=True)
    
         print(f'[DEBUG] Entry SettingFile: {args.setting_file}')
    
@@ -49,11 +49,11 @@ def main():
     
         own_job_name = ss_comm.get_own_job(setting_data['current_path'])
         #own_job_name = 'External/job100/'
-        print(f'[DEBUG] OwnJobName: {own_job_name}')
+        print(f'[DEBUG] OwnJobName: {own_job_name}', flush=True)
         own_job_path = os.path.join(setting_data['current_path'], own_job_name)
 
         mrd_star.merge_run_data_star(setting_data['current_path'], own_job_name, result_list)
-        mrs_folder.make_result_symboliclink_folder(setting_data['current_path'], setting_data['sub_folder_name'], result_list) 
+        mrl_folder.make_result_link_folder(setting_data['current_path'], setting_data['sub_folder_name'], result_list) 
     
     
     

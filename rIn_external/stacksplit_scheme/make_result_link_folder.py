@@ -43,7 +43,7 @@ def get_folder_list(path_list):
 
 
 
-def make_result_symboliclink_folder(current_path, sub_folder_list, merge_file_list):
+def make_result_link_folder(current_path, sub_folder_list, merge_file_list):
 
     index = 0
     for sub_folder in sub_folder_list:
@@ -71,8 +71,8 @@ def make_result_symboliclink_folder(current_path, sub_folder_list, merge_file_li
             #print(f'MakeFolder: {make_folder_path}')
             ff_comm.make_folder(make_folder_path)
 
-        ## make symboliclink
-        ff_comm.make_symboliclink_files(source_path, current_path, file_list)
+        ## make link
+        ff_comm.make_link_files(source_path, current_path, file_list, True)
         index += 1
 
 
@@ -101,7 +101,7 @@ def main():
     '/fsx/yatabe_stacksplit_test/100_particles_split_4/Refine3D/job092/run_data.star' 
     ]
 
-    make_result_symboliclink_folder(current_path, sub_folder_list, merge_file_list)
+    make_result_link_folder(current_path, sub_folder_list, merge_file_list)
 
     
     

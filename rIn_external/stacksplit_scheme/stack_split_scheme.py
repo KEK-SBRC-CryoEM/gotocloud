@@ -8,7 +8,7 @@ import stacksplit_common as ss_comm
 import folderfile_common as ff_comm
 import split_particles_star as sp_split
 import make_sub_folder as ms_folder
-import make_symboliclink_folder as sym_folder
+import make_link_folder as lin_folder
 import edit_scheme_star as es_star
 import run_sub_schemes as sub_run
 
@@ -93,13 +93,13 @@ def main():
     
 
     args, unknown = parser.parse_known_args()
-    print("RELION_IT: Stack Split Scheme running...")
+    print("RELION_IT: Stack Split Scheme running...", flush=True)
 
     print(f'[DEBUG] Entry YmlFile: {args.yml_file}')
     print(f'[DEBUG] Entry StarFile: {args.star_file}')
     print(f'[DEBUG] Entry SplitsNum: {args.splits_num}')
     print(f'[DEBUG] Entry ParticlesNum: {args.particles_num}')
-    print(f'[DEBUG] Entry SchemeCopySource: {args.scheme_copy_source}')
+    print(f'[DEBUG] Entry SchemeCopySource: {args.scheme_copy_source}', flush=True)
     
 
     own_job_name = None
@@ -167,7 +167,7 @@ def main():
         print(f'[DEBUG] Setting Schemes: {schemes}')
         print(f'[DEBUG] Setting SchemeCopySource: {scheme_source}')
         print(f'[DEBUG] Setting MergeSchemeNode: {merge_scheme_node}')
-        print(f'[DEBUG] Setting MergeFile: {merge_file}')
+        print(f'[DEBUG] Setting MergeFile: {merge_file}', flush=True)
            
 
         # Debug
@@ -189,21 +189,23 @@ def main():
             sub_folder_abs_list.append(sub_folder_path)
             print(f'[DEBUG] SubFolderPath: {sub_folder_path}')
             ms_folder.make_sub_folder(current_path, sub_folder_path, scheme_source, schemes)
-            sym_folder.make_symbolic_folder(current_path, sub_folder_path)
+            lin_folder.make_link_folder(current_path, sub_folder_path)
             ## split star file
             split_star_file = os.path.join(sub_folder_path, sub_folder.replace('/', '') + '.star')
             es_star.edit_scheme_star(current_path, sub_folder_path, split_star_file)
                        
-        print('Scheme is ready to be activated.')
+        print('Scheme is ready to be activated.', flush=True)
         
         ## Execute schemes
-        sub_run.run_sub_schemes(sub_folder_abs_list, schemes, LOG_FILE)
+        success_flg = sub_run.run_sub_schemes(sub_folder_abs_list, schemes, LOG_FILE)
+        if not success_flg:
+            raise Exception(f'Error with subfolder scheme.')
         
         ## Write result config to YAML file
         write_result_setting_file(current_path, own_job_name, sub_folder_list, LOG_FILE, merge_scheme_node, merge_file)
         
         
-        open(os.path.join(own_job_path, 'RELION_JOB_EXIT_SUCCESS'), 'w').close()      
+        open(os.path.join(own_job_path, 'RELION_JOB_EXIT_SUCCESS'), 'w').close()
     except Exception as e:
         print(f'Exception: {e}')
         if own_job_path: 

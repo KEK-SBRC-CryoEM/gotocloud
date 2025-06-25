@@ -10,6 +10,8 @@ def run_sub_schemes(sub_folder_path_list, scheme_list, log_file):
     print(f'SubFolder: {sub_folder_path_list}')
     print(f'SchemeList: {scheme_list}')
 
+    return_flg = False
+
     for sub_folder_path in sub_folder_path_list:
     
         if not os.path.exists(sub_folder_path):
@@ -36,7 +38,10 @@ def run_sub_schemes(sub_folder_path_list, scheme_list, log_file):
     time_interval = 60
     while True:
         check_str = check_scheme_end(sub_folder_path_list, scheme_list[len(scheme_list) - 1])
-        print(f'[{count}]...{check_str}')
+        print(f'[{count}]...{check_str}', flush=True)
+
+        if check_str == 'Success':
+            return_flg = True
 
         if check_str == 'Success' or check_str == 'Failure':
             break
@@ -53,7 +58,7 @@ def run_sub_schemes(sub_folder_path_list, scheme_list, log_file):
     #    job_name = ss_comm.extract_job_name_from_file(log_path, node_name)
     #    print(f'[DEBUG] [{sub_folder_path}] {node_name}: {job_name}')
     #    job_name_list.append(job_name)
-        
+    return return_flg
 
 def extract_result_job_name(lines, node_name):
     job_name = ss_comm.extract_job_name_from_lines(lines, node_name)

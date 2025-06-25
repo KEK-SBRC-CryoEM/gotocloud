@@ -7,6 +7,8 @@ import shutil
 import stacksplit_common as ss_comm
 import folderfile_common as ff_comm
 
+MERGED_FILE_NAME = 'merged_star_data.star'
+
 def merge_run_data_star(current_path, job_name, run_data_list):
     print(f'-->merge_run_data_star')
     print(f'[DEBUG] CurentPath: {current_path}')
@@ -16,7 +18,7 @@ def merge_run_data_star(current_path, job_name, run_data_list):
     print(f'[DEBUG] JobPath: {job_path}')
     if not os.path.exists(job_path):
         ff_comm.make_folder(job_path)
-    merged_star_file = os.path.join(job_path, 'merged_run_data.star')
+    merged_star_file = os.path.join(job_path, MERGED_FILE_NAME)
     print(f'[DEBUG] MergedStarFile: {merged_star_file}')
 
     if len(run_data_list) == 1:
