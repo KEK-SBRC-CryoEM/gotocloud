@@ -16,6 +16,8 @@ import run_sub_schemes as sub_run
 
 LOG_FILE = 'stacksplit.log'
 SCHEME_COPY_SOURCE = 'Schemes_Edited/Schemes/'
+SYMBOLIC_LINK = 'symbolic'
+HARD_LINK = 'hard'
 MERGE_SETTING_FILE = 'merge_setting.yml'
 MERGE_SCHEME_NODE = '090050_Refine3D_local'
 MERGE_FILE = 'run_data.star'
@@ -81,6 +83,7 @@ def main():
     scheme_source = None
     merge_scheme_node = None
     merge_file = None
+    symbolic_link = None
     
     
     parser = argparse.ArgumentParser()
@@ -90,16 +93,17 @@ def main():
     parser.add_argument('-spnum', '--splits_num', type=int, help='Number of file splits')
     parser.add_argument('-ptnum', '--particles_num', type=int, help='Approximate number of particles per file')
     parser.add_argument('-cp', '--scheme_copy_source', type=str, default=SCHEME_COPY_SOURCE, help='CS scheme copy source path')
-    
+    parser.add_argument('-l', '--link', type=str, default=SYMBOLIC_LINK, help='Specify link method, "symbolic" or "hard".')
 
     args, unknown = parser.parse_known_args()
-    print("RELION_IT: Stack Split Scheme running...", flush=True)
+    print('RELION_IT: Stack Split Scheme running...', flush=True)
 
     print(f'[DEBUG] Entry YmlFile: {args.yml_file}')
     print(f'[DEBUG] Entry StarFile: {args.star_file}')
     print(f'[DEBUG] Entry SplitsNum: {args.splits_num}')
     print(f'[DEBUG] Entry ParticlesNum: {args.particles_num}')
-    print(f'[DEBUG] Entry SchemeCopySource: {args.scheme_copy_source}', flush=True)
+    print(f'[DEBUG] Entry SchemeCopySource: {args.scheme_copy_source}')
+    print(f'[DEBUG] Entry Link: {args.link}', flush=True)
     
 
     own_job_name = None
@@ -137,6 +141,26 @@ def main():
             else:
                 raise Exception(f"'{args.yml_file}' is not exists.")
 
+        if args.star_file:
+            star_file = args.star_file
+        if args.splits_num:
+            splits_num = args.splits_num
+        if args.particles_num:
+            particles_num = args.particles_num
+        if args.scheme_copy_source:
+            scheme_source = args.scheme_copy_source
+        if args.link:
+            link_type = str.lower(args.link)
+
+            if link_type == SYMBOLIC_LINK:
+                symbolic_link = True
+            elif link_type == HARD_LINK:
+                symbolic_link = False
+            else:
+                symbolic_link = True
+        else:
+            symbolic_link = True
+
         if star_file is None:
             current_schemes_030_path = os.path.join(current_path, 'Schemes/030_GTF_Create_Stack/')
             run_out_030 = os.path.join(current_schemes_030_path, 'run.out')
@@ -154,6 +178,7 @@ def main():
         if merge_file is None:
             merge_file = MERGE_FILE
 
+
         flg = validate_args(args)
         if not flg:
             raise Exception
@@ -166,6 +191,7 @@ def main():
         print(f'[DEBUG] Setting ParticlesNum: {particles_num}')
         print(f'[DEBUG] Setting Schemes: {schemes}')
         print(f'[DEBUG] Setting SchemeCopySource: {scheme_source}')
+        print(f'[DEBUG] Setting Symbolic_link: {symbolic_link}')
         print(f'[DEBUG] Setting MergeSchemeNode: {merge_scheme_node}')
         print(f'[DEBUG] Setting MergeFile: {merge_file}', flush=True)
            
@@ -189,7 +215,7 @@ def main():
             sub_folder_abs_list.append(sub_folder_path)
             print(f'[DEBUG] SubFolderPath: {sub_folder_path}')
             ms_folder.make_sub_folder(current_path, sub_folder_path, scheme_source, schemes)
-            lin_folder.make_link_folder(current_path, sub_folder_path)
+            lin_folder.make_link_folder(current_path, sub_folder_path, symbolic_link)
             ## split star file
             split_star_file = os.path.join(sub_folder_path, sub_folder.replace('/', '') + '.star')
             es_star.edit_scheme_star(current_path, sub_folder_path, split_star_file)
