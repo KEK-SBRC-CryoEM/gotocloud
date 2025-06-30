@@ -6,7 +6,7 @@ import stacksplit_common as ss_comm
 import folderfile_common as ff_comm
 
         
-def make_sub_folder(current_path, sub_folder_path, source_folder_item, copy_folder_list):
+def make_sub_folder(current_path, sub_folder_path, copy_file_list, source_folder_item, copy_folder_list):
     print('--> make_sub_folder')
     print(f'CurrentPath: {current_path}')
     print(f'SubFolderPath: {sub_folder_path}')
@@ -16,10 +16,10 @@ def make_sub_folder(current_path, sub_folder_path, source_folder_item, copy_fold
 
     ## copy important file
     copy_source_path = current_path
-    copy_file_list = [
-        'config_sample_settings.yml',
-        'default_pipeline.star'
-    ]
+    #copy_file_list = [
+    #    'config_sample_settings.yml',
+    #    'default_pipeline.star'
+    #]
     for file in copy_file_list:
         file_name = os.path.join(current_path, file)
         shutil.copy(file_name, sub_folder_path)
@@ -64,9 +64,14 @@ def main():
         '100_particles_split_4/'  
     ]
     
+    copy_file_list = [
+        'config_sample_settings.yml',
+        'default_pipeline.star'
+    ]
+
     for sub_folder in sub_folder_list:
         sub_folder_path = os.path.join(current_path, sub_folder)
-        make_sub_folder(current_path, sub_folder_path, source_folder_item, copy_folder_list)
+        make_sub_folder(current_path, sub_folder_path, copy_file_list, source_folder_item, copy_folder_list)
     
     
 

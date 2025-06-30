@@ -4,6 +4,7 @@ import os
 import sys
 import starfile
 import argparse
+import fnmatch
 import stacksplit_common as ss_comm
 import folderfile_common as ff_comm
 import split_particles_star as sp_split
@@ -27,7 +28,17 @@ SCHEME_NODE_030060 = '030060_Select_rm_bars_xy'
 
 
 
+def get_config_sample_setting_file_name(current_path):
+    print('-->get_config_sample_setting_file_name', flush=True)
+    
+    file_list = [
+        f for f in os.listdir(current_path) if os.path.isfile(os.path.join(current_path, f))
+    ]
 
+    print(f'FileList: {file_list}', flush=True)
+    matched_file = fnmatch.filter(file_list, 'config_sample_settings*.yml')
+    print(f'MatchedFile: {matched_file}', flush=True)
+    return matched_file
 
 def validate_args(args):
     errors = []
@@ -111,6 +122,7 @@ def main():
     own_job_no = None
 
     sub_folder_list = []
+    copy_file_list = ['default_pipeline.star']
    
 
     try:
@@ -122,6 +134,7 @@ def main():
             own_job_no = own_job_name[-4:-1]
         else:
             raise Exception(f'Job name could not be obtained.')
+            
         
         print(f'[DEBUG] JobName: {own_job_name}')
         print(f'[DEBUG] JobNo: {own_job_no}')
@@ -196,6 +209,10 @@ def main():
         print(f'[DEBUG] Setting MergeSchemeNode: {merge_scheme_node}')
         print(f'[DEBUG] Setting MergeFile: {merge_file}', flush=True)
            
+        config_file_list = get_config_sample_setting_file_name(current_path)
+        for file in config_file_list:
+            copy_file_list.append(file)
+        print(f'CopyFileList: {copy_file_list}', flush=True)
 
         # Debug
         #sys.exit(0)
@@ -215,7 +232,7 @@ def main():
             sub_folder_path = os.path.join(current_path, sub_folder)
             sub_folder_abs_list.append(sub_folder_path)
             print(f'[DEBUG] SubFolderPath: {sub_folder_path}')
-            ms_folder.make_sub_folder(current_path, sub_folder_path, scheme_source, schemes)
+            ms_folder.make_sub_folder(current_path, sub_folder_path, copy_file_list, scheme_source, schemes)
             lin_folder.make_link_folder(current_path, sub_folder_path, symbolic_link)
             ## split star file
             split_star_file = os.path.join(sub_folder_path, sub_folder.replace('/', '') + '.star')
