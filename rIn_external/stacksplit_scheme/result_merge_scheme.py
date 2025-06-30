@@ -36,11 +36,11 @@ def main():
         args, unknown = parser.parse_known_args()
         print("RELION_IT: Result Merge Scheme running...", flush=True)
    
-        print(f'[DEBUG] Entry SettingFile: {args.setting_file}')
+        print(f'[DEBUG] Entry YmlFile: {args.yml_file}')
    
    
         ## Setting file load
-        yml_data = ss_comm.load_yaml_file(args.setting_file)
+        yml_data = ss_comm.load_yaml_file(args.yml_file)
         setting_data = yml_data['setting']
         print(f'[DEBUG] SettingData: {setting_data}')
     

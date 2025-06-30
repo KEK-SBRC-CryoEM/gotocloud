@@ -120,7 +120,8 @@ def main():
         if own_job_name is not None: 
             own_job_path = os.path.join(current_path, own_job_name)
             own_job_no = own_job_name[-4:-1]
-            
+        else:
+            raise Exception(f'Job name could not be obtained.')
         
         print(f'[DEBUG] JobName: {own_job_name}')
         print(f'[DEBUG] JobNo: {own_job_no}')
