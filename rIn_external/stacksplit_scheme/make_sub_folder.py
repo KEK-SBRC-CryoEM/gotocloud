@@ -24,6 +24,18 @@ def make_sub_folder(current_path, sub_folder_path, copy_file_list, source_folder
         file_name = os.path.join(current_path, file)
         shutil.copy(file_name, sub_folder_path)
 
+    ## Edit default_pipeline.star
+    pipeline_path = os.path.join(sub_folder_path, 'default_pipeline.star')
+    print(f'pipeline_path: {pipeline_path}')
+    with open(pipeline_path, encoding="utf-8") as f:
+        data_lines = f.read()
+        data_lines = data_lines.replace("Succeeded", "Failed")
+        data_lines = data_lines.replace("Running", "Failed")
+
+    with open(pipeline_path, mode="w", encoding="utf-8") as f:
+        f.write(data_lines)
+
+
     ## copy Schemes/ 060-090 folder
     make_folder_item = 'Schemes/'
     make_folder_path = os.path.join(sub_folder_path, make_folder_item)
