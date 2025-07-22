@@ -58,9 +58,10 @@ def write_star_file(data_dict, star_file):
     ## Delete temp file    	    
     os.remove(temp_file)
 
-    ## 
-    if fix_current_node_name(star_file) == False:
-        raise ValueError(f'{star_file} fix error.')
+    ## Glitch in starfile?
+    ### Might have fixed the starfile glitch...
+    #if fix_current_node_name(star_file) == False:
+    #    raise ValueError(f'{star_file} fix error.')
 
 def fix_current_node_name(file_name):
     SCHEME_NAME = '_rlnSchemeName'
