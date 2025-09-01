@@ -4,36 +4,48 @@ import os
 import stacksplit_common as ss_comm
 import time
 
-        
+import subprocess
+
 def run_sub_schemes(sub_folder_path_list, scheme_list, log_file):
     print('-->run_sub_schemes')
-    print(f'SubFolder: {sub_folder_path_list}')
+    print(f'SubFolderList: {sub_folder_path_list}')
     print(f'SchemeList: {scheme_list}')
-
+    print(f'LogFile: {log_file}')
+    
     return_flg = False
 
     for sub_folder_path in sub_folder_path_list:
-    
+        print(f'[MRK_DEBUG] Starting Inner Command Loop of subfolder {sub_folder_path}')
+        
         if not os.path.exists(sub_folder_path):
             raise Exception(f"'{sub_folder_path}' is not exists.")
             
         ## Set the path to the current path 
         os.chdir(sub_folder_path)
         print(f'Current: {sub_folder_path}')
-
         
-##-- os.system
+        ##-- os.system
         for scheme in scheme_list:
             scheme_path = f'Schemes/{scheme}/'
             
-            command = f'relion_schemer --scheme {scheme} --run --pipeline_control {scheme_path} >> {log_file} 2>&1 &'
+            ### command = f'relion_schemer --scheme {scheme} --run --pipeline_control {scheme_path} >> {log_file} 2>&1 &'
+            ### command = f'relion_schemer --scheme {scheme} --run --pipeline_control {scheme_path} >> {log_file} 2>&1'
+            command = ["relion_schemer", "--scheme", scheme, "--run", "--pipeline_control", scheme_path]
+            print(f'Command: {command}')
+            ### os.system(command)
+            ### process = subprocess.Popen(command, shell=True)
             
-            print(f'Command: {command}')                       
-            os.system(command)
-##-- os.system
-
- 
-            
+            with open(log_file, "a") as f:  # Open with append mode
+                p = subprocess.Popen(
+                    command,
+                    stdout=f,
+                    stderr=subprocess.STDOUT
+                )
+        
+        print(f'[MRK_DEBUG] Finishing Inner Command Loop of subfolder {sub_folder_path}')
+        ##-- os.system
+    print(f'[MRK_DEBUG] Finishing Outer Command Loop of all subfolders')
+    
     count = 0
     time_interval = 60
     while True:
