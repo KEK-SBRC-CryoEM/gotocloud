@@ -67,24 +67,24 @@ def get_own_jobname(current_path):
     #print(jobname)
     return jobname
 
-    
-def get_own_job(current_path):
-    #print('--> get_own_job')
-    jobname = get_own_jobname(current_path)
-    job_path = os.path.join(current_path, jobname)
-    #print(f'JobPath: {job_path}')
-    
-    if os.path.exists(job_path):
 
-        if os.path.exists(os.path.join(job_path, 'RELION_JOB_EXIT_SUCCESS')):
-            print(f"'{job_path}' is already done.")
-            #raise Exception("'{job_path}' is already done.")
-            jobname = None    
-    else:
-        ff_comm.make_folder(job_path)    
-    
-    #print(f'Return: {jobname}')
-    return jobname
+### def get_own_job(current_path):
+###     #print('--> get_own_job')
+###     jobname = get_own_jobname(current_path)
+###     job_path = os.path.join(current_path, jobname)
+###     #print(f'JobPath: {job_path}')
+###     
+###     if os.path.exists(job_path):
+### 
+###         if os.path.exists(os.path.join(job_path, 'RELION_JOB_EXIT_SUCCESS')):
+###             print(f"'{job_path}' is already done.")
+###             #raise Exception("'{job_path}' is already done.")
+###             jobname = None    
+###     else:
+###         ff_comm.make_folder(job_path)    
+###     
+###     #print(f'Return: {jobname}')
+###     return jobname
 
 
 def fix_path_end(path):

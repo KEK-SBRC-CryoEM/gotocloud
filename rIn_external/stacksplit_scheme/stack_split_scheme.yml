@@ -1,7 +1,7 @@
 setting:
   splits_num: 2
-  particles_num: 
-  schemes:
+  particles_num: -1
+  scheme_list:
   - 060_CSS_Clean_Stack_3D
   - 070_CSS_Init_Refine3D
   - 080_CSS_PPRefine_Cycle
