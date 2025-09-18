@@ -140,7 +140,7 @@ def main():
     print(f'[KEK_MESSAGE] ', flush=True)
 
     ### print(f'[KEK_DEBUG] Entry YmlFile: {args.yml_file}')
-    print(f'[KEK_DEBUG] Entry InputPartsStar: {args.in_parts}')
+    print(f'[KEK_DEBUG] Entry InputPartsStar: {args.input}')
     print(f'[KEK_DEBUG] Entry OutputDir: {args.output}')
     print(f'[KEK_DEBUG] Entry SplitsNum: {args.splits_num}')
     print(f'[KEK_DEBUG] Entry ParticlesNum: {args.particles_num}')
@@ -187,7 +187,7 @@ def main():
         print(f'[KEK_DEBUG] JobNo: {own_job_no}')
         
         # Set the path of star file from an arugment
-        input_parts_star = args.in_parts
+        input_parts_star = args.input
 
         # Get the path of this script file
         script_file_path = Path(__file__).resolve()
@@ -226,8 +226,8 @@ def main():
         print(f'[KEK_MESSAGE] ')
         print(f'[KEK_MESSAGE] Checking command line arguments...')
         print(f'[KEK_MESSAGE] ', flush=True)
-        ### if args.in_parts is not None:
-        ###     input_parts_star = args.in_parts
+        ### if args.input is not None:
+        ###     input_parts_star = args.input
         if args.splits_num is not None and args.splits_num > 0:
             print(f'[KEK_MESSAGE] Overwride with command line splits_num: {splits_num}')
             splits_num = args.splits_num
