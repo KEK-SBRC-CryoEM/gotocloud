@@ -1,0 +1,12 @@
+setting:
+  splits_num: 2
+  particles_num: -1
+  scheme_list:
+  - 060_CSS_Clean_Stack_3D
+  - 070_CSS_Init_Refine3D
+  - 080_CSS_PPRefine_Cycle
+  - 090_CSS_Res_Fish_3D
+  scheme_copy_source: Schemes_Edited/
+  link_type: symbolic
+  merge_scheme_node: 090050_Refine3D_local
+  merge_file: run_data.star
