@@ -173,12 +173,11 @@ def plot_ctf_2d(phaseshift_ctf2d, nyquist, boxsize, filename=None):
     img = ax.imshow(phaseshift_ctf2d, cmap='gray', origin='lower', extent=extent)
     ax.set_xlabel("Spatial frequency [1/Å]")
     ax.set_ylabel("Spatial frequency [1/Å]")
-    ax.set_title(f"Thon Rings for boxsize = {256}")
+    ax.set_title(f"Thon Rings for boxsize = {boxsize}")
     cbar = fig.colorbar(img, ax=ax, label="CTF amplitude")
 
-
-    circle = Circle((0, 0), nyquist, color='red', alpha=1.0, fill=False, linestyle='--', lw=2)
-    ax.add_patch(circle)
+    # circle = Circle((0, 0), nyquist, color='red', alpha=1.0, fill=False, linestyle='--', lw=2)
+    # ax.add_patch(circle)
 
     plt.tight_layout()
 
@@ -197,7 +196,7 @@ def make_figs_by_pixelsize(data, pixelsize_list, defocus_list, limit_resolution,
     """
     for pix in pixelsize_list:
         fig = plot_resolution_boxsize_curves_by_defocus(data[pix], pix, defocus_list, limit_resolution)
-        fig.savefig(os.path.join(output_path, f"ctflimit_pixel{pix:.2f}.pdf"), dpi=300, bbox_inches='tight')
+        fig.savefig(os.path.join(output_path, f"ctflimit_pixel{pix:.2f}.png"), dpi=300, bbox_inches='tight')
         plt.close(fig)
         
 def plot_resolution_boxsize_curves_by_defocus(data, pixel_size, defocus_list, limit_resolution):
@@ -207,6 +206,7 @@ def plot_resolution_boxsize_curves_by_defocus(data, pixel_size, defocus_list, li
         y-axis: resolution
         curves: defocus settings
     """
+    
     fig, ax = plt.subplots(figsize=(12, 8))
 
     for defocus in defocus_list:
@@ -232,14 +232,14 @@ def plot_resolution_boxsize_curves_by_defocus(data, pixel_size, defocus_list, li
         linestyle='-',
         color='black',
         linewidth=3,
-        label=f"Nyquist: {nyquist_limit}[Å]"
+        label=f"Nyquist: {nyquist_limit}[Å/pixel]"
     )
 
-    ax.set_title(f"CTF Limit: Maximum Resolution for a Given Box Size Across Multiple Defocus Values for pixel size={pixel_size} [Å]")
+    ax.set_title(f"Maximum Resolution for a Given Box Size \nAcross Multiple Defocus Values for Pixel Size={pixel_size} [Å/pixel]")
     ax.set_xlabel("Box size")
     ax.set_ylabel("Resolution [Å]")
-    ax.set_xlim(0, x_max + 10)
-    ax.set_ylim(0, 40)
+    ax.set_xlim(0, x_max + int(x_max*0.1))
+    # ax.set_ylim(0, 40)
     # ax.set_ylim(0, limit_resolution)
     # ax.set_yticks(np.arange(0, limit_resolution + 1.5, 1.5))
 
@@ -254,6 +254,13 @@ def plot_resolution_boxsize_curves_by_defocus(data, pixel_size, defocus_list, li
     # hide top and right spines, show left and bottom
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+
+    # adjust font size
+    for item in [ax.get_legend().get_title()]+(ax.get_xticklabels() + ax.get_yticklabels() + ax.get_legend().get_texts()):
+        item.set_fontsize(16)
+
+    for item in [ax.title,  ax.xaxis.label, ax.yaxis.label]:
+        item.set_fontsize(20)
 
     return fig        
 
@@ -312,8 +319,9 @@ def plot_boxsize_vs_defocus_by_pixelsize(data, pixelsize_list, output_path):
     yticks = set()
     xticks = set()
     
-    for pix in pixelsize_list:
+    for pix in pixelsize_list[::-1]:
         data_x  = data[pix][:,1] # defocus
+        # data_x  = np.abs(data[pix][:,1]) # defocus (revert)
         data_y  = data[pix][:,3] # min boxsize
         
         yticks = yticks.union(set(data_y))
@@ -335,7 +343,7 @@ def plot_boxsize_vs_defocus_by_pixelsize(data, pixelsize_list, output_path):
     ax.set_yticks(list(yticks))
     
     ax.legend(
-        title="Pixel Size [Å]",
+        title="Pixel Size [Å/pixel]",
         # loc='upper right',
         # bbox_to_anchor=(0.98, 0.98),
         frameon=True,
@@ -344,8 +352,14 @@ def plot_boxsize_vs_defocus_by_pixelsize(data, pixelsize_list, output_path):
     
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+
+    for item in [ax.get_legend().get_title()]+(ax.get_xticklabels() + ax.get_yticklabels() + ax.get_legend().get_texts()):
+        item.set_fontsize(16)
+
+    for item in [ax.title,  ax.xaxis.label, ax.yaxis.label]:
+        item.set_fontsize(20)
             
-    fig.savefig(os.path.join(output_path, f"defocus_vs_boxsize.pdf"), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(output_path, f"defocus_vs_boxsize.png"), dpi=300, bbox_inches='tight')
     plt.close(fig)
 
 ### analyses pipelines ###
