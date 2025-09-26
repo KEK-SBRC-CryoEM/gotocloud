@@ -34,7 +34,7 @@ def ctf_period(defocus_A, cs_A, lambda_, frequency):
     
     The result represents the distance between two consecutive zero-crossings of the CTF at
         the specified spatial frequency, which can be used to assess aliasing risk in Fourier space.
-    
+
     Parameters:
         defocus_A (float) : defocus value in [Å].
         cs_A      (float) : spherical aberration constant in [Å].
@@ -136,7 +136,6 @@ def ctf_limit(boxsize, pixel_size, voltage, defocus, cs, limit_resolution=15):
 def phaseshift_ctf(lambda_, pixel_size, defocus, cs, boxsize): #_heel
     '''
     from: Principles of Phase Contrast (Electron) Microscopy - Marin van Heel
-        - positive values for underfocus
         - PhCTF(f) = sin(\frac{2\pi}{\lambda}[\frac{-C_s \lambda ^4 f^4}{4} + \frac{\Delta F \lambda ^2 f^2}{2}])
 
     arguments:
@@ -160,10 +159,10 @@ def phaseshift_ctf(lambda_, pixel_size, defocus, cs, boxsize): #_heel
 
     # simplified
     f2 = f**2
-    a = (-cs * (lambda_**3) * f2)/2
+    a = (cs * (lambda_**3) * f2)/2
     b = defocus * lambda_
     gamma = np.pi*f2*(a+b)
-    phaseshift_ctf = np.sin(gamma)    
+    phaseshift_ctf = -np.sin(gamma)
 
     return f, phaseshift_ctf
 
@@ -176,10 +175,10 @@ def phaseshift_ctf2d(lambda_, pixel_size, defocus, cs, boxsize):
     s = np.sqrt(fx**2 + fy**2)
     
     s2 = s**2
-    a = (-cs * lambda_**3 * s2)/2
+    a = (cs * lambda_**3 * s2)/2
     b = defocus * lambda_
     gamma = np.pi*s2*(a+b)
-    phaseshift_ctf = np.sin(gamma)    
+    phaseshift_ctf = -np.sin(gamma)    
 
     return s, phaseshift_ctf
 
