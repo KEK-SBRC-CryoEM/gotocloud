@@ -75,7 +75,7 @@ function gtc_dependency_pcluster_install() {
         #echo "GoToCloud: Done"
     } || {
         #python3 -m pip install --use-feature=2020-resolver "aws-parallelcluster<3.7.1" --upgrade --user
-        python3 -m pip install --upgrade "aws-parallelcluster<3.7.1"
+        python3 -m pip install --upgrade "aws-parallelcluster==3.11.1" # 3.11.1 is the latest available under python3.8
         echo "GoToCloud: "
         echo "GoToCloud: Check PATH settings for parallelcluster"
         echo "GoToCloud: which pcluster "
