@@ -67,7 +67,7 @@ function gtc_dependency_virtualenv_create() {
     sudo yum install -y openssl11 openssl11-devel
     wget https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && tar xf Python-3.12.12.tar.xz
     pushd ./Python-3.12.12 && ./configure && make && sudo make altinstall && popd
-    python3 -m virtualenv -p python3.12 ~/$1    #Create virtualenv for parallelcluster with python3.8
+    python3 -m virtualenv -p python3.12 ~/$1    #Create virtualenv for parallelcluster with python3.12
 }
 
 #Installe pcluster
