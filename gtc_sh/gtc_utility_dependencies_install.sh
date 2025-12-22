@@ -52,7 +52,7 @@ function gtc_dependency_jq_install() {
 function gtc_dependency_virtualenv_create() {
     echo "GoToCloud: Installing python3.8 ..."
     GTC_PYTHON3_VERSION=$(python3 -V)
-    if [[ ${GTC_PYTHON3_VERSION} < 3.8 ]]; then
+    if python3 -c "import sys; sys.exit(0 if sys.version_info < (3, 8) else 1)"; then
         echo "GoToCloud: Installing python3.8 ..."
         sudo amazon-linux-extras install -y python3.8
     else
@@ -63,7 +63,11 @@ function gtc_dependency_virtualenv_create() {
         python3 -m pip install --upgrade pip
         python3 -m pip install --user --upgrade virtualenv
     }
-    python3 -m virtualenv -p python3.8 ~/$1    #Create virtualenv for parallelcluster with python3.8
+    echo "GoToCloud: Altinstalling python3.12 ..."
+    sudo yum install -y openssl11 openssl11-devel
+    wget https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && tar xf Python-3.12.12.tar.xz
+    pushd ./Python-3.12.12 && ./configure && make && sudo make altinstall && popd
+    python3 -m virtualenv -p python3.12 ~/$1    #Create virtualenv for parallelcluster with python3.8
 }
 
 #Installe pcluster
@@ -75,7 +79,8 @@ function gtc_dependency_pcluster_install() {
         #echo "GoToCloud: Done"
     } || {
         #python3 -m pip install --use-feature=2020-resolver "aws-parallelcluster<3.7.1" --upgrade --user
-        python3 -m pip install --upgrade "aws-parallelcluster==3.11.1" # 3.11.1 is the latest available under python3.8
+        # python3 -m pip install --upgrade "aws-parallelcluster==3.11.1" # 3.11.1 is the latest available under python3.8
+        python3 -m pip install --upgrade "aws-parallelcluster==3.13.2" # 3.13 is the last ParallelCluster release supporting Ubuntu 20.04
         echo "GoToCloud: "
         echo "GoToCloud: Check PATH settings for parallelcluster"
         echo "GoToCloud: which pcluster "
