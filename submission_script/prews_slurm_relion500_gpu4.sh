@@ -8,7 +8,7 @@
 #SBATCH --job-name=XXXqueueXXX
 #SBATCH --partition=XXXextra1XXX
 #SBATCH --nodes=XXXextra2XXX
-#SBATCH --ntasks-per-node=128
+#SBATCH --ntasks-per-node=XXXdedicatedXXX
 
 # --- Backup Functions ---
 backup_file () {
