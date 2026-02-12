@@ -444,11 +444,11 @@ def run_boxsize_optimal(pixel_size, voltage, defocus, cs, limit_resolution=15):
                     1024, 
     ] # for custom boxsizes, please use plot mode
 
-    res_f, res_b = compute_best_boxsize(boxsize_list, pixel_size, voltage, defocus, cs, limit_resolution=15)
+    res_f, res_b = compute_best_boxsize(boxsize_list, pixel_size, voltage, defocus, cs, limit_resolution)
 
     logger.info(f"Best boxsize {res_b} for resolution {res_f} [Å]")
 
-    return res_f, res_b
+    return {"boxsize":res_b, "resolution":res_f}
 
 def run_ctf_vs_boxsize(voltage, cs, pixelsize_list, defocus_list, boxsize_list, output_folder):
     lambda_ = relativistic_electron_wavelength(voltage_kV=voltage)
