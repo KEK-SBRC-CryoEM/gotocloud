@@ -182,6 +182,30 @@ def phaseshift_ctf2d(lambda_, pixel_size, defocus, cs, boxsize):
 
     return s, phaseshift_ctf
 
+def boxsize_fresnel(particle_diameter, lambda_, resolution, defocus):
+    """
+    Calculate the optimal box size required to capture Fresnel fringes
+    around a particle in real space.
+
+    This function estimates the minimum box size necessary to fully
+    include the signal displacement (delocalization) caused by defocus,
+    based on the Fresnel fringe extent.
+
+    Parameters:
+        particle_diameter (float): Particle diameter in Ångströms [Å].
+        lambda_ (float): Relativistic electron wavelength in Ångströms [Å].
+        resolution (float): Target resolution in Ångströms [Å].
+        defocus (float): Defocus value in Ångströms [Å].
+
+    Returns:
+        boxsize (float): Minimum box size required to capture the
+            Fresnel fringes in Ångströms [Å].
+
+    Formula:
+        boxsize = particle_diameter + 2 * defocus * (lambda_ / resolution)
+    """
+    return particle_diameter + 2*defocus*(lambda_/resolution)
+
 if __name__ == "__main__":
 	# python ctf.py -b 400 -p 1.2 -v 300 -d -0.8 -c 2.7 -q
     parser = argparse.ArgumentParser(description="Estimate the CTF aliasing limit based on microscope parameters.")	
