@@ -177,9 +177,7 @@ def load_yaml(filepath):
     """
     Receives a filepath of a .yaml file and loads it as a dictionary
     """
-    if filepath is not None and filepath.strip()!="":
-        parameters = yaml.safe_load(filepath)
+    if filepath:
         with open(filepath, 'r') as yaml_file:
-            yaml_dict = yaml.safe_load(yaml_file)
-        return yaml_dict
+            return yaml.safe_load(yaml_file)
     return None
