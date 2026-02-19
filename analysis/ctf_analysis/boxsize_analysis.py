@@ -6,62 +6,24 @@ import os
 import copy
 import yaml
 import time
+import logging
 import argparse
 import numpy as np
+
 from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FixedFormatter
 from matplotlib.patches import Circle
-
 matplotlib.use('Agg') # prevents opening the gui
 
-import logging
-logger = logging.getLogger(__name__)
+import utils
+from ctf import ctf_limit, relativistic_electron_wavelength, phaseshift_ctf, phaseshift_ctf2d, boxsize_fresnel
 
-from ctf import ctf_limit, relativistic_electron_wavelength, phaseshift_ctf, phaseshift_ctf2d
+logger = logging.getLogger(f"CTF OPT/PLOT")
 
-### utils ###
-def create_numbered_folder(base_path="."):
-    '''
-    created a numbered folder '000' at base_path
-    if base_path/'000' already exists, increments one and try again
-    '''
-    n = 0
-    while True:
-        folder_name = f"{n:03d}"
-        full_path = os.path.join(base_path, folder_name)
-        if not os.path.exists(full_path):
-            os.makedirs(full_path)
-            return full_path
-        n += 1
-
-def gtf_get_timestamp(file_format=False):
-	"""
-	Utility function to get a properly formatted timestamp. 
-
-	Args:
-		file_format (bool): If true, timestamp will not include ':' characters
-			for a more OS-friendly string that can be used in less risky file 
-			names [default: False ]
-	"""
-	if file_format:
-		return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
-	else:
-		return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
-def load_yaml(filepath):
-    """
-    Receives a string filepath for a .yaml file and loads it as a dictionary
-    """
-    if filepath is not None and filepath.strip()!="":
-        parameters = yaml.safe_load(filepath)
-        with open(filepath, 'r') as yaml_file:
-            yaml_dict = yaml.safe_load(yaml_file)
-        return yaml_dict
-    return None
-
+### input handling ###
 def process_params(dparams):
     params = copy.deepcopy(dparams)
     params["boxsizes_all"] = np.array(params["boxsizes"])
@@ -185,7 +147,7 @@ def plot_ctf_2d(phaseshift_ctf2d, nyquist, boxsize, filename=None):
         fig.savefig(filename, dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-### plots ###
+### analysis plots ###
 def make_figs_by_pixelsize(data, pixelsize_list, defocus_list, limit_resolution, output_path):
     """
     Generates one figure from plot_resolution_boxsize_curves_by_defocus
@@ -363,20 +325,21 @@ def plot_boxsize_vs_defocus_by_pixelsize(data, pixelsize_list, output_path):
     plt.close(fig)
 
 ### analyses pipelines ###
-def run_boxsize_plot(path_params):
+def run_boxsize_plot(path_params, output_folder):
     logger.info(f"Running Complete Boxsize analysis")
 
     # 1. Load user data and prepares directory structure
-    config = load_yaml(path_params)
+    config = utils.load_yaml(path_params)
     config = process_params(config)
+    config["output_folder"] = output_folder
     logger.info(f"Loading parameters from {path_params}")
 
     # config["output_folder"] = create_numbered_folder(config["output_folder"])
-    config["output_folder"] = os.path.join(config["output_folder"], gtf_get_timestamp(True))
-    Path(config["output_folder"]).mkdir(parents=True, exist_ok=True)
+    # config["output_folder"] = os.path.join(config["output_folder"], gtf_get_timestamp(True))
+    # Path(config["output_folder"]).mkdir(parents=True, exist_ok=True)
     # subfolder = os.path.join(config["output_folder"], "ctf")
     # Path(subfolder).mkdir(parents=True, exist_ok=True)
-    logger.info(f"Setting output folder to: {config['output_folder']}")
+    # logger.info(f"Setting output folder to: {config['output_folder']}")
 
     # 2. Compute the ctf limit for several pixel sizes, defocus values, and boxsizes
     logger.info("Computing CTF data... (may take a while)")
@@ -447,8 +410,7 @@ def run_boxsize_optimal(pixel_size, voltage, defocus, cs, limit_resolution=15):
     res_f, res_b = compute_best_boxsize(boxsize_list, pixel_size, voltage, defocus, cs, limit_resolution)
 
     logger.info(f"Best boxsize {res_b} for resolution {res_f} [Å]")
-
-    return {"boxsize":res_b, "resolution":res_f}
+    return res_f, res_b
 
 def run_ctf_vs_boxsize(voltage, cs, pixelsize_list, defocus_list, boxsize_list, output_folder):
     lambda_ = relativistic_electron_wavelength(voltage_kV=voltage)
@@ -483,11 +445,16 @@ def run_ctf_vs_boxsize(voltage, cs, pixelsize_list, defocus_list, boxsize_list, 
                 )
                 plot_ctf_2d(c, nyquist, boxsize, filename=os.path.join(output_folder, f"CTF2D_pixelsize{pixel_size}_defocus{defocus}_boxsize{boxsize}.png"))
 
-if __name__ == "__main__":
-    # boxsize_analysis.py -q opt -p 1.2 -v 300 -d -0.8 -c 2.7 
-    # boxsize_analysis.py -q opt -p 1.2 -v 300 -d -0.8 -c 2.7 -save
-    # boxsize_analysis.py -q plot -p config/boxsize.yaml 
+def run_boxsize_fresnel(particle_diameter, voltage_kV, resolution, defocus):
+    logger.info(f"Computing Fresnel Fringes Boxsize")
+    result = boxsize_fresnel(particle_diameter=args.particle_diameter,
+                            lambda_=relativistic_electron_wavelength(voltage_kV=args.voltage), # [Å]
+                            resolution=args.resolution,
+                            defocus=args.defocus*1e4)  # µm to Å
+    logger.info(f"Suggested boxsize: {result} pixels")
+    return result
 
+if __name__ == "__main__":
     ### Argument Parser and Script Mode Selection ###
     parser = argparse.ArgumentParser(
         description=(
@@ -497,14 +464,15 @@ if __name__ == "__main__":
             "  - opt : Compute the optimal box size for a specific setup using direct inputs.\n\n"
             "Use one of the modes below followed by -h to see mode-specific options.\n"
             "Example:\n"
-            "  python boxsize_analysis.py -q plot -p params.yaml\n"
-            "  python boxsize_analysis.py -q opt -p 1.2 -v 300 -d -0.8 -c 2.7"
-            "Ommit -q for verbose ouput."
+            "  python boxsize_analysis.py plot -p params.yaml\n"
+            "  python boxsize_analysis.py opt -p 1.2 -v 300 -d -0.8 -c 2.7"
+            "  python boxsize_analysis.py --verbose --json opt -p 1.2 -v 300 -d -0.8 -c 2.7 -save"
+            "  python boxsize_analysis.py --verbose fresnel -p 200 -v 300 -d 1 -r 2"
         ),
         formatter_class=argparse.RawTextHelpFormatter  # preserves line breaks
     )
-    parser.add_argument("-q", "--quiet", action='store_true', help="Disable verbose output")
-    subparsers = parser.add_subparsers(dest="mode", required=True, help="Choose between modes 'plot' or 'opt'")
+    parser = utils.add_common_cli_arguments(parser) #add: --json, --output-dir, and --verbose
+    subparsers = parser.add_subparsers(dest="mode", required=True, help="Choose between modes 'plot', 'opt', or 'fresnel'")
 
     ### Parameters for Plot Mode ###
     plot_parser = subparsers.add_parser("plot", help="Run analysis over multiple parameter sets")
@@ -518,35 +486,66 @@ if __name__ == "__main__":
     opt_parser.add_argument("-c", "--cs",         type=float, required=True, help="Spherical aberration constant (Cs) in millimeters [mm].")
     opt_parser.add_argument("-limres", "--limit_resolution",  default=15, type=float, help="(Optional) Estimate CTF only up to this limiting resolution")
     opt_parser.add_argument("-save", "--save_plots", action='store_true', help="Saves the CTF plots for 1D and 2D.")
+
+    ### Parameters for Fresnel Mode ###
+    opt_parser = subparsers.add_parser("fresnel", help="Calculate the optimal box size required to capture Fresnel fringes around a particle in real space.")
+    opt_parser.add_argument("-p", "--particle_diameter", type=float, required=True, help="Particle diameter in Ångströms [Å].")
+    opt_parser.add_argument("-v", "--voltage",    type=float, required=True, help="Microscope accelerating voltage in [kV].")
+    opt_parser.add_argument("-d", "--defocus",    type=float, required=True, help="Defocus value in micrometers [µm].")
+    opt_parser.add_argument("-r", "--resolution", type=float, required=True, help="Target resolution in Ångströms [Å].")
   
     args = parser.parse_args()
 
+    ### output folder ###
+    if args.mode.lower() == "opt" and not args.save_plots: # opt: print final value and save nothing
+        output_folder = None
+    else:
+        output_folder = args.output_dir or f"boxsize_{args.mode.lower()}" 
+    output_folder = utils.prepare_output_environment(output_folder)
+
     ### Logging ###
-    logging.basicConfig(level=logging.WARNING if args.quiet else logging.INFO, 
-                        format=f"CTF {args.mode.upper()} | %(levelname)s: %(message)s"
-    ) # modify logging setting only if run from main 
+    utils.configure_logging(verbose=args.verbose, output_directory=output_folder, capture_warnings=False)
+    logger = logging.getLogger(f"CTF {args.mode.upper()}")
 
     ### Mode Execution ###
     if args.mode=="plot":
-        run_boxsize_plot(path_params=args.param_file)
+        run_boxsize_plot(path_params=args.param_file, output_folder=output_folder)
     elif args.mode=="opt":
+        # computation
         result = run_boxsize_optimal(pixel_size       = args.pixel_size,
                                      voltage          = args.voltage,
                                      defocus          = args.defocus,
                                      cs               = args.cs,
                                      limit_resolution = args.limit_resolution)
-        print(result)
+        # output interface
+        result_dict = {"boxsize":int(result[1]),
+                       "resolution":float(result[0])}
+
+        # print and/or save output
+        utils.handle_output(result_dict, to_json=args.json, output_directory=output_folder)
+        
+        # save optinal plots
         if args.save_plots:
-            output_path = os.path.join("boxsize_opt", gtf_get_timestamp(True))
-            Path(output_path).mkdir(parents=True, exist_ok=True)
             run_ctf_vs_boxsize(
                 voltage        = args.voltage,
                 cs             = args.cs,
                 pixelsize_list = [args.pixel_size],
                 defocus_list   = [args.defocus],
                 boxsize_list   = [int(result[1])],
-                output_folder  = output_path
+                output_folder  = output_folder
             )
+    elif args.mode=="fresnel": #todo: match against the good boxes for computing runtime
+        # computation
+        result = run_boxsize_fresnel(particle_diameter=args.particle_diameter,
+                                     voltage_kV=args.voltage,
+                                    resolution=args.resolution,
+                                    defocus=args.defocus)
+
+        # output interface
+        result_dict = {"boxsize": float(result)}
+
+        # print and/or save output
+        utils.handle_output(result_dict, to_json=args.json, output_directory=output_folder)
     else:
         logger.warning(f"Unknown mode {args.mode}! Exiting...")
 
