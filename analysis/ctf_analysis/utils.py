@@ -117,8 +117,7 @@ def handle_output(result, to_json=False, output_directory=None):
     to_json : bool, optional
         If True, serialize output as JSON. Otherwise, use YAML for a more human-friendly format.
     output_directory : str, optional
-        File path where the output will also be saved. If None, output is
-        only printed to stdout.
+        File path where the output will also be saved. If None, output is only printed to stdout.
 
     Example
     -------
