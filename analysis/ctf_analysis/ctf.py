@@ -7,6 +7,8 @@ from functools import partial
 import logging
 import utils
 
+logger = logging.getLogger("CTF LIMIT")
+
 def relativistic_electron_wavelength(voltage_kV):
     """
     Calculate the relativistically corrected deBroglie wavelength of an electron
@@ -223,7 +225,6 @@ if __name__ == "__main__":
 
     # logging
     utils.configure_logging(verbose=args.verbose, output_directory=output_directory, capture_warnings=False)
-    logger = logging.getLogger("CTF LIMIT")
 
     if output_directory:
         logger.info(f"Output directory set to: {output_directory}")
@@ -232,9 +233,9 @@ if __name__ == "__main__":
     result = ctf_limit(args.boxsize, args.pixel_size, args.voltage, args.defocus, args.cs, args.limit_resolution)
 
     # output interface
-    result_dict = {"bin":result[0],
-                   "frequency":result[1],
-                   "resolution":1/result[1]}
+    result_dict = {"bin":int(result[0]),
+                   "frequency":float(result[1]),
+                   "resolution":float(1/result[1])}
     
     # print and save output
     utils.handle_output(result_dict, to_json=args.json, output_directory=output_directory)
