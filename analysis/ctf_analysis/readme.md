@@ -60,7 +60,8 @@ When executed as a script (`python ctf.py`), it estimates the spatial frequency 
 ## Usage
 
 ```bash
-python ctf.py -b 480 -p 1.2 -v 300 -d 1.5 -c 2.7 -q
+python ctf.py -b 480 -p 1.2 -v 300 -d 1.5 -c 2.7
+python ctf.py -b 480 -p 1.2 -v 300 -d 1.5 -c 2.7 --verbose
 ```
 
 ## Required Arguments
@@ -74,7 +75,9 @@ python ctf.py -b 480 -p 1.2 -v 300 -d 1.5 -c 2.7 -q
 ## Optional Arguments
 
 - `--limit_resolution`, `-limres` : Estimate CTF only up to this resolution (default: 15 Å).
-- `--quiet`, `-q`                  : Suppress verbose output.
+- `--verbose`                     : Enable verbose output.
+- `--json`                        : Structure output as JSON, default is YAML.
+- `--output-dir`                  : Save output and logs to this directory. If not provided, results are printed to stdout and logs to stderr.
 
 ## Output
 A tuple:
@@ -106,7 +109,9 @@ This mode computes the optimal boxsize for a single microscope setup.
 
 #### Usage
 ```bash
-python boxsize_analysis.py -q opt -p 1.2 -v 300 -d -0.8 -c 2.7
+python boxsize_analysis.py opt -p 1.2 -v 300 -d -0.8 -c 2.7
+python boxsize_analysis.py opt -p 1.2 -v 300 -d -0.8 -c 2.7 --save
+python boxsize_analysis.py --verbose opt -p 1.2 -v 300 -d -0.8 -c 2.7
 ```
 
 This mode outputs a tuple:
@@ -114,19 +119,56 @@ This mode outputs a tuple:
 - The **first value** is the theoretical resolution limit [Å] at which aliasing begins.
 - The **second value** is the **minimum box size** (in pixels) required to reach that resolution without aliasing.
 
-#### Required Parameters:
+#### Required Arguments:
 - `-p`, `--pixel_size`: Pixel size of the microscope detector, in Ångstroms [Å].
 - `-v`, `--voltage`: Accelerating voltage of the microscope, in kilovolts [kV].
 - `-d`, `--defocus`: Defocus value, specified in micrometers [µm].
 - `-c`, `--cs`: Spherical aberration constant (Cs), in millimeters [mm].
 
-#### Optional Parameters:
-- `-limres`, `--limit_resolution`  
-  Limits the CTF estimation up to this resolution value (default: 15 Å).
-- `-save`, `--save_plots`  
-  If set, the script saves the generated 1D and 2D CTF (Thon Rings) plots as image files and save them in `./boxsize_opt/<timestamp>`.
+#### Optional Arguments:
+- `-limres`, `--limit_resolution`: Limits the CTF estimation up to this resolution value (default: 15 Å).
+- `-save`, `--save_plots`        : If set, the script saves the generated 1D and 2D CTF (Thon Rings) plots as image files.
+- `--verbose`                    : Enable verbose output.
+- `--json`                       : Structure output as JSON, default is YAML.
+- `--output-dir`                 : Save output and logs to this directory. If not provided, results are printed to stdout, logs to stderr, and files (if any) saved to `./boxsize_opt/<timestamp>`.
 
-### 3.2 PLOT Mode
+### 3.2 FRESNEL Mode
+This mode calculates the box size required to capture Fresnel fringes around a particle in real space.
+
+#### Usage
+```bash
+python boxsize_analysis.py fresnel -p 200 -v 300 -d 1 -r 2
+python boxsize_analysis.py --verbose fresnel -p 200 -v 300 -d 1 -r 2
+```
+
+Output: **minimum box size** (in pixels) required to capture Fresnel fringes.
+
+#### Required Arguments:
+- `-p`, `--particle_diameter`: Particle diameter in Ångstroms [Å].
+- `-v`, `--voltage`: Accelerating voltage of the microscope, in kilovolts [kV].
+- `-d`, `--defocus`: Defocus value, specified in micrometers [µm].
+- `-r`, `--resolution`: Target resolution in Ångströms [Å].
+
+#### Optional Arguments:
+- `--verbose`                    : Enable verbose output.
+- `--json`                       : Structure output as JSON, default is YAML.
+- `--output-dir`                 : Save output and logs to this directory. If not provided, results are printed to stdout and logs to stderr.
+
+#### Fresnel Fringes Boxsize Equation
+$D_w = D_p + 2 \left(\frac{\lambda}{d}\right) \Delta F $
+
+Where:
+
+- `D_w`: is the box size in pixels
+- `D_p` is the particle diameter [Å]
+- `ΔF` is the defocus value [Å]
+- `λ` is the relativistic electron wavelength [Å]
+- `d` is the target resolution [Å]
+
+This formula is obtained from equation 4.10 in 
+- [2] Glaeser, R. M., Nogales, E., & Chiu, W. (2021). Single-particle Cryo-EM of biological macromolecules. IOP publishing.
+
+### 3.3 PLOT Mode
 This mode analyzes multiple microscope setups using a parameter file (`.yaml`). Useful for batch analysis across many parameter combinations and studying material.
 
 #### Usage
@@ -156,7 +198,8 @@ This mode produces the following plots and save them in `./boxsize_plot/<timesta
   Each curve represents a specific pixel size, showing how the required boxsize changes as the focus values changes.
 
 
-### Optional Flags
+### Optional Arguments
 Both modes support the following optional flag:
-- **`--quiet`, `-q`**:  
-  Suppresses verbose output for cleaner logs and minimal console messages.
+- `--verbose`                    : Enable verbose output.
+- `--json`                       : Structure output as JSON, default is YAML.
+- `--output-dir`                 : Save output and logs to this directory. If not provided, results are printed to stdout, logs to stderr, and files saved to `./boxsize_opt/<timestamp>`.
