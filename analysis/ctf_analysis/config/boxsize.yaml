@@ -7,8 +7,6 @@ voltage: 300 # accelerating voltage [kV]
 box_lower_bound: 450 # 450  # set to -1 for the lowest value from boxsizes
 box_upper_bound: -1 # set to -1 for the highest value from boxsizes
 
-output_folder: "./boxsize_plot"
-
 limiting_resolution: 15 # [Å] minimum resolution of interest
 
 ### advanced settings ###
