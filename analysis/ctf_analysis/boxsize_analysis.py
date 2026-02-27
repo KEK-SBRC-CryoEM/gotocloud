@@ -499,6 +499,8 @@ if __name__ == "__main__":
     ### output folder ###
     if args.mode.lower() == "opt" and not args.save_plots: # opt: print final value and save nothing
         output_folder = None
+    elif args.mode.lower() == "fresnel":
+        output_folder = args.output_dir
     else:
         output_folder = args.output_dir or f"boxsize_{args.mode.lower()}" 
     output_folder = utils.prepare_output_environment(output_folder)
