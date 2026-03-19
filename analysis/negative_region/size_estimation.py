@@ -14,7 +14,7 @@ logger = logging.getLogger("MRC SIZE ESTIMATION")
 
 # todo: merge with old size_estimation
 
-def estimate_particle_size(volume, threshold, kernel_size=3, kernel_spherical=True):
+def estimate_particle_size(volume, voxel_size, threshold, kernel_size=3, kernel_spherical=True):
     volume_processed = volume
 
     # guassian blurr
@@ -37,6 +37,7 @@ def estimate_particle_size(volume, threshold, kernel_size=3, kernel_spherical=Tr
 
     logger.info(f"Finding the enclosed sphere...")
     volume_processed = vutils.enclosing_sphere(volume_processed)
+    volume_processed["voxel_size"] = voxel_size
 
     return volume_processed
 
@@ -73,7 +74,7 @@ if __name__ == "__main__":
     volume   = vutils.load_mrc(args.volume)
 
     logger.info(f"Running size estimation...")
-    result = estimate_particle_size(volume["data"], threshold=args.threshold)
+    result = estimate_particle_size(volume["data"], volume["voxel_size"], threshold=args.threshold)
     
     # save mask
     if args.save_mask:
@@ -82,7 +83,7 @@ if __name__ == "__main__":
         logger.info(f"Saving mask to {fpath}")
         vutils.create_spherical_mask(
                 shape      = volume["data"].shape, 
-                voxel_size = volume["voxel_size"],
+                voxel_size = result["voxel_size"],
                 radius     = result["radius"],
                 center     = result["center"],
                 filename   = fpath
