@@ -30,7 +30,7 @@ def load_mrc(filename):
     data = {}
     with mrcfile.open(filename) as mrc:
         data["data"]       = mrc.data
-        data["voxel_size"] = mrc.voxel_size
+        data["voxel_size"] = mrc.voxel_size.tolist()
     return data
 
 def create_spherical_mask(shape, radius, voxel_size, center=None, filename="mask.mrc"):
