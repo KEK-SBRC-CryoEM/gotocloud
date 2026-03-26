@@ -305,7 +305,8 @@ def analysis_pipeline(volume, mask=None, threshold=0, mode="zero_crossing"):
     # 1. find the sphere enclosing the volume
     logger.info(f"Estimating volume size using {'MASK' if mask else 'VOLUME'}...")
 
-    sphere_positive = estimate_particle_size(volume    = mask["data"] if mask else volume["data"],
+    sphere_positive = estimate_particle_size(volume     = mask["data"] if mask else volume["data"],
+                                             voxel_size = mask["voxel_size"] if mask else volume["voxel_size"],
                                              threshold = 0            if mask else threshold, 
                                              kernel_size=3, kernel_spherical=True)
     logger.info(f"Estimated Positive sphere: \n{utils.handle_output(sphere_positive, show=False)}")
