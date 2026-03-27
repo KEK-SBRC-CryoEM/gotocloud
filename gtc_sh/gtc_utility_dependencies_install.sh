@@ -85,8 +85,8 @@ function gtc_dependency_virtualenv_create() {
             tar
         TMPDIR=$(mktemp -d)
         pushd "$TMPDIR" >/dev/null
-        wget https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && tar xf Python-3.12.12.tar.xz
-        pushd ./Python-3.12.12 >/dev/null && ./configure --enable-optimizations && make -j"$(nproc)" && sudo make altinstall && popd >/dev/null
+        wget https://www.python.org/ftp/python/3.12.13/Python-3.12.13.tar.xz && tar xf Python-3.12.13.tar.xz
+        pushd ./Python-3.12.13 >/dev/null && ./configure --enable-optimizations && make -j"$(nproc)" && sudo make altinstall && popd >/dev/null
         popd >/dev/null
         rm -rf "$TMPDIR"
     else
