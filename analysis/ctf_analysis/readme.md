@@ -141,7 +141,7 @@ python boxsize_analysis.py fresnel -p 200 -v 300 -d 1 -r 2
 python boxsize_analysis.py --verbose fresnel -p 200 -v 300 -d 1 -r 2
 ```
 
-Output: **minimum box size** (in pixels) required to capture Fresnel fringes.
+Output: **minimum box size** in real space required to capture Fresnel fringes.
 
 #### Required Arguments:
 - `-p`, `--particle_diameter`: Particle diameter in Ångstroms [Å].
