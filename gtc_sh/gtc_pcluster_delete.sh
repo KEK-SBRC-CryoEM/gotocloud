@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -29,21 +29,21 @@
 #
 # Usage:
 #   gtc_pcluster_delete.sh  [-i INSTANCE_ID]
-#   
+#
 # Arguments & Options:
 #   -i INSTANCE_ID     : AWS Parallel Cluster Instance ID. e.g. "-i 00". (default NONE)
-#   
+#
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
-#   $ gtc_pcluster_delete.sh 
+#   $ gtc_pcluster_delete.sh
 #   $ gtc_pcluster_delete.sh -i 00
-#   
+#
 << DEVELOPER_NOTES
 [*] 2010/07/20: Comment from AWS Miyamoto-san
 "lfs hsm_archive" command just queues an request of exporting and returns immediately
 Therefore, the actuall processing will run on backgroud.
-To make sure of the completion of the process, 
+To make sure of the completion of the process,
 it is necessary to check the exporting status using "lfs hsm_action"
 
 DEVELOPER_NOTES
@@ -80,9 +80,9 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello 
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
 
 usage_exit() {
-        echo "GoToCloud: Usage $0 [-i INSTANCE_ID]" 1>&2
-        echo "GoToCloud: Exiting(1)..."
-        exit 1
+    echo "GoToCloud: Usage $0 [-i INSTANCE_ID]" 1>&2
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 }
 
 # Check if the number of command line arguments is valid
@@ -139,9 +139,9 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AW
 echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is still running..."
 #pcluster status -nw ${GTC_INSTANCE_NAME} ||  {
 pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} > /dev/null || {
-        echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} does not exist already!"
-        echo "GoToCloud: Exiting(1)..."
-        exit 1
+    echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} does not exist already!"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 }
 echo "GoToCloud: OK! pcluster instance ${GTC_INSTANCE_NAME} is still running."
 
@@ -170,24 +170,24 @@ pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} -i $
 t0=`date +%s` # in seconds
 while :
 do
-        # Check if exporting (archiving) is completed.
-        # It is done when output becomes "0", 
-        GCT_EXIT_STATUS=`pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD_STATUS}"`
+    # Check if exporting (archiving) is completed.
+    # It is done when output becomes "0",
+    GCT_EXIT_STATUS=`pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD_STATUS}"`
+    echo "GoToCloud: ${GCT_EXIT_STATUS}"
+    if [ ${GCT_EXIT_STATUS} -eq 0 ]; then
+        echo "GoToCloud: Exporting (archiving) is completed."
+        break
+    fi
+
+    sleep ${GTC_STATUS_CHECK_INTERVAL}
+    t1=`date +%s` # in seconds
+    if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
+        echo "GoToCloud: [GCT_ERROR] GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
+        echo "GoToCloud: Last output of pcluster status command:"
         echo "GoToCloud: ${GCT_EXIT_STATUS}"
-        if [ ${GCT_EXIT_STATUS} -eq 0 ]; then
-                echo "GoToCloud: Exporting (archiving) is completed."
-                break
-        fi
-        
-        sleep ${GTC_STATUS_CHECK_INTERVAL} 
-        t1=`date +%s` # in seconds
-        if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
-                echo "GoToCloud: [GCT_ERROR] GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
-                echo "GoToCloud: Last output of pcluster status command:"
-                echo "GoToCloud: ${GCT_EXIT_STATUS}"
-                echo "GoToCloud: Exiting(1)..."
-                exit 1
-        fi
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
 done
 # GTC_DEBUG_COMMENTOUTS
 
@@ -204,29 +204,29 @@ pcluster delete-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_R
 t0=`date +%s` # in seconds
 while :
 do
-        # Check if deletion of pcluster instace is completed.
-        # It is done when pcluster status command returns error value (Non-zero value) with exit status.
-        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} | jq -r '.clusterStatus'`
-        # exit_status=$?
-        echo "GoToCloud: ${GCT_EXIT_STATUS}"
-        if [[ ${GCT_EXIT_STATUS} =~ .*null.* ]]; then
-                echo "GoToCloud: Deletion of pcluster instance ${GTC_INSTANCE_NAME} is completed."
-                break
-        elif [[ ${GCT_EXIT_STATUS} =~ .*DELETE_FAILED.* ]]; then
-                echo "GoToCloud: [GCT_ERROR] Deletion of pcluster instance ${GTC_INSTANCE_NAME} failed."
-                echo "GoToCloud: Exiting(1)..."
-                exit 1
-        fi
+    # Check if deletion of pcluster instace is completed.
+    # It is done when pcluster status command returns error value (Non-zero value) with exit status.
+    GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} | jq -r '.clusterStatus'`
+    # exit_status=$?
+    echo "GoToCloud: ${GCT_EXIT_STATUS}"
+    if [[ ${GCT_EXIT_STATUS} =~ .*null.* ]]; then
+        echo "GoToCloud: Deletion of pcluster instance ${GTC_INSTANCE_NAME} is completed."
+        break
+    elif [[ ${GCT_EXIT_STATUS} =~ .*DELETE_FAILED.* ]]; then
+        echo "GoToCloud: [GCT_ERROR] Deletion of pcluster instance ${GTC_INSTANCE_NAME} failed."
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
 
-        sleep ${GTC_STATUS_CHECK_INTERVAL} 
-        t1=`date +%s` # in seconds
-        if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
-                echo "GoToCloud: [GCT_ERROR] GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
-                echo "GoToCloud: Last output of pcluster status command:"
-                echo "GoToCloud: ${GCT_EXIT_STATUS}"
-                echo "GoToCloud: Exiting(1)..."
-                exit 1
-        fi
+    sleep ${GTC_STATUS_CHECK_INTERVAL}
+    t1=`date +%s` # in seconds
+    if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
+        echo "GoToCloud: [GCT_ERROR] GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
+        echo "GoToCloud: Last output of pcluster status command:"
+        echo "GoToCloud: ${GCT_EXIT_STATUS}"
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
 done
 # GTC_DEBUG_COMMENTOUTS
 

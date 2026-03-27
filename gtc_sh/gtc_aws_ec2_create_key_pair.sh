@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -29,16 +29,16 @@
 #
 # Usage:
 #   gtc_aws_ec2_create_key_pair.sh
-#   
+#
 # Arguments & Options:
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
 #   $ gtc_aws_ec2_create_key_pair.sh
-# 
+#
 # Debug Script:
 #   gtc_aws_ec2_create_key_pair_debug.sh
-# 
+#
 
 usage_exit() {
         echo "GoToCloud: Usage $0" 1>&2
@@ -98,7 +98,7 @@ aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} --region ${GTC_AWS_REGION}
     fi
 } || {
     if [ -e ${GTC_KEY_FILE} ]; then
-        echo "GoToCloud: Key file ${GTC_KEY_FILE} exists already in your environment, but Key-pair ${GTC_KEY_NAME} dosen't exist. Failed to create key-pair." 
+        echo "GoToCloud: Key file ${GTC_KEY_FILE} exists already in your environment, but Key-pair ${GTC_KEY_NAME} dosen't exist. Failed to create key-pair."
         exit 1
     fi
 }

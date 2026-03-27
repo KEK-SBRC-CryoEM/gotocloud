@@ -69,7 +69,7 @@ imds_get() {
 GTC_SET_PROJECT_NAME=$(imds_get "/meta-data/tags/instance/ProjectId")
 GTC_SH_VERSION=""
 GTC_PCLUSTER_VER="fix"
-GTC_SHARED_S3_URL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com"
+GTC_SHARED_S3_URL="https://kek-gtc-master-02-s3-bucket.s3.ap-northeast-1.amazonaws.com"
 
 # Parse command line arguments
 while getopts p:v:o:-:h OPT

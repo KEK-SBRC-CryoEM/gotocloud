@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -29,32 +29,32 @@
 #
 # Usage:
 #   gtc_setup_cloud9_environment.sh
-#   
+#
 # Arguments & Options:
 #   -p                 : Project name (Default value is cloud9 name)
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
 #   $ /efs/em/gtc_sh_ver00/gtc_setup_cloud9_environment.sh
-# 
+#
 # Debug Script:
 #   gtc_setup_cloud9_environment_debug.sh
-# 
+#
 # Developer Notes:
 #   [2021/0725 Toshio Moriya]
 #   Considered following specification but rejected.
 #   Usage:
 #     gtc_setup_env_vars_on_cloud9.sh  -s GTC_SH_DIR  -d GTC_DEBUG_MODE
-#   
+#
 #   Arguments & Options:
 #     -s GTC_SH_DIR      : GoToCloud shell script direcctory path. e.g. "/efs/em/gtc_sh_ver00/". (default "/efs/em/gtc_sh")
 #     -d GTC_DEBUG_MODE  : GoToCloud debug mode. 0 (off) or 1 (on)  (default 0 (off))
-#     
+#
 #     -h                 : Help option displays usage
 
-if [ ! -z $GTC_SYSTEM_DEBUG_MODE ]; then 
+if [ ! -z $GTC_SYSTEM_DEBUG_MODE ]; then
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_SYSTEM_DEBUG_MODE is set to ${GTC_SYSTEM_DEBUG_MODE} already!"; fi
-else 
+else
     # GTC_SYSTEM_DEBUG_MODE is not set yet!
     export GTC_SYSTEM_DEBUG_MODE=0
 fi
@@ -111,8 +111,8 @@ source ${GTC_SH_DIR}/gtc_utility_global_varaibles.sh
 # Then call gtc_utility_setup_global_variables function
 gtc_utility_setup_global_variables
 
-if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then 
-# 
+if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then
+#
     echo "GoToCloud: [GTC_DEBUG] "
     echo "GoToCloud: [GTC_DEBUG] At this point, get functions in gtc_utility_global_varaibles.sh should be usable within file scope of this script file"
     echo "GoToCloud: [GTC_DEBUG] gtc_utility_get_sh_dir = $(gtc_utility_get_sh_dir)"
@@ -149,8 +149,8 @@ fi
 echo "GoToCloud: Appending GoToCloud system environment variable settings to ${GTC_BASHRC}..."
 GTC_GLOBAL_VARIABLES_FILE=$(gtc_utility_get_global_varaibles_file)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_GLOBAL_VARIABLES_FILE=${GTC_GLOBAL_VARIABLES_FILE}"; fi
-# cat > ${GTC_BASHRC} <<'EOS' suppresses varaible replacements 
-# cat > ${GTC_BASHRC} <<EOS allows varaible replacements 
+# cat > ${GTC_BASHRC} <<'EOS' suppresses varaible replacements
+# cat > ${GTC_BASHRC} <<EOS allows varaible replacements
 cat >> ${GTC_BASHRC} <<EOS
 
 #  GoToCloud system environment variables

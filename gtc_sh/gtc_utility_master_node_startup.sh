@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -29,18 +29,18 @@
 #
 # Usage:
 #   gtc_utility_master_node_startup.sh [-d]
-#   
+#
 # Arguments & Options:
 #   -d                 : Run with GoToCloud debug mode
-#   
+#
 #   -h                 : Help option displays usage
-#   
+#
 # Example:
 #   $ /efs/em/gtc_sh_ver00/gtc_utility_master_node_startup.sh -d
-#   
+#
 # Debug Script:
 #   gtc_utility_master_node_startup_debug.sh
-#  
+#
 usage_exit() {
         echo "GoToCloud: Usage $0 [-d]" 1>&2
         echo "GoToCloud: Exiting(1)..."
@@ -153,7 +153,7 @@ sed -i "s@XXX_GTC_SH_DIR_XXX@${GTC_SH_DIR}@g" ${GTC_GLOBAL_VARIABLES_FILE}
 # XXX_GTC_DEBUG_MODE_XXX -> ${GTC_DEBUG_MODE}
 sed -i "s@XXX_GTC_DEBUG_MODE_XXX@${GTC_DEBUG_MODE}@g" ${GTC_GLOBAL_VARIABLES_FILE}
 
-# Set file permission 
+# Set file permission
 chmod 775 ${GTC_GLOBAL_VARIABLES_FILE}
 
 # echo "GoToCloud: Activating pcluster head node system environment variable settings for GoToCloud global variables defined in ${GTC_GLOBAL_VARIABLES_FILE}..."
@@ -174,12 +174,12 @@ fi
 # --------------------
 # Store all to RELION environment settings file
 echo "GoToCloud: Creating pcluster head node system environment variable settings for RELION as ${GTC_RELION_SETTINGS_FILE}..."
-# cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS' suppresses varaible replacements 
-# cat > ${GTC_RELION_SETTINGS_FILE} <<EOS allows varaible replacements 
+# cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS' suppresses varaible replacements
+# cat > ${GTC_RELION_SETTINGS_FILE} <<EOS allows varaible replacements
 cat > ${GTC_RELION_SETTINGS_FILE} <<'EOS'
 #!/bin/sh
 
-# load relion 
+# load relion
 source /etc/profile.d/modules.sh
 module load relion
 module load schemes-editing
@@ -193,7 +193,7 @@ export RELION_QSUB_EXTRA2="Number of nodes"
 export RELION_QSUB_EXTRA2_DEFAULT=1
 EOS
 
-# Set file permission 
+# Set file permission
 chmod 775 ${GTC_RELION_SETTINGS_FILE}
 
 # echo "GoToCloud: Activating pcluster head node system environment variable settings for RELION defined in ${GTC_RELION_SETTINGS_FILE}..."
@@ -214,8 +214,8 @@ fi
 # --------------------
 # Store all to UCFS Chimera environment settings file
 echo "GoToCloud: Creating pcluster head node system environment variable settings for UCFS Chimera settings as ${GTC_CHIMERA_SETTINGS_FILE}..."
-# cat > ${GTC_CHIMERA_SETTINGS_FILE} <<'EOS' suppresses varaible replacements 
-# cat > ${GTC_CHIMERA_SETTINGS_FILE} <<EOS allows varaible replacements 
+# cat > ${GTC_CHIMERA_SETTINGS_FILE} <<'EOS' suppresses varaible replacements
+# cat > ${GTC_CHIMERA_SETTINGS_FILE} <<EOS allows varaible replacements
 cat > ${GTC_CHIMERA_SETTINGS_FILE} <<'EOS'
 #!/bin/sh
 
@@ -224,7 +224,7 @@ source /etc/profile.d/modules.sh
 module load chimera
 EOS
 
-# Set file permission 
+# Set file permission
 chmod 775 ${GTC_CHIMERA_SETTINGS_FILE}
 
 # echo "GoToCloud: Activating pcluster head node system environment variable settings for UCFS Chimera defined in ${GTC_CHIMERA_SETTINGS_FILE}..."
@@ -244,8 +244,8 @@ else
 fi
 
 echo "GoToCloud: Appending GoToCloud system environment variable settings to ${GTC_BASHRC}..."
-# cat > ${GTC_BASHRC} <<'EOS' suppresses varaible replacements 
-# cat > ${GTC_BASHRC} <<EOS allows varaible replacements 
+# cat > ${GTC_BASHRC} <<'EOS' suppresses varaible replacements
+# cat > ${GTC_BASHRC} <<EOS allows varaible replacements
 cat >> ${GTC_BASHRC} <<EOS
 
 # ------------------

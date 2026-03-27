@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -29,21 +29,21 @@
 #
 # Usage:
 #   gtc_pcluster_create.sh  [-i INSTANCE_ID]
-#   
+#
 # Arguments & Options:
 #   -i INSTANCE_ID     : AWS Parallel Cluster Instance ID. e.g. "-i 00". (default NONE)
-#   
+#
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
-#   $ gtc_pcluster_create.sh 
+#   $ gtc_pcluster_create.sh
 #   $ gtc_pcluster_create.sh -i 00
-#   
+#
 << DEBUG_COMMANDS
 [Instance without ID]
 export GTC_SYSTEM_DEBUG_MODE=1
-gtc_config_create.sh 
-gtc_pcluster_create.sh 
+gtc_config_create.sh
+gtc_pcluster_create.sh
 pcluster list
 pcluster status kek-moriya-protein210720
 pcluster ssh kek-moriya-protein210720 -i ~/environment/kek-moriya-protein210720.pem
@@ -105,9 +105,9 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello 
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
 
 usage_exit() {
-        echo "GoToCloud: Usage $0 [-i INSTANCE_ID]" 1>&2
-        echo "GoToCloud: Exiting(1)..."
-        exit 1
+    echo "GoToCloud: Usage $0 [-i INSTANCE_ID]" 1>&2
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 }
 
 # Check if the number of command line arguments is valid
@@ -162,29 +162,28 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PC
 GTC_INSTANCE_NAME=${GTC_PCLUSTER_NAME}${GTC_INSATANCE_SUFFIX}
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_INSTANCE_NAME=${GTC_INSTANCE_NAME}"; fi
 
-# Get AWS region 
+# Get AWS region
 GTC_AWS_REGION=$(gtc_utility_get_aws_region)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_AWS_REGION=${GTC_AWS_REGION}"; fi
 
 # << GTC_DEBUG_COMMENTOUTS
 echo "GoToCloud: Making sure that pcluster instance ${GTC_INSTANCE_NAME} is not running..."
-# pcluster status -nw ${GTC_INSTANCE_NAME} &&  { 
-pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} > /dev/null &&  { 
-        echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} is aleady running!"
-        echo "GoToCloud: Exiting(1)..."
-        exit 1
+# pcluster status -nw ${GTC_INSTANCE_NAME} &&  {
+    pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} > /dev/null &&  {
+    echo "GoToCloud: [GCT_ERROR] Pcluster instance ${GTC_INSTANCE_NAME} is aleady running!"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 }
-
 
 echo "GoToCloud: OK! Pcluster instance ${GTC_INSTANCE_NAME} is not running yet!"
 
 GTC_CONFIG_INSTANCE=${HOME}/.parallelcluster/config${GTC_INSATANCE_SUFFIX}.yaml
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CONFIG_INSTANCE=${GTC_CONFIG_INSTANCE}"; fi
 if [ ! -e ${GTC_CONFIG_INSTANCE} ]; then
-        echo "GoToCloud: [GCT_ERROR] Config ${GTC_CONFIG_INSTANCE} is not found..."
-        echo "GoToCloud: Make sure instance ID is correct and rerun!"
-        echo "GoToCloud: Exiting(1)..."
-        exit 1
+    echo "GoToCloud: [GCT_ERROR] Config ${GTC_CONFIG_INSTANCE} is not found..."
+    echo "GoToCloud: Make sure instance ID is correct and rerun!"
+    echo "GoToCloud: Exiting(1)..."
+    exit 1
 fi
 
 GTC_STATUS_CHECK_INTERVAL=60 # in seconds
@@ -200,29 +199,29 @@ pcluster create-cluster --cluster-name ${GTC_INSTANCE_NAME} --cluster-configurat
 t0=`date +%s` # in seconds
 while :
 do
-        # Check if creation of pcluster instace is completed.
-        # It is done when pcluster status command outputs "CREATE_COMPLETE".
-        # GCT_EXIT_STATUS=`pcluster status -nw ${GTC_INSTANCE_NAME}`
-        GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} | jq -r '.clusterStatus'`
-        echo "GoToCloud: ${GCT_EXIT_STATUS}"
-        if [[ ${GCT_EXIT_STATUS} =~ .*CREATE_COMPLETE.* ]]; then
-                echo "GoToCloud: Creation of pcluster instance ${GTC_INSTANCE_NAME} is completed."
-                break
-        elif [[ ${GCT_EXIT_STATUS} =~ .*CREATE_FAILED.* ]]; then
-                echo "GoToCloud: [GCT_ERROR] Creation of pcluster instance ${GTC_INSTANCE_NAME} failed."
-                echo "GoToCloud: Exiting(1)..."
-                exit 1
-        fi
+    # Check if creation of pcluster instace is completed.
+    # It is done when pcluster status command outputs "CREATE_COMPLETE".
+    # GCT_EXIT_STATUS=`pcluster status -nw ${GTC_INSTANCE_NAME}`
+    GCT_EXIT_STATUS=`pcluster describe-cluster --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} | jq -r '.clusterStatus'`
+    echo "GoToCloud: ${GCT_EXIT_STATUS}"
+    if [[ ${GCT_EXIT_STATUS} =~ .*CREATE_COMPLETE.* ]]; then
+        echo "GoToCloud: Creation of pcluster instance ${GTC_INSTANCE_NAME} is completed."
+        break
+    elif [[ ${GCT_EXIT_STATUS} =~ .*CREATE_FAILED.* ]]; then
+        echo "GoToCloud: [GCT_ERROR] Creation of pcluster instance ${GTC_INSTANCE_NAME} failed."
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
 
-        sleep ${GTC_STATUS_CHECK_INTERVAL} 
-        t1=`date +%s` # in seconds
-        if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
-                echo "GoToCloud: [GCT_ERROR] GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
-                echo "GoToCloud: Last output of pcluster status command:"
-                echo "GoToCloud: ${GCT_EXIT_STATUS}"
-                echo "GoToCloud: Exiting(1)..."
-                exit 1
-        fi
+    sleep ${GTC_STATUS_CHECK_INTERVAL}
+    t1=`date +%s` # in seconds
+    if [ $((t1-t0)) -gt ${GTC_TIME_OUT} ]; then
+        echo "GoToCloud: [GCT_ERROR] GTC_TIME_OUT ${GTC_TIME_OUT} seconds"
+        echo "GoToCloud: Last output of pcluster status command:"
+        echo "GoToCloud: ${GCT_EXIT_STATUS}"
+        echo "GoToCloud: Exiting(1)..."
+        exit 1
+    fi
 done
 # GTC_DEBUG_COMMENTOUTS
 
@@ -231,7 +230,7 @@ done
 GTC_KEY_FILE=$(gtc_utility_get_key_file)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_FILE=${GTC_KEY_FILE}"; fi
 
-# Need GoToCloud shell script direcctory path for this script 
+# Need GoToCloud shell script direcctory path for this script
 # since this command will be executed in master node!
 GTC_CMD="${GTC_SH_DIR}/gtc_utility_master_node_startup.sh"
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then
