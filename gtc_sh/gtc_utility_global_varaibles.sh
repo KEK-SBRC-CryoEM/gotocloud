@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -31,10 +31,10 @@
 #   $ source gtc_utility_global_varaibles.sh
 #   OR
 #   $ . gtc_utility_global_varaibles.sh
-#   
+#
 #   Then, first call
 #   $ gtc_utility_setup_global_variables
-#   
+#
 #   Then, you can use the following functions from any GoToCloud scripts
 #   $ gtc_utility_get_sh_dir
 #   $ gtc_utility_get_tag_key_iamuser
@@ -67,10 +67,10 @@
 #   $ gtc_utility_get_virtualenv_name
 #   $ gtc_utility_get_global_varaibles_file
 #   $ gtc_utility_get_debug_mode
-#  
+#
 # Debug Script:
-#   gtc_utility_global_varaibles_debug_setup.sh 
-# 
+#   gtc_utility_global_varaibles_debug_setup.sh
+#
 
 # Set GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
 function gtc_utility_setup_global_variables() {
@@ -98,19 +98,19 @@ function gtc_utility_setup_global_variables() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_account_identity_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
-    
+
         # Get tags values from this Cloud9 instance
         # local GTC_TAGS=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].Tags[]')
         local GTC_AWS_INFO=$(aws sts get-caller-identity)
         # echo "GoToCloud: [GTC_DEBUG] GTC_TAGS=${GTC_TAGS}"
-    
+
         # Extract values of keys
         GTC_IAM_USEAR_NAME=`echo ${GTC_AWS_INFO} | jq -r '.Arn' | awk '{sub(".*./", "");print $0;}'`
         GTC_ACCOUNT_ID=`echo ${GTC_AWS_INFO} | jq -r '.Account'`
 
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_IAM_USEAR_NAME=${GTC_IAM_USEAR_NAME}"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_ACCOUNT_ID=${GTC_ACCOUNT_ID}"; fi
-  
+
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_account_identity_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
@@ -120,27 +120,33 @@ function gtc_utility_setup_global_variables() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_project_name_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
-    
+
         # Get tags values from this Cloud9 instance
-        local GTC_TAGS=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].Tags[]')
+        local TOKEN="$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')"
+        local INSTANCE_ID="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" "http://169.254.169.254/latest/meta-data/instance-id" | tr -d '\r\n')"
+        local GTC_TAGS=$(aws ec2 describe-instances --instance-ids "${INSTANCE_ID}" | jq -r '.Reservations[].Instances[].Tags[]')
+        # local GTC_TAGS=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].Tags[]')
         GTC_CLOUD9_ENV=`echo ${GTC_TAGS} | jq -r 'select(.Key == "aws:cloud9:environment").Value'`
         GTC_CLOUD9_NAME=`echo ${GTC_TAGS} | jq -r 'select(.Key == "Name").Value' | awk '{sub("-'${GTC_CLOUD9_ENV}'", "");print $0;}' | awk '{sub("aws-cloud9-", "");print $0;}'`
 
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_CLOUD9_ENV=${GTC_CLOUD9_ENV}"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_CLOUD9_NAME=${GTC_CLOUD9_NAME}"; fi
-  
+
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_project_name_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     }
 
-        function gtc_utility_network_info_get_values() {
+    function gtc_utility_network_info_get_values() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Hello gtc_utility_network_info_get_values!"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
-    
+
         # Get network info from this Cloud9 instance
-        local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
+        local TOKEN="$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')"
+        local INSTANCE_ID="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" "http://169.254.169.254/latest/meta-data/instance-id" | tr -d '\r\n')"
+        local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --instance-ids "${INSTANCE_ID}" | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
+        # local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
         local GTC_PEERING_INFO=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]')
         GTC_VPC_ID=`echo ${GTC_CLOUD9_NETWORK_INFO} | jq -r '.VpcId'`
         GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
@@ -168,7 +174,7 @@ function gtc_utility_setup_global_variables() {
 
     # Get GoToCloud meta info as global variables within file scope
     # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
-    GTC_AWS_REGION=$(aws configure get region)
+    GTC_AWS_REGION=$(gtc_utility_get_aws_region)
     gtc_utility_account_identity_get_values
     gtc_utility_project_name_get_values
     gtc_utility_network_info_get_values
@@ -221,10 +227,10 @@ function gtc_utility_setup_global_variables() {
         GTC_DEBUG_MODE=${GTC_SYSTEM_DEBUG_MODE}
     fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_DEBUG_MODE=${GTC_DEBUG_MODE}"; fi
-    
+
     # --------------------
     # Set name of virtual environment for parallelcluster
-    GTC_VIRTUALENV_NAME="gtc-parallelcluster" 
+    GTC_VIRTUALENV_NAME="gtc-parallelcluster"
     # --------------------
     # Set GoToCloud application directory path on cloud9 and file path of GoToCloud environment settings file for cloud9 as a systemwise environment constant
     GTC_APPLICATION_DIR=${HOME}/.gtc
@@ -235,11 +241,11 @@ function gtc_utility_setup_global_variables() {
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_APPLICATION_DIR_BACKUP=${GTC_APPLICATION_DIR_BACKUP}"; fi
         echo "GoToCloud: Making a backup of previous GoToCloud application ${GTC_APPLICATION_DIR} as ${GTC_APPLICATION_DIR_BACKUP}..."
         mv ${GTC_APPLICATION_DIR} ${GTC_APPLICATION_DIR_BACKUP}
-        
+
     fi
     echo "GoToCloud: Creating GoToCloud application directory ${GTC_APPLICATION_DIR}..."
     mkdir -p ${GTC_APPLICATION_DIR}
-    
+
     GTC_GLOBAL_VARIABLES_FILE=${GTC_APPLICATION_DIR}/global_variables.sh
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_GLOBAL_VARIABLES_FILE=${GTC_GLOBAL_VARIABLES_FILE}"; fi
     if [ -e ${GTC_GLOBAL_VARIABLES_FILE} ]; then
@@ -254,10 +260,9 @@ function gtc_utility_setup_global_variables() {
 
     # --------------------
     # Store all to GoToCloud environment settings file
-    
     echo "GoToCloud: Creating Cloud9 system environment variable settings for GoToCloud global variables as ${GTC_GLOBAL_VARIABLES_FILE}..."
-    # cat > ${GTC_GLOBAL_VARIABLES_FILE} <<'EOS' suppresses varaible replacements 
-    # cat > ${GTC_GLOBAL_VARIABLES_FILE} <<EOS allows varaible replacements 
+    # cat > ${GTC_GLOBAL_VARIABLES_FILE} <<'EOS' suppresses varaible replacements
+    # cat > ${GTC_GLOBAL_VARIABLES_FILE} <<EOS allows varaible replacements
     cat > ${GTC_GLOBAL_VARIABLES_FILE} <<'EOS'
 #!/bin/sh
 
@@ -323,7 +328,7 @@ EOS
     # XXX_GTC_PROJECT_NAME_XXX -> ${GTC_PROJECT_NAME}
     sed -i "s@XXX_GTC_PROJECT_NAME_XXX@${GTC_PROJECT_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_ACCOUNT_ID_XXX -> ${GTC_ACCOUNT_ID}
-    sed -i "s@XXX_GTC_ACCOUNT_ID_XXX@${GTC_ACCOUNT_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE} 
+    sed -i "s@XXX_GTC_ACCOUNT_ID_XXX@${GTC_ACCOUNT_ID}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_PCLUSTER_NAME_XXX -> ${GTC_PCLUSTER_NAME}
     sed -i "s@XXX_GTC_PCLUSTER_NAME_XXX@${GTC_PCLUSTER_NAME}@g" ${GTC_GLOBAL_VARIABLES_FILE}
     # XXX_GTC_S3_NAME_XXX -> ${GTC_S3_NAME}
@@ -361,14 +366,14 @@ EOS
     # XXX_GTC_DEBUG_MODE_XXX -> ${GTC_DEBUG_MODE}
     sed -i "s@XXX_GTC_DEBUG_MODE_XXX@${GTC_DEBUG_MODE}@g" ${GTC_GLOBAL_VARIABLES_FILE}
 
-    # Set file permission 
+    # Set file permission
     chmod 775 ${GTC_GLOBAL_VARIABLES_FILE}
-    
+
     echo "GoToCloud: Activating Cloud9 system environment variable settings for GoToCloud global variables defined in ${GTC_GLOBAL_VARIABLES_FILE}..."
     echo "GoToCloud: Note that this activation is effective only for caller of this script file."
     source ${GTC_GLOBAL_VARIABLES_FILE}
     #. ${GTC_GLOBAL_VARIABLES_FILE}
-    
+
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] Good-bye gtc_utility_setup_global_variables!"; fi
     if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] --------------------------------------------------"; fi
@@ -377,7 +382,7 @@ EOS
 # -----------------------
 # Get functions
 # -----------------------
-# These get functions encapsulates the implementation details of 
+# These get functions encapsulates the implementation details of
 # where these GTC system values are stored.
 
 function gtc_utility_get_sh_dir() {

@@ -241,7 +241,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CM
 
 echo "GoToCloud: Executing head-node startup script..."
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no \"${GTC_CMD}\""; fi
-pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD}"
+pcluster ssh --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD}"
 # pcluster ssh ${GTC_INSTANCE_NAME} -i ${GTC_KEY_FILE} -oStrictHostKeyChecking=no "${GTC_CMD}"
 # GTC_DEBUG_COMMENTOUTS
 

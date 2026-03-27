@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -59,7 +59,14 @@ if [[ $# -gt 6 ]]; then
     usage_exit
 fi
 
-GTC_SET_PROJECT_NAME="cloud9-name"
+API_TOKEN=$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')
+imds_get() {
+    local path="$1"
+    curl -fsS -H "X-aws-ec2-metadata-token: ${API_TOKEN}" "http://169.254.169.254/latest${path}"
+}
+
+# ProjectId
+GTC_SET_PROJECT_NAME=$(imds_get "/meta-data/tags/instance/ProjectId")
 GTC_SH_VERSION=""
 GTC_PCLUSTER_VER="fix"
 GTC_SHARED_S3_URL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com"
@@ -90,31 +97,57 @@ do
     esac
 done
 echo "GoToCloud: Run setup with following settings..."
-echo "GoToCloud: Project name         : ${GTC_SET_PROJECT_NAME}"
+echo "GoToCloud: Project ID: ${GTC_SET_PROJECT_NAME}"
 
 
 #Installe jq
 jq -V &>/dev/null || {
     echo "GoToCloud: Installing jq ..."
-    sudo yum -y install jq
+    sudo dnf -y install jq
     }
 GTC_JQ_INST_STAT=$?
 
 #Mount the file system /efs
-echo "GoToCloud: mounting the file system /efs ..." 
+echo "GoToCloud: mounting the file system /efs ..."
 mountpoint -q /efs && {
     df -h
     echo "GoToCloud: /efs is already mounted."
     #echo "GoToCloud: Done"
 } || {
-    sudo yum -y install amazon-efs-utils
+    sudo dnf -y install amazon-efs-utils
     sudo mkdir /efs
-    GTC_AWS_REGION=$(aws configure get region)
-    GTC_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
-    GTC_VPC_ID=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[].VpcId')
-    GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
-    GTC_ACCEPTER_VPC_ID=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]' | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.VpcId')
-    GTC_ACCEPTER_VPC_CIDR=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]' | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.CidrBlock')
+    GTC_AWS_REGION="$(imds_get '/dynamic/instance-identity/document' | jq -r '.region')"
+    GTC_ACCOUNT_ID="$(imds_get '/dynamic/instance-identity/document' | jq -r '.accountId')"
+    MAC="$(imds_get '/meta-data/network/interfaces/macs/' | head -n 1 | tr -d '/')"
+    GTC_VPC_ID="$(imds_get "/meta-data/network/interfaces/macs/${MAC}/vpc-id" | tr -d '\r\n')"
+    GTC_VPC_CIDR="$(aws ec2 describe-vpcs --region "${GTC_AWS_REGION}" --vpc-ids "${GTC_VPC_ID}" --query 'Vpcs[0].CidrBlock' --output text)"
+    GTC_ACCEPTER_VPC_ID="$(
+    aws ec2 describe-vpc-peering-connections --region "${GTC_AWS_REGION}" \
+    | jq -r --arg vpc "${GTC_VPC_ID}" '
+        .VpcPeeringConnections[]
+        | select(.Status.Code == "active")
+        | if .RequesterVpcInfo.VpcId == $vpc then .AccepterVpcInfo.VpcId else empty end
+        ' \
+    | head -n 1
+    )"
+    GTC_ACCEPTER_VPC_CIDR="$(
+    aws ec2 describe-vpc-peering-connections --region "${GTC_AWS_REGION}" \
+    | jq -r --arg vpc "${GTC_VPC_ID}" '
+        .VpcPeeringConnections[]
+        | select(.Status.Code == "active")
+        | if .RequesterVpcInfo.VpcId == $vpc then .AccepterVpcInfo.CidrBlock else empty end
+        ' \
+    | head -n 1
+    )"
+
+    if [[ -z "${GTC_AWS_REGION}" || -z "${GTC_VPC_ID}" ]]; then
+    echo "ERROR: failed to get region or vpc-id via IMDS" >&2
+    exit 1
+    fi
+    if [[ -z "${GTC_ACCEPTER_VPC_ID}" ]]; then
+    echo "ERROR: no active VPC peering found for VPC=${GTC_VPC_ID} in region=${GTC_AWS_REGION}" >&2
+    exit 1
+    fi
 
     wget ${GTC_SHARED_S3_URL}/gtc_efs_setting.json
     GTC_EFS_SETTING=$(echo "$(pwd)/gtc_efs_setting.json")
@@ -127,8 +160,25 @@ mountpoint -q /efs && {
         exit 1
     fi
 
-    GTC_EFS_FILESYSTEM_ID=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").FileSystemId')
-    GTC_EFS_MOUNT_TARGET_IP=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").IpAddress')
+    GTC_EFS_FILESYSTEM_ID=$(
+    jq -r --arg vpc "$GTC_ACCEPTER_VPC_ID" \
+        '.EfsSettings[] | select(.VpcId == $vpc) | .FileSystemId // empty' \
+        "$GTC_EFS_SETTING" | head -n 1
+    )
+    GTC_EFS_MOUNT_TARGET_IP=$(
+    jq -r --arg vpc "$GTC_ACCEPTER_VPC_ID" \
+        '.EfsSettings[] | select(.VpcId == $vpc) | .IpAddress // empty' \
+        "$GTC_EFS_SETTING" | head -n 1
+    )
+
+    if [[ -z "$GTC_ACCEPTER_VPC_ID" || -z "$GTC_EFS_FILESYSTEM_ID" || -z "$GTC_EFS_MOUNT_TARGET_IP" ]]; then
+        echo "ERROR: missing EFS values"
+        echo "  GTC_ACCEPTER_VPC_ID=[$GTC_ACCEPTER_VPC_ID]"
+        echo "  GTC_EFS_FILESYSTEM_ID=[$GTC_EFS_FILESYSTEM_ID]"
+        echo "  GTC_EFS_MOUNT_TARGET_IP=[$GTC_EFS_MOUNT_TARGET_IP]"
+        exit 1
+    fi
+
     echo ''${GTC_EFS_FILESYSTEM_ID}':/ /efs efs _netdev,noresvport,tls,mounttargetip='${GTC_EFS_MOUNT_TARGET_IP}' 1 1' | sudo tee -a /etc/fstab
     sudo mount -a || {
         echo "GoToCloud:----------------------------------------------------------------------------------------"
@@ -140,7 +190,7 @@ mountpoint -q /efs && {
     df -h
     echo "GoToCloud: /efs is mounted."
     #echo "GoToCloud: Done"
-} 
+}
 
 #Setup SH directory path
 GTC_SET_SH_DIR="/efs/em/gtc_sh"${GTC_SH_VERSION}
@@ -153,15 +203,15 @@ if [[ ! -e  ${GTC_SET_SH_DIR} ]]; then
 	exit 1
 fi
 
-#Setup Cloud9 environment 
+#Setup Cloud9 environment
 ${GTC_SET_SH_DIR}/gtc_setup_cloud9_environment.sh -p ${GTC_SET_PROJECT_NAME}
 GTC_CLOUD9_SETUP_STAT=$?
 
 source /home/ec2-user/.gtc/global_variables.sh
-source gtc_utility_global_varaibles.sh 
+source gtc_utility_global_varaibles.sh
 GTC_VIRTUALENV_NAME=$(gtc_utility_get_virtualenv_name)
 
-source ${GTC_SET_SH_DIR}/gtc_utility_dependencies_install.sh 
+source ${GTC_SET_SH_DIR}/gtc_utility_dependencies_install.sh
 
 gtc_dependency_virtualenv_create ${GTC_VIRTUALENV_NAME}
 
@@ -230,12 +280,12 @@ fi
     echo "GoToCloud: Mount /efs         : Success"
 if [[ ${GTC_JQ_INST_STAT} == 0 ]]; then
     echo "GoToCloud: Install jq         : Success";
-else 
+else
     echo "GoToCloud: Install jq         : Fail";
-fi   
+fi
 if [[ ${GTC_PCLUSER_INST_STAT} == 0 ]]; then
     echo "GoToCloud: Install pcluster   : Success";
-else 
+else
     echo "GoToCloud: Install pcluster   : Fail";
 fi
 if [[ ${GTC_NODE_INST_STAT} == 0 ]]; then
@@ -255,18 +305,17 @@ else
 fi
 if [[ ${GTC_S3_CREATE_STAT} == 0 ]]; then
     echo "GoToCloud: Create s3 bucket   : Success";
-else 
+else
     echo "GoToCloud: Create s3 bucket   : Fail. Project name "${GTC_PROJECT_NAME}" may be invalid or S3 bucket "${GTC_S3_NAME}" exists already. Please set other project name.";  
 fi
 if [[ ${GTC_KEY_CREATE_STAT} == 0 ]]; then
     echo "GoToCloud: Create key-pair    : Success";
 else
-    echo "GoToCloud: Create key-pair    : Fail. Key-pair "${GTC_KEY_NAME}" exists already. Please set other project name."; 
+    echo "GoToCloud: Create key-pair    : Fail. Key-pair "${GTC_KEY_NAME}" exists already. Please set other project name.";
 fi
 if [[ ${GTC_CONFIG_CREATE_STAT} == 0 ]]; then
     echo "GoToCloud: Create config file : Success";
-    
-else 
+else
     echo "GoToCloud: Create config file : Fail";
 fi
 echo "GoToCloud: ------------------------------------------------------------------------------------"

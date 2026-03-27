@@ -2,14 +2,14 @@
 #
 # ***************************************************************************
 #
-# Copyright (c) 2021-2024 Structural Biology Research Center, 
-#                         Institute of Materials Structure Science, 
+# Copyright (c) 2021-2024 Structural Biology Research Center,
+#                         Institute of Materials Structure Science,
 #                         High Energy Accelerator Research Organization (KEK)
 #
 #
 # Authors:   Toshio Moriya (toshio.moriya@kek.jp)
 #            Misato Yamamoto (misatoy@post.kek.jp)
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -17,7 +17,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -29,26 +29,26 @@
 #
 # Usage:
 #  gtc_dependencies_install.sh
-#   
+#
 # Arguments & Options:
 #   -h                 : Help option displays usage
-#   
+#
 # Examples:
 #   $ gtc_dependencies_install.sh
-#   
+#
 # Debug Script:
-#   
-# 
-#Installe jq
+#
+#
+#Install jq
 function gtc_dependency_jq_install() {
     jq -V &>/dev/null || {
         echo "GoToCloud: Installing jq ..."
-        sudo yum -y install jq
+        sudo dnf -y install jq
         #echo "GoToCloud: Done"
         }
 }
 
-#Installe python
+#Install python
 function gtc_dependency_virtualenv_create() {
     echo "GoToCloud: Installing python3.8 ..."
     GTC_PYTHON3_VERSION=$(python3 -V)
@@ -59,18 +59,45 @@ function gtc_dependency_virtualenv_create() {
         echo "GoToCloud: Python "${GTC_PYTHON3_VERSION}" is already installed"
     fi
     echo "GoToCloud: creating virtual environment for ParallelCluster ..."
-    python3 -m pip virtualenv &>/dev/null || {
+    if ! python3 -m pip --version >/dev/null 2>&1; then
+        echo "GoToCloud: Installing pip..."
+        sudo dnf install -y python3-pip
+    fi
+    if ! python3 -m virtualenv --version >/dev/null 2>&1; then
+        echo "GoToCloud: Installing virtualenv..."
         python3 -m pip install --upgrade pip
         python3 -m pip install --user --upgrade virtualenv
-    }
+    fi
     echo "GoToCloud: Altinstalling python3.12 ..."
-    sudo yum install -y openssl11 openssl11-devel
-    wget https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && tar xf Python-3.12.12.tar.xz
-    pushd ./Python-3.12.12 && ./configure && make && sudo make altinstall && popd
-    python3 -m virtualenv -p python3.12 ~/$1    #Create virtualenv for parallelcluster with python3.12
+
+    if ! command -v python3.12 >/dev/null 2>&1; then
+        echo "GoToCloud: Preparing build dependencies for Python3.12..."
+        sudo dnf install -y \
+            gcc \
+            make \
+            openssl-devel \
+            bzip2-devel \
+            libffi-devel \
+            zlib-devel \
+            readline-devel \
+            sqlite-devel \
+            wget \
+            tar
+        TMPDIR=$(mktemp -d)
+        pushd "$TMPDIR" >/dev/null
+        wget https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz && tar xf Python-3.12.12.tar.xz
+        pushd ./Python-3.12.12 >/dev/null && ./configure --enable-optimizations && make -j"$(nproc)" && sudo make altinstall && popd >/dev/null
+        popd >/dev/null
+        rm -rf "$TMPDIR"
+    else
+        echo "GoToCloud: Python3.12 already installed"
+    fi
+    echo "GoToCloud: Creating ParallelCluster virtualenv..."
+    python3 -m virtualenv -p python3.12 ~/"$1"    #Create virtualenv for parallelcluster with python3.12
+    echo "GoToCloud: virtualenv created at ~/$1"
 }
 
-#Installe pcluster
+#Install pcluster
 function gtc_dependency_pcluster_install() {
     echo "GoToCloud: Installing parallelcluster ..."
     pcluster version &>/dev/null && {
@@ -92,7 +119,7 @@ function gtc_dependency_pcluster_install() {
     }
 }
 
-#Installe pcluster latest version
+#Install pcluster latest version
 function gtc_dependency_pcluster_latestver_install() {
     echo "GoToCloud: Installing parallelcluster ..."
     pcluster version &>/dev/null && {
@@ -113,7 +140,7 @@ function gtc_dependency_pcluster_latestver_install() {
     }
 }
 
-#Installe Node.js
+#Install Node.js
 function gtc_dependency_node_install() {
     echo "GoToCloud: Installing Node.js ..."
     source ~/.nvm/nvm.sh
@@ -169,7 +196,7 @@ function gtc_dependency_pcluster_setuptools_install() {
             echo "GoToCloud: Downgrading setuptools ..."
             pip install setuptools==69.5.1
             GTC_PC_PKG_VER=$(echo "$($GTC_PC_PKG_NAME_INFO)" | grep ^Version: | awk '{print $2}')
-            echo "GoToCloud: ${GTC_PC_PKG_NAME} has been downgraded to version: ${GTC_PC_PKG_VER}."    
+            echo "GoToCloud: ${GTC_PC_PKG_NAME} has been downgraded to version: ${GTC_PC_PKG_VER}."
             PV=$(pcluster version | jq -r '.version')   # To enable pcluster
             echo "GoToCloud: Parallelcluster "${PV}" is already installed."
         fi

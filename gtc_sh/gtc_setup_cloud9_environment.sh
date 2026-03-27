@@ -190,7 +190,8 @@ GTC_CLOUD9_TAGSET=${GTC_CLOUD9_TAGSET}
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_CLOUD9_TAGSET=${GTC_CLOUD9_TAGSET}"; fi
 
 echo "GoToCloud: Settings tags to Cloud9..."
-GTC_CLOUD9_INSTANCE_ID=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].InstanceId')
+API_TOKEN=$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')
+GTC_CLOUD9_INSTANCE_ID=$(curl -fsS -H "X-aws-ec2-metadata-token: ${API_TOKEN}" "http://169.254.169.254/latest/meta-data/instance-id")
 echo "GoToCloud: Cloud9 Instance ID: ${GTC_CLOUD9_INSTANCE_ID}"
 aws ec2 create-tags --resources ${GTC_CLOUD9_INSTANCE_ID} --tags ${GTC_CLOUD9_TAGSET} || {
     echo "GoToCloud: [GCT_WARNING] Failed to setup Cloud9 tags."

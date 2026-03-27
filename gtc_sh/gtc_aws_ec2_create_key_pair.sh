@@ -86,7 +86,7 @@ if [ ! -e ${GTC_KEY_DIR} ]; then
 fi
 
 echo "GoToCloud: Making sure that Key-pair ${GTC_KEY_NAME} does not exist yet..."
-aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} && {
+aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} --region ${GTC_AWS_REGION} && {
     if [ -e ${GTC_KEY_FILE} ]; then
         echo "GoToCloud: Key file ${GTC_KEY_FILE} exists already in your environment!"
         #echo "GoToCloud: Done"

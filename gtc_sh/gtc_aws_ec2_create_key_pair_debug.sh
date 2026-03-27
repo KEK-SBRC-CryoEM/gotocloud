@@ -53,7 +53,7 @@ echo "GoToCloud: "
 # NOTE (2021/07/27 Toshio Moriya): I could not find any aws command to list all available key-paris
 
 echo "GoToCloud: Checking if key-pair ${GTC_KEY_NAME} exists already"
-aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} && {
+aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} --region ${GTC_AWS_REGION} && {
     echo "GoToCloud: [GCT_WARNING] Key-pair ${GTC_KEY_NAME} exists already!"
     echo "GoToCloud: Deleting for debug..."
     aws ec2 delete-key-pair --key-name ${GTC_KEY_NAME}
@@ -88,7 +88,7 @@ echo "GoToCloud: "
 # NOTE (2021/07/27 Toshio Moriya): I could not find any aws command to list all available key-paris
 
 echo "GoToCloud: Checking if key-pair ${GTC_KEY_NAME} created successfully"
-aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} || {
+aws ec2 describe-key-pairs --key-name ${GTC_KEY_NAME} --region ${GTC_AWS_REGION} || {
     echo "GoToCloud: GTC_UNIT_TEST_FAIL"
     echo "GoToCloud: Failed to create key-pair ${GTC_KEY_NAME}."
     echo "GoToCloud: Do debug again, DUDE!!!"

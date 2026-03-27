@@ -120,6 +120,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IN
 source gtc_utility_global_varaibles.sh
 # . gtc_utility_global_varaibles.sh
 # Get related global variables
+GTC_AWS_REGION=$(gtc_utility_get_aws_region)
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_PCLUSTER_NAME=${GTC_PCLUSTER_NAME}"; fi
 
@@ -132,7 +133,7 @@ GTC_KEY_FILE=$(gtc_utility_get_key_file)
 if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_KEY_FILE=${GTC_KEY_FILE}"; fi
 
 echo "GoToCloud: Connecting to pcluster instance ${GTC_INSTANCE_NAME} through NiceDCV..."
-pcluster dcv-connect --cluster-name ${GTC_INSTANCE_NAME} --key-path ${GTC_KEY_FILE}
+pcluster dcv-connect --cluster-name ${GTC_INSTANCE_NAME} --region ${GTC_AWS_REGION} --key-path ${GTC_KEY_FILE}
 #pcluster dcv connect ${GTC_INSTANCE_NAME} -k ${GTC_KEY_FILE}
 
 # echo "GoToCloud: Done"
