@@ -75,7 +75,7 @@ GTC_FSX_MB_CAPACITY=2400
 GTC_COMPUTE_RESOURCE_MAX_COUNT=16
 GTC_CONFIG_TYPE="general"
 GTC_USED_S3_NAME="S3_bucket_for_Project"
-GTC_SHARED_S3_URL="https://kek-gtc-master-s3-bucket.s3.ap-northeast-1.amazonaws.com"
+GTC_SHARED_S3_URL="https://kek-gtc-master-02-s3-bucket.s3.ap-northeast-1.amazonaws.com"
 # Parse command line arguments
 while getopts i:s:m:b:o:-:h OPT
 do
