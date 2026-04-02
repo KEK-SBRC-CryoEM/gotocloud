@@ -149,6 +149,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IN
 # Load gtc_utility_global_varaibles shell functions
 source gtc_utility_global_varaibles.sh
 # . gtc_utility_global_varaibles.sh
+source ~/.nvm/nvm.sh
 
 # Obtaine GoToCloud shell script direcctory path
 GTC_SH_DIR=$(gtc_utility_get_sh_dir)

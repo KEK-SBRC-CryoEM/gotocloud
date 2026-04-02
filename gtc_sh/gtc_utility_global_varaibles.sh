@@ -124,7 +124,7 @@ function gtc_utility_setup_global_variables() {
         # Get tags values from this Cloud9 instance
         local TOKEN="$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')"
         local INSTANCE_ID="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" "http://169.254.169.254/latest/meta-data/instance-id" | tr -d '\r\n')"
-        local GTC_TAGS=$(aws ec2 describe-instances --instance-ids "${INSTANCE_ID}" | jq -r '.Reservations[].Instances[].Tags[]')
+        local GTC_TAGS=$(aws ec2 describe-instances --region "${GTC_AWS_REGION}" --instance-ids "${INSTANCE_ID}" | jq -r '.Reservations[].Instances[].Tags[]')
         # local GTC_TAGS=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].Tags[]')
         GTC_CLOUD9_ENV=`echo ${GTC_TAGS} | jq -r 'select(.Key == "aws:cloud9:environment").Value'`
         GTC_CLOUD9_NAME=`echo ${GTC_TAGS} | jq -r 'select(.Key == "Name").Value' | awk '{sub("-'${GTC_CLOUD9_ENV}'", "");print $0;}' | awk '{sub("aws-cloud9-", "");print $0;}'`
@@ -145,18 +145,18 @@ function gtc_utility_setup_global_variables() {
         # Get network info from this Cloud9 instance
         local TOKEN="$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')"
         local INSTANCE_ID="$(curl -fsS -H "X-aws-ec2-metadata-token: ${TOKEN}" "http://169.254.169.254/latest/meta-data/instance-id" | tr -d '\r\n')"
-        local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --instance-ids "${INSTANCE_ID}" | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
+        local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --region "${GTC_AWS_REGION}" --instance-ids "${INSTANCE_ID}" | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
         # local GTC_CLOUD9_NETWORK_INFO=$(aws ec2 describe-instances --instance-ids $(curl -s http://169.254.169.254/latest/meta-data/instance-id) | jq -r '.Reservations[].Instances[].NetworkInterfaces[]')
         local GTC_PEERING_INFO=$(aws ec2 describe-vpc-peering-connections --region ${GTC_AWS_REGION} | jq '.VpcPeeringConnections[]')
         GTC_VPC_ID=`echo ${GTC_CLOUD9_NETWORK_INFO} | jq -r '.VpcId'`
-        GTC_VPC_CIDR=$(aws ec2 describe-vpcs | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
+        GTC_VPC_CIDR=$(aws ec2 describe-vpcs --region "${GTC_AWS_REGION}" | jq '.Vpcs[]' | jq -r 'select(.VpcId == "'${GTC_VPC_ID}'").CidrBlock')
         GTC_ACCEPTER_VPC_ID=`echo ${GTC_PEERING_INFO} | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.VpcId'`
         GTC_ACCEPTER_VPC_CIDR=`echo ${GTC_PEERING_INFO} | jq -r 'select(.RequesterVpcInfo.VpcId == "'${GTC_VPC_ID}'").AccepterVpcInfo.CidrBlock'`
         GTC_EFS_SETTING=$(echo "$(pwd)/gtc_efs_setting.json")
         GTC_EFS_FILESYSTEM_ID=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").FileSystemId')
         GTC_EFS_MOUNT_TARGET_IP=$(cat ${GTC_EFS_SETTING} | jq '.EfsSettings[]' | jq -r 'select(.VpcId == "'${GTC_ACCEPTER_VPC_ID}'").IpAddress')
         GTC_SUBNET_ID=`echo ${GTC_CLOUD9_NETWORK_INFO} | jq -r '.SubnetId'`
-        GTC_SUBNET_NAME=$(aws ec2 describe-subnets | jq '.Subnets[]' | jq 'select(.SubnetId == "'${GTC_SUBNET_ID}'")' | jq '.Tags[]' | jq -r 'select(.Key == "Name").Value')
+        GTC_SUBNET_NAME=$(aws ec2 describe-subnets --region "${GTC_AWS_REGION}" | jq '.Subnets[]' | jq 'select(.SubnetId == "'${GTC_SUBNET_ID}'")' | jq '.Tags[]' | jq -r 'select(.Key == "Name").Value')
 
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_VPC_ID=${GTC_VPC_ID}"; fi
         if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GTC_DEBUG] GTC_VPC_CIDR=${GTC_VPC_CIDR}"; fi
@@ -174,15 +174,11 @@ function gtc_utility_setup_global_variables() {
 
     # Get GoToCloud meta info as global variables within file scope
     # i.e. GTC_IAM_USEAR_NAME GTC_METHOD_NAME GTC_PROJECT_NAME GTC_ACCOUNT_ID GTC_TAG_KEY_*
-    GTC_AWS_REGION=$(gtc_utility_get_aws_region)
+    GTC_AWS_REGION="$(gtc_utility_get_aws_region)" || exit 1
     gtc_utility_account_identity_get_values
     gtc_utility_project_name_get_values
     gtc_utility_network_info_get_values
-    if [ ${GTC_PROJECT_NAME_INIT} == "cloud9-name" ]; then
-        GTC_PROJECT_NAME=${GTC_CLOUD9_NAME}
-    else
-        GTC_PROJECT_NAME=${GTC_PROJECT_NAME_INIT}
-    fi
+    GTC_PROJECT_NAME=${GTC_PROJECT_NAME_INIT}
     GTC_TAG_KEY_IAMUSER="gtc:iam-user"
     GTC_TAG_KEY_METHOD="gtc:method"
     GTC_TAG_KEY_PROJECT="gtc:project"
@@ -450,7 +446,15 @@ function gtc_utility_get_key_name() {
 }
 
 function gtc_utility_get_aws_region() {
-    echo ${GTC_SYSTEM_AWS_REGION}
+    if [[ -z "${GTC_SYSTEM_AWS_REGION}" ]]; then
+        local API_TOKEN
+        API_TOKEN="$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" \
+            -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" | tr -d '\r\n')" || return 1
+        GTC_SYSTEM_AWS_REGION="$(curl -fsS -H "X-aws-ec2-metadata-token: ${API_TOKEN}" \
+            "http://169.254.169.254/latest/meta-data/placement/region" | tr -d '\r\n')" || return 1
+        [[ -n "${GTC_SYSTEM_AWS_REGION}" ]] || return 1
+    fi
+    echo "${GTC_SYSTEM_AWS_REGION}"
 }
 
 function gtc_utility_get_vpc_id() {

@@ -123,6 +123,7 @@ if [[ ${GTC_SYSTEM_DEBUG_MODE} != 0 ]]; then echo "GoToCloud: [GCT_DEBUG] GTC_IN
 # Load gtc_utility_global_varaibles shell functions
 source gtc_utility_global_varaibles.sh
 # . gtc_utility_global_varaibles.sh
+source ~/.nvm/nvm.sh
 
 # Get related global variables
 GTC_PCLUSTER_NAME=$(gtc_utility_get_pcluster_name)
