@@ -233,7 +233,7 @@ def plot_shell_avg(radii, shell_avg, shell_std, radius_protein=None, radius_limi
     else:
         plt.show()
 
-def get_visualization_images(volume_segmented, mask, align=False, mode="mean"):
+def get_visualization_images(volume_segmented, mask, align=False, mode="summed"):
     # 0. mode setup
     mode_settings = {
         "summed":     {"method": vutils.get_volume_summed_projection, "max_value": lambda img: np.max(img.shape)},
