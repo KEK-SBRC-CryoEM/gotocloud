@@ -119,7 +119,7 @@ def get_spherical_kernel(size):
 def is_hard_mask(mask):
     return np.all((mask == 0) | (mask == 1))
 
-def covariance_alignment(volume_segmented, volume_original=None):
+def covariance_alignment(volume_segmented, volume_original=None, center_mode="box"):
     # 1. get components by covariance matrix (covariance on the coordinates)
     coords = np.column_stack(np.where(volume_segmented==1)).astype(np.float32)
     
@@ -127,9 +127,15 @@ def covariance_alignment(volume_segmented, volume_original=None):
     eigvals, eigvecs = np.linalg.eigh(cov)
 
     # 2. rotate
-    center = np.array(volume_segmented.shape) // 2
-    R = eigvecs.T
-    offset = center - R @ center
+    R = eigvecs
+    if center_mode == "coord":
+        centroid = coords.mean(axis=0)
+        offset = centroid - R @ centroid
+    elif center_mode == "box":
+        center = np.array(volume_segmented.shape) // 2
+        offset = center - R @ center
+    else:
+        raise Exception(f"covariance_alignment encountered an unkown value for 'center_mode' as {center_mode}. Expected values are 'coord' or 'box'")
 
     to_rotate = volume_original if volume_original is not None else volume_segmented
     rotated = affine_transform(to_rotate, R,
