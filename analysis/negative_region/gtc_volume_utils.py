@@ -7,7 +7,7 @@ from miniball import miniball
 from scipy.ndimage import affine_transform
 
 ## miniball enclosing sphere ##
-def enclosing_sphere(volume_segmented):
+def enclosing_sphere(binary_mask):
     """
     Computes the smallest enclosing sphere around the segmented region 
         of a 3D density map, based on a given threshold.
@@ -20,9 +20,9 @@ def enclosing_sphere(volume_segmented):
 
     todo: convexhull before miniball may improve speed
     """
-    coords = np.column_stack(np.where(volume_segmented==1)).astype(np.float64)
+    coords = np.column_stack(np.where(binary_mask==1)).astype(np.float64)
     if coords.size == 0:
-        raise ValueError("miniball: no coordinates given. Segmented volume has no density above the input threshold.")
+        raise ValueError("enclosing_sphere: no coordinates given. Input must be binary segmented.")
     return miniball(coords)
 
 ## mrc file related ##
@@ -32,6 +32,11 @@ def load_mrc(filename):
         data["data"]       = mrc.data
         data["voxel_size"] = mrc.voxel_size.tolist()
     return data
+
+def save_mrc(volume, voxel_size, filename):
+    with mrcfile.new(filename, overwrite=True) as mrc:
+        mrc.set_data(volume)
+        mrc.voxel_size = voxel_size
 
 def create_spherical_mask(shape, radius, voxel_size, center=None, filename="mask.mrc"):
     """
@@ -51,9 +56,7 @@ def create_spherical_mask(shape, radius, voxel_size, center=None, filename="mask
     dist = np.sqrt((X - center[2])**2 + (Y - center[1])**2 + (Z - center[0])**2)
     mask = (dist <= radius).astype(np.uint8)
 
-    with mrcfile.new(filename, overwrite=True) as mrc:
-        mrc.set_data(mask.astype(np.uint8))
-        mrc.voxel_size = voxel_size
+    save_mrc(volume=mask.astype(np.uint8), voxel_size=voxel_size, filename=filename)
 
 ## volume manipulation (numpy, scipy) ##
 def binary_segmentation(data, threshold=0, is_binary_mask=False):
@@ -119,33 +122,51 @@ def get_spherical_kernel(size):
 def is_hard_mask(mask):
     return np.all((mask == 0) | (mask == 1))
 
-def covariance_alignment(volume_segmented, volume_original=None, center_mode="box"):
+def covariance_alignment(hard_mask, center, volume=None, center_mode="box"):
     # 1. get components by covariance matrix (covariance on the coordinates)
-    coords = np.column_stack(np.where(volume_segmented==1)).astype(np.float32)
+    coords = np.column_stack(np.where(hard_mask==1)).astype(np.float32)
     
+    # 2. pca rotation
     cov = np.cov(coords, rowvar=False)
     eigvals, eigvecs = np.linalg.eigh(cov)
 
-    # 2. rotate
+    # 3. centering
     R = eigvecs
-    if center_mode == "coord":
+    if center_mode == "mass":
         centroid = coords.mean(axis=0)
-        offset = centroid - R @ centroid
-    elif center_mode == "box":
-        center = np.array(volume_segmented.shape) // 2
-        offset = center - R @ center
-    else:
-        raise Exception(f"covariance_alignment encountered an unkown value for 'center_mode' as {center_mode}. Expected values are 'coord' or 'box'")
+        offset = center - R @ centroid
 
-    to_rotate = volume_original if volume_original is not None else volume_segmented
-    rotated = affine_transform(to_rotate, R,
+    elif center_mode == "box":
+        box_center = (np.array(hard_mask.shape) - 1) / 2.0
+        offset = center - R @ box_center
+
+    else:
+        raise Exception(f"covariance_alignment encountered an unkown value for 'center_mode' as {center_mode}. Expected values are 'mass' or 'box'")
+
+    # 4. apply
+    if volume is not None:
+        rotated_volume = affine_transform(volume, R,
+            offset=offset,
+            order=0,
+            mode='constant',
+            cval=0.0
+        )
+
+    rotated_mask  = affine_transform(hard_mask, R,
         offset=offset,
         order=0,
         mode='constant',
         cval=0.0
     )
 
-    return rotated, (eigvals, eigvecs)
+    result = {"volume":  rotated_volume if volume is not None else None,
+              "mask":    rotated_mask,
+              "eigvals": eigvals,
+              "eigvecs": eigvecs,
+              "offset":  offset,
+    }
+
+    return result
 
 ## opencv related ##
 def normalize_to_uint8(img, max_value):
