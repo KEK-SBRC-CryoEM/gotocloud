@@ -187,6 +187,7 @@ def estimate_negative_shell(pos_radius, lim_radius, pos_center, radii, shell_avg
         else:
             ValueError("mode must be either 'zero_crossing' or 'quantile75'")
 
+    sphere["diameter"] = 2*sphere["radius"]
     return sphere
 
 ## plot related ##
@@ -297,9 +298,12 @@ def show_slices(imgs_gray, spheres=None, title="", output_path=None):
 ## analysis and plot pipelines ##
 def analysis_pipeline(volume, mask=None, threshold=0, mode="zero_crossing"):
     # maximum sphere for this volume shape
-    sphere_limit = {"center": np.array(volume["data"].shape)//2,
-                    "radius": volume["data"].shape[0]//2
+    sphere_limit = {"center":   (np.array(volume["data"].shape) - 1) / 2.0,
+                    "radius":   np.min((np.array(volume["data"].shape) - 1) / 2.0),
+                    "diameter": 2*np.min((np.array(volume["data"].shape) - 1) / 2.0)
     }
+
+
     logger.info(f"Limiting sphere: \n{utils.handle_output(sphere_limit, show=False)}")
  
     # 1. find the sphere enclosing the volume
