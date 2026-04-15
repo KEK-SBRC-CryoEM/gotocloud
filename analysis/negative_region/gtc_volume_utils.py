@@ -23,7 +23,9 @@ def enclosing_sphere(binary_mask):
     coords = np.column_stack(np.where(binary_mask==1)).astype(np.float64)
     if coords.size == 0:
         raise ValueError("enclosing_sphere: no coordinates given. Input must be binary segmented.")
-    return miniball(coords)
+    result = miniball(coords)
+    result["diameter"] = 2*result["radius"]
+    return result
 
 ## mrc file related ##
 def load_mrc(filename):
