@@ -233,7 +233,7 @@ def plot_shell_avg(radii, shell_avg, shell_std, radius_protein=None, radius_limi
     else:
         plt.show()
 
-def get_visualization_images(volume_segmented, mask, align=False, mode="summed"):
+def get_visualization_images(volume_segmented, mask, center, align=False, mode="summed"):
     # 0. mode setup
     mode_settings = {
         "summed":     {"method": vutils.get_volume_summed_projection, "max_value": lambda img: np.max(img.shape)},
@@ -250,10 +250,10 @@ def get_visualization_images(volume_segmented, mask, align=False, mode="summed")
 
     # 2. alignment (optional)
     if align:
-        volume_segmented, _ = vutils.covariance_alignment(mask, volume_segmented)
+        alignment_data = covariance_alignment(hard_mask=mask, center=center, volume=volume_segmented, center_mode="box")
 
     # 3. project or take slices
-    imgs_projections = mode_["method"](volume_segmented)
+    imgs_projections = mode_["method"](alignment_data["volume"] if align else volume_segmented)
 
     # 4. grayscale normalization
     imgs_gray        = [vutils.normalize_to_uint8(img, max_value=mode_["max_value"](img)) for img in imgs_projections]
@@ -394,6 +394,7 @@ def figures_pipeline(volume, mask,
     images = get_visualization_images(
                 volume_segmented = segmented,
                 mask      = mask,
+                center    = sphere_negative["center"],
                 align     = True,
                 mode      = "orthogonal"
     )    
@@ -408,6 +409,7 @@ def figures_pipeline(volume, mask,
     images = get_visualization_images( 
                 volume_segmented = segmented,
                 mask      = mask,
+                center    = sphere_negative["center"],
                 align     = True,
                 mode      = "summed"
     )    
