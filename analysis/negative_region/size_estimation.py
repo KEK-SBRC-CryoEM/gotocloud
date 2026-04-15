@@ -12,8 +12,6 @@ import gtc_volume_utils as vutils
 
 logger = logging.getLogger("MRC SIZE ESTIMATION")
 
-# todo: merge with old size_estimation
-
 def estimate_particle_size(volume, voxel_size, threshold, kernel_size=3, kernel_spherical=True):
     volume_processed = volume
 
