@@ -520,8 +520,9 @@ if __name__ == "__main__":
                                      cs               = args.cs,
                                      limit_resolution = args.limit_resolution)
         # output interface
-        result_dict = {"boxsize":int(result[1]),
-                       "resolution":float(result[0])}
+        result_dict = {"boxsize":int(result[1]), # pixels
+                       "resolution":float(result[0]),
+                       "pixel_size":args.pixel_size}
 
         # print and/or save output
         utils.handle_output(result_dict, to_json=args.json, output_directory=output_folder)
@@ -544,7 +545,8 @@ if __name__ == "__main__":
                                     defocus=args.defocus)
 
         # output interface
-        result_dict = {"boxsize": float(result)}
+        result_dict = {"boxsize": float(result), # angstrom
+                       "pixel_size":args.pixel_size}
 
         # print and/or save output
         utils.handle_output(result_dict, to_json=args.json, output_directory=output_folder)
