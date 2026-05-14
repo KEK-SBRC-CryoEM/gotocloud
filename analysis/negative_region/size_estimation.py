@@ -12,7 +12,7 @@ import gtc_volume_utils as vutils
 
 logger = logging.getLogger("MRC SIZE ESTIMATION")
 
-def estimate_particle_size(volume, voxel_size, threshold, kernel_size=3, kernel_spherical=True):
+def estimate_particle_size(volume, threshold, kernel_size=3, kernel_spherical=True):
     volume_processed = volume
 
     # guassian blurr
@@ -34,10 +34,8 @@ def estimate_particle_size(volume, voxel_size, threshold, kernel_size=3, kernel_
     volume_processed = ndimage.binary_closing(volume_processed, structure=kernel)
 
     logger.info(f"Finding the enclosed sphere...")
-    volume_processed = vutils.enclosing_sphere(volume_processed)
-    volume_processed["voxel_size"] = voxel_size
-
-    return volume_processed
+    sphere = vutils.enclosing_sphere(volume_processed)
+    return sphere
 
 if __name__ == "__main__":
     # python mask_size.py -v data_testing/prot_mask_final.mrc -s
@@ -72,7 +70,8 @@ if __name__ == "__main__":
     volume   = vutils.load_mrc(args.volume)
 
     logger.info(f"Running size estimation...")
-    result = estimate_particle_size(volume["data"], volume["voxel_size"], threshold=args.threshold)
+    result = estimate_particle_size(volume["data"], threshold=args.threshold)
+    result["voxel_size"] = volume["voxel_size"][0]
     
     # save mask
     if args.save_mask:
