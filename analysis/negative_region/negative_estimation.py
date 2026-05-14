@@ -37,7 +37,7 @@ def shell_distance_matrix(volume, center=None):
     
     # if no center provided, use volume center
     if center is None:
-        cz, cy, cx = Z // 2, Y // 2, X // 2
+        cz, cy, cx = (Z-1)/2.0, (Y-1)/2.0, (X-1)/2.0
     else:
         cz, cy, cx = center
 
@@ -95,7 +95,7 @@ def batch_shell_average(volume, sphere_positive, min_radius=2, shell_tickness=0.
     """
 
     # Compute voxel-wise distances to the provided center
-    center = sphere_positive["center"].astype(int)
+    center = sphere_positive["center"]#.astype(int)
     distance_matrix = shell_distance_matrix(volume, center)
 
     # Define shell radii from min_radius up to the max distance in the map
@@ -251,7 +251,7 @@ def get_visualization_images(volume_segmented, mask, center, align=False, mode="
 
     # 2. alignment (optional)
     if align:
-        alignment_data = covariance_alignment(hard_mask=mask, center=center, volume=volume_segmented, center_mode="box")
+        alignment_data = vutils.covariance_alignment(hard_mask=mask, center=center, volume=volume_segmented, center_mode="box")
 
     # 3. project or take slices
     imgs_projections = mode_["method"](alignment_data["volume"] if align else volume_segmented)
