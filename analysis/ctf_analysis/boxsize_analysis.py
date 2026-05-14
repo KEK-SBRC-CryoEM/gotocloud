@@ -541,12 +541,11 @@ if __name__ == "__main__":
         # computation
         result = run_boxsize_fresnel(particle_diameter=args.particle_diameter,
                                      voltage_kV=args.voltage,
-                                    resolution=args.resolution,
-                                    defocus=args.defocus)
+                                     resolution=args.resolution,
+                                     defocus=args.defocus)
 
         # output interface
-        result_dict = {"boxsize": float(result), # angstrom
-                       "pixel_size":args.pixel_size}
+        result_dict = {"boxsize": float(result)} # angstrom
 
         # print and/or save output
         utils.handle_output(result_dict, to_json=args.json, output_directory=output_folder)
