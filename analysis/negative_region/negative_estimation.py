@@ -338,7 +338,7 @@ def analysis_pipeline(volume, mask=None, threshold=0, mode="zero_crossing"):
                                               shell_std_densities=shell_std_densities,
                                               mode=mode
     )
-    sphere_negative["voxel_size"] = volume["voxel_size"]
+    sphere_negative["voxel_size"] = volume["voxel_size"][0]
     logger.info(f"Estimated Negative sphere: \n{utils.handle_output(sphere_negative, show=False)}")
 
     result = {#"volume"         : volume["data"],
