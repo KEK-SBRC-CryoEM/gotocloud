@@ -103,7 +103,7 @@ if __name__ == "__main__":
                     voxel_size=voxel_size,
                     filename=avolume_path)
     if amask_path:
-        vutils.save_mrc(volume=alignment_data["volume"],
+        vutils.save_mrc(volume=alignment_data["mask"],
                 voxel_size=voxel_size,
                 filename=amask_path)
 
