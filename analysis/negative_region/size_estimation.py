@@ -72,7 +72,7 @@ if __name__ == "__main__":
     logger.info(f"Running size estimation...")
     result = estimate_particle_size(volume["data"], threshold=args.threshold)
     result["voxel_size"] = volume["voxel_size"][0]
-    result["box_size"]   = volume["box_size"]
+    result["box_size"]   = volume["box_size"][0]
     
     # save mask
     if args.save_mask:
