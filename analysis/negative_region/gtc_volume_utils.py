@@ -33,6 +33,7 @@ def load_mrc(filename):
     with mrcfile.open(filename) as mrc:
         data["data"]       = mrc.data
         data["voxel_size"] = mrc.voxel_size.tolist()
+        data["box_size"]   = mrc.data.shape
     return data
 
 def save_mrc(volume, voxel_size, filename):

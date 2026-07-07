@@ -94,6 +94,7 @@ if __name__ == "__main__":
 
     logger.info(f"Running alignment...")
     alignment_data = do_alignment(volume, mask, args.threshold)
+    alignment_data["box_size"] = alignment_data["volume"].shape[0]
 
     # saving aligned volume
     avolume_path = os.path.join(basedir or ".", f"aligned_{Path(args.volume).name}")
@@ -123,4 +124,5 @@ if __name__ == "__main__":
     ## replacing volume and mask data by its path
     alignment_data["volume"] = avolume_path
     alignment_data["mask"]   = amask_path
+    
     utils.handle_output(alignment_data, to_json=args.json, output_directory=basedir)
